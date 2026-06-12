@@ -4,6 +4,10 @@ import SwiftUI
 struct SiraatApp: App {
     @StateObject private var services = AppServices()
 
+    init() {
+        SiraatFont.registerBundledFonts()
+    }
+
     var body: some Scene {
         WindowGroup {
             MainTabView()
