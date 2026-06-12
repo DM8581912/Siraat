@@ -58,12 +58,12 @@ struct PrayerTimesService: PrayerTimesServicing {
             date: date,
             coordinate: coordinate,
             times: [
-                PrayerTime(name: .fajr, date: date(fromMinutes: fajrMinutes, on: date, calendar: calendar)),
-                PrayerTime(name: .sunrise, date: date(fromMinutes: sunriseMinutes, on: date, calendar: calendar)),
-                PrayerTime(name: .dhuhr, date: date(fromMinutes: noon, on: date, calendar: calendar)),
-                PrayerTime(name: .asr, date: date(fromMinutes: asrMinutes, on: date, calendar: calendar)),
-                PrayerTime(name: .maghrib, date: date(fromMinutes: maghribMinutes, on: date, calendar: calendar)),
-                PrayerTime(name: .isha, date: date(fromMinutes: ishaMinutes, on: date, calendar: calendar))
+                PrayerTime(name: .fajr, date: resolveDate(minutes: fajrMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .sunrise, date: resolveDate(minutes: sunriseMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .dhuhr, date: resolveDate(minutes: noon, on: date, calendar: calendar)),
+                PrayerTime(name: .asr, date: resolveDate(minutes: asrMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .maghrib, date: resolveDate(minutes: maghribMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .isha, date: resolveDate(minutes: ishaMinutes, on: date, calendar: calendar))
             ]
         )
     }
@@ -121,7 +121,7 @@ struct PrayerTimesService: PrayerTimesServicing {
     /// transitions (adding seconds to midnight is off by an hour on transition days).
     /// Handles minute values outside 0–1440 (e.g. Isha after midnight, or a negative
     /// high-latitude fallback) by rolling the day.
-    private func date(fromMinutes minutes: Double, on date: Date, calendar: Calendar) -> Date {
+    private func resolveDate(minutes: Double, on date: Date, calendar: Calendar) -> Date {
         let dayStart = calendar.startOfDay(for: date)
         let totalSeconds = Int((minutes * 60).rounded())
         let dayOffset = Int(floor(Double(totalSeconds) / 86_400))
