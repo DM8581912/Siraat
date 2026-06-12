@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import SwiftUI
 
 @MainActor
 final class DashboardViewModel: ObservableObject {
@@ -89,6 +90,20 @@ final class DashboardViewModel: ObservableObject {
         locationManager?.requestLocation()
     }
 
+    /// Stop the magnetometer + GPS when backgrounded, restart when foregrounded.
+    /// Without this, startHeadingUpdates() runs the sensors indefinitely.
+    func scenePhaseChanged(_ phase: ScenePhase) {
+        switch phase {
+        case .active:
+            locationManager?.startHeadingUpdates()
+            load()
+        case .background, .inactive:
+            locationManager?.stopHeadingUpdates()
+        @unknown default:
+            break
+        }
+    }
+
     func schedulePrayerReminders() {
         Task {
             guard let prayerNotificationService else { return }
@@ -117,7 +132,8 @@ final class DashboardViewModel: ObservableObject {
             calendar: .current,
             method: settings.calculationMethod,
             madhab: settings.madhab,
-            highLatitudeRule: settings.highLatitudeRule
+            highLatitudeRule: settings.highLatitudeRule,
+            adjustments: settings.prayerAdjustments
         )
         qiblaDirection = qiblaService?.direction(from: coordinate, headingDegrees: locationManager?.headingDegrees)
         autoRescheduleRemindersIfNeeded(for: coordinate)
@@ -149,7 +165,8 @@ final class DashboardViewModel: ObservableObject {
                 calendar: calendar,
                 method: settings.calculationMethod,
                 madhab: settings.madhab,
-                highLatitudeRule: settings.highLatitudeRule
+                highLatitudeRule: settings.highLatitudeRule,
+                adjustments: settings.prayerAdjustments
             )
         }
     }

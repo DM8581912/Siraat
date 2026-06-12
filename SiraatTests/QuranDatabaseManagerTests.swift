@@ -48,6 +48,31 @@ final class QuranDatabaseManagerTests: XCTestCase {
         XCTAssertEqual(restored, settings)
     }
 
+    /// Settings persisted before Phase 1 lack the prayerAdjustments key.
+    /// The defensive decoder must fill it with zeros, not crash.
+    func testDecodesOldSettingsWithoutPrayerAdjustments() throws {
+        let oldJSON = """
+        {
+            "script": "uthmani",
+            "readingMode": "continuous",
+            "fontSize": 28,
+            "translationLanguage": "en",
+            "selectedReciterID": 7,
+            "appearanceMode": "system",
+            "calculationMethod": "muslimWorldLeague",
+            "madhab": 1,
+            "hijriDayAdjustment": 0
+        }
+        """
+        let decoded = try JSONDecoder().decode(
+            ReaderSettings.self, from: Data(oldJSON.utf8)
+        )
+        XCTAssertEqual(decoded.prayerAdjustments, PrayerAdjustments(),
+                       "Missing prayerAdjustments key should default to all-zero adjustments")
+        XCTAssertEqual(decoded.script, .uthmani)
+        XCTAssertEqual(decoded.calculationMethod, .muslimWorldLeague)
+    }
+
     func testBundleLoadsFatihahOffline() async throws {
         let manager = QuranDatabaseManager(userDefaults: userDefaults)
         let verses = try await manager.verses(forSurah: 1, language: .english, reciterID: QuranReciter.misharyAlafasy.rawValue)

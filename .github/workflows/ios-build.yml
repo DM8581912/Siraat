@@ -7,7 +7,7 @@ name: Build unsigned IPA
 
 on:
   push:
-    branches: [main, "feat/**", "feature/**", "fix/**", "chore/**"]
+    branches: [main, "feat/**", "feature/**", "fix/**", "chore/**", "hardening/**"]
   workflow_dispatch: {}   # lets you run it by hand from the Actions tab (any branch)
 
 jobs:

@@ -63,6 +63,17 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Prayer Time Adjustments") {
+                PrayerAdjustmentStepper("Fajr", value: $viewModel.settings.prayerAdjustments.fajr)
+                PrayerAdjustmentStepper("Dhuhr", value: $viewModel.settings.prayerAdjustments.dhuhr)
+                PrayerAdjustmentStepper("Asr", value: $viewModel.settings.prayerAdjustments.asr)
+                PrayerAdjustmentStepper("Maghrib", value: $viewModel.settings.prayerAdjustments.maghrib)
+                PrayerAdjustmentStepper("Isha", value: $viewModel.settings.prayerAdjustments.isha)
+                Text("Add or subtract minutes to match your local mosque's timetable.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Hijri Date") {
                 Stepper(
                     hijriAdjustmentLabel,
@@ -116,6 +127,25 @@ struct SettingsView: View {
         }
         .onChange(of: viewModel.prayerReminderSettings) {
             viewModel.save()
+        }
+    }
+
+    /// Per-prayer minute adjustment — label shows "+2 min" / "-1 min" / "0 min".
+    private struct PrayerAdjustmentStepper: View {
+        let label: String
+        @Binding var value: Int
+
+        init(_ label: String, value: Binding<Int>) {
+            self.label = label
+            self._value = value
+        }
+
+        var body: some View {
+            Stepper(
+                "\(label): \(value > 0 ? "+" : "")\(value) min",
+                value: $value,
+                in: -30...30
+            )
         }
     }
 

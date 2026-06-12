@@ -7,7 +7,8 @@ protocol PrayerTimesServicing {
         calendar: Calendar,
         method: CalculationMethod,
         madhab: Madhab,
-        highLatitudeRule: HighLatitudeRule?
+        highLatitudeRule: HighLatitudeRule?,
+        adjustments: PrayerAdjustments
     ) -> DailyPrayerSchedule
 }
 
@@ -23,7 +24,8 @@ struct PrayerTimesService: PrayerTimesServicing {
         calendar: Calendar = .current,
         method: CalculationMethod = .muslimWorldLeague,
         madhab: Madhab = .shafi,
-        highLatitudeRule: HighLatitudeRule? = nil
+        highLatitudeRule: HighLatitudeRule? = nil,
+        adjustments: PrayerAdjustments = PrayerAdjustments()
     ) -> DailyPrayerSchedule {
         let coordinates = Coordinates(latitude: coordinate.latitude, longitude: coordinate.longitude)
 
@@ -35,6 +37,7 @@ struct PrayerTimesService: PrayerTimesServicing {
         params.madhab = madhab
         // nil = pick the rule Adhan recommends for this latitude (sane automatic default).
         params.highLatitudeRule = highLatitudeRule ?? HighLatitudeRule.recommended(for: coordinates)
+        params.adjustments = adjustments
 
         guard
             let prayerTimes = PrayerTimes(

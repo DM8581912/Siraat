@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject private var services: AppServices
     @StateObject private var viewModel = DashboardViewModel()
+    @Environment(\.scenePhase) private var scenePhase
     @Binding var selectedTab: AppTab
 
     var body: some View {
@@ -67,6 +68,9 @@ struct DashboardView: View {
                 qiblaService: services.qiblaService
             )
             viewModel.load()
+        }
+        .onChange(of: scenePhase) {
+            viewModel.scenePhaseChanged(scenePhase)
         }
     }
 }
