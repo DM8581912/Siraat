@@ -36,6 +36,15 @@ struct TajweedPhonemeObservation: Codable, Equatable, Sendable {
     let hasQalqalahBurst: Bool
     let articulationClass: String
 
+    private enum CodingKeys: String, CodingKey {
+        case letter
+        case confidence
+        case duration
+        case hasNasalization
+        case hasQalqalahBurst
+        case articulationClass
+    }
+
     init(
         letter: Character,
         confidence: Double,
@@ -51,6 +60,27 @@ struct TajweedPhonemeObservation: Codable, Equatable, Sendable {
         self.hasQalqalahBurst = hasQalqalahBurst
         self.articulationClass = articulationClass
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let letterString = try container.decode(String.self, forKey: .letter)
+        letter = letterString.first ?? " "
+        confidence = try container.decode(Double.self, forKey: .confidence)
+        duration = try container.decode(TimeInterval.self, forKey: .duration)
+        hasNasalization = try container.decode(Bool.self, forKey: .hasNasalization)
+        hasQalqalahBurst = try container.decode(Bool.self, forKey: .hasQalqalahBurst)
+        articulationClass = try container.decode(String.self, forKey: .articulationClass)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(String(letter), forKey: .letter)
+        try container.encode(confidence, forKey: .confidence)
+        try container.encode(duration, forKey: .duration)
+        try container.encode(hasNasalization, forKey: .hasNasalization)
+        try container.encode(hasQalqalahBurst, forKey: .hasQalqalahBurst)
+        try container.encode(articulationClass, forKey: .articulationClass)
+    }
 }
 
 struct TajweedViolation: Codable, Equatable, Sendable {
@@ -60,6 +90,15 @@ struct TajweedViolation: Codable, Equatable, Sendable {
     let severity: TajweedSeverity
     let confidence: Double
     let userFacingMessage: String
+
+    private enum CodingKeys: String, CodingKey {
+        case rule
+        case affectedLetter
+        case wordIndex
+        case severity
+        case confidence
+        case userFacingMessage
+    }
 
     init(
         rule: TajweedRule,
@@ -75,5 +114,26 @@ struct TajweedViolation: Codable, Equatable, Sendable {
         self.severity = severity
         self.confidence = confidence
         self.userFacingMessage = userFacingMessage
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        rule = try container.decode(TajweedRule.self, forKey: .rule)
+        let letterString = try container.decode(String.self, forKey: .affectedLetter)
+        affectedLetter = letterString.first ?? " "
+        wordIndex = try container.decode(Int.self, forKey: .wordIndex)
+        severity = try container.decode(TajweedSeverity.self, forKey: .severity)
+        confidence = try container.decode(Double.self, forKey: .confidence)
+        userFacingMessage = try container.decode(String.self, forKey: .userFacingMessage)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(rule, forKey: .rule)
+        try container.encode(String(affectedLetter), forKey: .affectedLetter)
+        try container.encode(wordIndex, forKey: .wordIndex)
+        try container.encode(severity, forKey: .severity)
+        try container.encode(confidence, forKey: .confidence)
+        try container.encode(userFacingMessage, forKey: .userFacingMessage)
     }
 }
