@@ -77,7 +77,9 @@ final class PrayerNotificationService: PrayerNotificationServicing {
             let content = UNMutableNotificationContent()
             content.title = "\(prayer.name.displayName) soon"
             content.body = settings.minutesBefore == 0 ? "It is time for \(prayer.name.displayName)." : "\(prayer.name.displayName) begins in \(settings.minutesBefore) minutes."
-            content.sound = .default
+            content.sound = settings.playAdhanSound
+                ? UNNotificationSound(named: UNNotificationSoundName("Adhan.caf"))
+                : .default
 
             // Repeat daily on the prayer's clock time so reminders never silently stop
             // after the first day. Times drift a minute or two over weeks; the app
