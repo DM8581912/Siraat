@@ -6,7 +6,7 @@ name: Build unsigned IPA
 
 on:
   push:
-    branches: [main, luh-mk-inthestu, feat/correctness-overhaul]
+    branches: [main, "feat/**", "fix/**", "chore/**"]
   workflow_dispatch: {}   # lets you run it by hand from the Actions tab
 
 jobs:

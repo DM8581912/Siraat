@@ -1,12 +1,62 @@
 import SwiftUI
+import UIKit
 
+private extension Color {
+    /// Adaptive color that resolves differently in light vs dark mode. The hand-authored
+    /// project has no asset catalog, so colors are defined dynamically in code.
+    init(lightHex light: UInt, darkHex dark: UInt) {
+        self = Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(hex: dark) : UIColor(hex: light)
+        })
+    }
+}
+
+private extension UIColor {
+    convenience init(hex: UInt) {
+        self.init(
+            red: CGFloat((hex >> 16) & 0xFF) / 255,
+            green: CGFloat((hex >> 8) & 0xFF) / 255,
+            blue: CGFloat(hex & 0xFF) / 255,
+            alpha: 1
+        )
+    }
+}
+
+/// Calm, reverent palette. Deep teal-green primary with a warm gold accent; warm
+/// off-white surfaces in light, deep charcoal (not pure black) in dark. All tokens
+/// adapt between light and dark mode.
 enum SiraatColor {
-    static let background = Color(.systemBackground)
-    static let secondaryBackground = Color(.secondarySystemBackground)
-    static let accent = Color(red: 0.05, green: 0.47, blue: 0.39)
-    static let gold = Color(red: 0.72, green: 0.53, blue: 0.18)
-    static let warning = Color(red: 0.82, green: 0.47, blue: 0.12)
-    static let destructive = Color(red: 0.78, green: 0.19, blue: 0.18)
+    static let background = Color(lightHex: 0xF7F5F0, darkHex: 0x0E1413)
+    static let secondaryBackground = Color(lightHex: 0xFFFFFF, darkHex: 0x18211F)
+    static let surfaceElevated = Color(lightHex: 0xFFFFFF, darkHex: 0x1F2A27)
+    static let hairline = Color(lightHex: 0xE6E1D6, darkHex: 0x2A3633)
+
+    static let accent = Color(lightHex: 0x0C6B57, darkHex: 0x4FC2A6)
+    static let accentDeep = Color(lightHex: 0x094B3D, darkHex: 0x2E8C76)
+    static let gold = Color(lightHex: 0xB8862B, darkHex: 0xE0B65C)
+    static let warning = Color(lightHex: 0xC2741E, darkHex: 0xE2944A)
+    static let destructive = Color(lightHex: 0xC53330, darkHex: 0xE57470)
+
+    static let textPrimary = Color(lightHex: 0x14201D, darkHex: 0xF2F5F3)
+    static let textSecondary = Color(lightHex: 0x5C6864, darkHex: 0x9BA8A3)
+}
+
+/// A reusable elevated surface with consistent corner radius and a soft hairline border.
+struct Card<Content: View>: View {
+    var padding: CGFloat = 16
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        content
+            .padding(padding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(SiraatColor.secondaryBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(SiraatColor.hairline, lineWidth: 1)
+            )
+    }
 }
 
 extension Text {
