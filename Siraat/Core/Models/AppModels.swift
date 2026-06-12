@@ -37,7 +37,7 @@ enum TranslationLanguage: String, CaseIterable, Identifiable, Codable, Hashable 
     /// app-generated.
     var quranTranslationCredit: String {
         switch self {
-        case .english: "Dr. Mustafa Khattab — The Clear Quran"
+        case .english: "Saheeh International"
         case .spanish: "Sheikh Isa García"
         case .french: "Muhammad Hamidullah"
         case .urdu: "Tafheem-ul-Quran — Abul A'la Maududi"

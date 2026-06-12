@@ -6,11 +6,29 @@ final class QuranAudioPlayer: NSObject, ObservableObject {
     @Published private(set) var isPlaying = false
     @Published private(set) var currentVerseKey: String?
     @Published var isRepeatEnabled = false
+    /// Loop a contiguous range of queue indices (memorization). nil = no range loop.
+    @Published var repeatRange: ClosedRange<Int>?
 
     private var player: AVPlayer?
     private var queue: [QuranVerse] = []
     private var currentIndex = 0
     private var endObserver: NSObjectProtocol?
+
+    /// Pure decision for what plays after the current item finishes. Extracted so the
+    /// playback logic is unit-testable (AVPlayer itself isn't). Returns nil to stop.
+    nonisolated static func nextIndex(
+        current: Int,
+        queueCount: Int,
+        repeatSingle: Bool,
+        repeatRange: ClosedRange<Int>?
+    ) -> Int? {
+        guard queueCount > 0 else { return nil }
+        if repeatSingle { return current }
+        if let range = repeatRange {
+            return current >= range.upperBound ? range.lowerBound : min(current + 1, queueCount - 1)
+        }
+        return current < queueCount - 1 ? current + 1 : nil
+    }
 
     deinit {
         if let endObserver {
@@ -85,13 +103,16 @@ final class QuranAudioPlayer: NSObject, ObservableObject {
     }
 
     private func handlePlaybackEnded() {
-        if isRepeatEnabled {
-            play()
-        } else if currentIndex < queue.count - 1 {
-            currentIndex += 1
-            play()
-        } else {
+        guard let next = Self.nextIndex(
+            current: currentIndex,
+            queueCount: queue.count,
+            repeatSingle: isRepeatEnabled,
+            repeatRange: repeatRange
+        ) else {
             isPlaying = false
+            return
         }
+        currentIndex = next
+        play()
     }
 }

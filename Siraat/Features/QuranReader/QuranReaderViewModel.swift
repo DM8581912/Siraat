@@ -9,12 +9,16 @@ final class QuranReaderViewModel: ObservableObject {
     @Published private(set) var verses: [QuranVerse] = []
     @Published private(set) var bookmarks: [Bookmark] = []
     @Published private(set) var readingPosition: QuranReadingPosition?
+    @Published private(set) var surahs: [BundledSurah] = []
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
+    /// verseKey the reader should scroll to (jump-to-ayah / start-of-juz).
+    @Published var scrollTarget: String?
 
     private var databaseManager: QuranDatabaseManaging?
     private var audioPlayer: QuranAudioPlayer?
     private var hasRestoredReadingPosition = false
+    private var persistPositionTask: Task<Void, Never>?
 
     var selectedChapter: QuranChapter {
         QuranChapter.chapter(number: selectedSurah)
@@ -52,6 +56,10 @@ final class QuranReaderViewModel: ObservableObject {
             isLoading = true
             defer { isLoading = false }
 
+            if surahs.isEmpty {
+                surahs = await databaseManager.surahMetadata()
+            }
+
             do {
                 settings = await databaseManager.readerSettings()
                 bookmarks = await databaseManager.cachedBookmarks()
@@ -70,6 +78,25 @@ final class QuranReaderViewModel: ObservableObject {
                 errorMessage = error.localizedDescription
             }
         }
+    }
+
+    /// Jump to a surah (and optionally an ayah) — used by the Surah/Juz index.
+    func jump(toSurah surah: Int, ayah: Int? = nil) {
+        let target = ayah.map { "\(surah):\($0)" }
+        if surah != selectedSurah {
+            selectSurah(surah)
+        }
+        if let target { scrollTarget = target }
+    }
+
+    /// First verseKey of a juz, derived from the bundle's per-ayah juz metadata.
+    func startOfJuz(_ juz: Int) -> (surah: Int, ayah: Int)? {
+        for surah in surahs {
+            if let ayah = surah.ayahs.first(where: { $0.juz == juz }) {
+                return (surah.number, ayah.numberInSurah)
+            }
+        }
+        return nil
     }
 
     func updateSettings(_ newSettings: ReaderSettings) {
@@ -112,6 +139,14 @@ final class QuranReaderViewModel: ObservableObject {
             verseKey: verse.verseKey
         )
         readingPosition = position
-        Task { await databaseManager?.saveReadingPosition(position) }
+
+        // Debounce the persist: row appearance fires this rapidly during scroll, which
+        // otherwise hammers storage and last-write-wins to the bottom-most visible row.
+        persistPositionTask?.cancel()
+        persistPositionTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard !Task.isCancelled else { return }
+            await self?.databaseManager?.saveReadingPosition(position)
+        }
     }
 }

@@ -1,12 +1,15 @@
 import SwiftUI
+import UIKit
 
 struct QuranReaderView: View {
     @EnvironmentObject private var services: AppServices
     @StateObject private var viewModel = QuranReaderViewModel()
+    @State private var showSurahIndex = false
+    @State private var showJuzIndex = false
 
     var body: some View {
         VStack(spacing: 0) {
-            ReaderToolbar(viewModel: viewModel)
+            ReaderToolbar(viewModel: viewModel, showSurahIndex: $showSurahIndex, showJuzIndex: $showJuzIndex)
                 .padding(.horizontal)
                 .padding(.bottom, 8)
 
@@ -55,6 +58,16 @@ struct QuranReaderView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .sheet(isPresented: $showSurahIndex) {
+            SurahIndexView(surahs: viewModel.surahs) { viewModel.jump(toSurah: $0) }
+        }
+        .sheet(isPresented: $showJuzIndex) {
+            JuzIndexView { juz in
+                if let start = viewModel.startOfJuz(juz) {
+                    viewModel.jump(toSurah: start.surah, ayah: start.ayah)
+                }
+            }
+        }
         .task {
             viewModel.configure(databaseManager: services.quranDatabaseManager, audioPlayer: services.quranAudioPlayer)
             viewModel.load()
@@ -62,24 +75,32 @@ struct QuranReaderView: View {
     }
 
     private var continuousReader: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: 14) {
-                ForEach(viewModel.displayedVerses) { verse in
-                    QuranVerseRow(
-                        verse: verse,
-                        settings: viewModel.settings,
-                        isBookmarked: viewModel.isBookmarked(verse),
-                        isPlaying: services.quranAudioPlayer.currentVerseKey == verse.verseKey,
-                        onBookmark: { viewModel.toggleBookmark(for: verse) },
-                        onPlay: {
-                            viewModel.markAsCurrent(verse)
-                            services.quranAudioPlayer.play(verse: verse)
-                        },
-                        onVisible: { viewModel.markAsCurrent(verse) }
-                    )
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 14) {
+                    ForEach(viewModel.displayedVerses) { verse in
+                        QuranVerseRow(
+                            verse: verse,
+                            settings: viewModel.settings,
+                            isBookmarked: viewModel.isBookmarked(verse),
+                            isPlaying: services.quranAudioPlayer.currentVerseKey == verse.verseKey,
+                            onBookmark: { viewModel.toggleBookmark(for: verse) },
+                            onPlay: {
+                                viewModel.markAsCurrent(verse)
+                                services.quranAudioPlayer.play(verse: verse)
+                            },
+                            onVisible: { viewModel.markAsCurrent(verse) }
+                        )
+                        .id(verse.verseKey)
+                    }
                 }
+                .padding()
             }
-            .padding()
+            .onChange(of: viewModel.scrollTarget) {
+                guard let target = viewModel.scrollTarget else { return }
+                withAnimation { proxy.scrollTo(target, anchor: .top) }
+                viewModel.scrollTarget = nil
+            }
         }
     }
 
@@ -109,6 +130,8 @@ struct QuranReaderView: View {
 
 private struct ReaderToolbar: View {
     @ObservedObject var viewModel: QuranReaderViewModel
+    @Binding var showSurahIndex: Bool
+    @Binding var showJuzIndex: Bool
 
     var body: some View {
         VStack(spacing: 10) {
@@ -131,13 +154,21 @@ private struct ReaderToolbar: View {
             .background(SiraatColor.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
-            HStack {
-                Picker("Surah", selection: Binding(get: { viewModel.selectedSurah }, set: { viewModel.selectSurah($0) })) {
-                    ForEach(QuranChapter.all) { chapter in
-                        Text(chapter.displayName).tag(chapter.number)
-                    }
+            HStack(spacing: 10) {
+                Button { showSurahIndex = true } label: {
+                    Label(viewModel.selectedChapter.transliteratedName, systemImage: "list.bullet")
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
                 }
-                .pickerStyle(.menu)
+                .buttonStyle(.bordered)
+                .tint(SiraatColor.accent)
+
+                Button { showJuzIndex = true } label: {
+                    Label("Juz", systemImage: "square.stack.3d.up")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                .tint(SiraatColor.gold)
 
                 Spacer()
 
@@ -147,7 +178,7 @@ private struct ReaderToolbar: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 190)
+                .frame(maxWidth: 150)
             }
 
             HStack {
@@ -221,6 +252,13 @@ private struct QuranVerseRow: View {
                     Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                 }
                 .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Bookmark verse")
+
+                Button {
+                    UIPasteboard.general.string = "\(verse.text(for: settings.script))\n\n\(verse.translation)\n\n— Quran \(verse.verseKey), \(settings.translationLanguage.quranTranslationCredit)"
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                }
+                .accessibilityLabel("Copy verse")
 
                 ShareLink(item: "\(verse.verseKey)\n\(verse.text(for: settings.script))\n\(verse.translation)") {
                     Image(systemName: "square.and.arrow.up")
