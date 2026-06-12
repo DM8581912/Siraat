@@ -6,12 +6,13 @@ struct QuranReaderView: View {
     @StateObject private var viewModel = QuranReaderViewModel()
     @State private var showSurahIndex = false
     @State private var showJuzIndex = false
+    @State private var showDisplaySettings = false
 
     var body: some View {
         VStack(spacing: 0) {
-            ReaderToolbar(viewModel: viewModel, showSurahIndex: $showSurahIndex, showJuzIndex: $showJuzIndex)
+            ReaderToolbar(viewModel: viewModel, showSurahIndex: $showSurahIndex, showJuzIndex: $showJuzIndex, showDisplaySettings: $showDisplaySettings)
                 .padding(.horizontal)
-                .padding(.bottom, 8)
+                .padding(.bottom, SiraatSpacing.xs)
 
             Group {
                 if viewModel.isLoading {
@@ -74,6 +75,10 @@ struct QuranReaderView: View {
                     viewModel.jump(toSurah: start.surah, ayah: start.ayah)
                 }
             }
+        }
+        .sheet(isPresented: $showDisplaySettings) {
+            DisplaySettingsSheet(viewModel: viewModel)
+                .presentationDetents([.medium])
         }
         .task {
             viewModel.configure(databaseManager: services.quranDatabaseManager, audioPlayer: services.quranAudioPlayer)
@@ -139,12 +144,13 @@ private struct ReaderToolbar: View {
     @ObservedObject var viewModel: QuranReaderViewModel
     @Binding var showSurahIndex: Bool
     @Binding var showJuzIndex: Bool
+    @Binding var showDisplaySettings: Bool
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: SiraatSpacing.sm) {
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(SiraatColor.textSecondary)
                 TextField("Search ayah, translation, or verse key", text: $viewModel.searchText)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -157,14 +163,14 @@ private struct ReaderToolbar: View {
                 .buttonStyle(.bordered)
                 .accessibilityLabel(viewModel.showsBookmarksOnly ? "Show all verses" : "Show bookmarked verses")
             }
-            .padding(10)
+            .padding(SiraatSpacing.sm)
             .background(SiraatColor.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
 
-            HStack(spacing: 10) {
+            HStack(spacing: SiraatSpacing.sm) {
                 Button { showSurahIndex = true } label: {
                     Label(viewModel.selectedChapter.transliteratedName, systemImage: "list.bullet")
-                        .font(.subheadline.weight(.semibold))
+                        .font(SiraatType.callout.weight(.semibold))
                         .lineLimit(1)
                 }
                 .buttonStyle(.bordered)
@@ -172,46 +178,82 @@ private struct ReaderToolbar: View {
 
                 Button { showJuzIndex = true } label: {
                     Label("Juz", systemImage: "square.stack.3d.up")
-                        .font(.subheadline.weight(.semibold))
+                        .font(SiraatType.callout.weight(.semibold))
                 }
                 .buttonStyle(.bordered)
                 .tint(SiraatColor.gold)
 
                 Spacer()
 
-                Picker("Mode", selection: settingsBinding(\.readingMode)) {
-                    ForEach(ReadingMode.allCases) { mode in
-                        Text(mode.displayName).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .frame(maxWidth: 150)
-            }
+                Text(viewModel.selectedChapter.detailName)
+                    .font(SiraatType.caption)
+                    .foregroundStyle(SiraatColor.textSecondary)
+                    .lineLimit(1)
 
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(viewModel.selectedChapter.detailName)
-                        .font(.caption.weight(.semibold))
-                    Text("\(viewModel.selectedChapter.verseCount) ayahs")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                Button { showDisplaySettings = true } label: {
+                    Image(systemName: "textformat.size")
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel("Display settings")
+            }
+        }
+    }
+}
+
+private struct DisplaySettingsSheet: View {
+    @ObservedObject var viewModel: QuranReaderViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: SiraatSpacing.xl) {
+                VStack(alignment: .leading, spacing: SiraatSpacing.xs) {
+                    Text("Reading Mode")
+                        .font(SiraatType.caption.weight(.semibold))
+                        .foregroundStyle(SiraatColor.textSecondary)
+                    Picker("Mode", selection: settingsBinding(\.readingMode)) {
+                        ForEach(ReadingMode.allCases) { mode in
+                            Text(mode.displayName).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                VStack(alignment: .leading, spacing: SiraatSpacing.xs) {
+                    Text("Script")
+                        .font(SiraatType.caption.weight(.semibold))
+                        .foregroundStyle(SiraatColor.textSecondary)
+                    Picker("Script", selection: settingsBinding(\.script)) {
+                        ForEach(QuranScript.allCases) { script in
+                            Text(script.displayName).tag(script)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                VStack(alignment: .leading, spacing: SiraatSpacing.xs) {
+                    Text("Arabic Font Size")
+                        .font(SiraatType.caption.weight(.semibold))
+                        .foregroundStyle(SiraatColor.textSecondary)
+                    Slider(value: settingsBinding(\.fontSize), in: 22...42, step: 1) {
+                        Text("Arabic font size")
+                    } minimumValueLabel: {
+                        Image(systemName: "textformat.size.smaller")
+                            .foregroundStyle(SiraatColor.textSecondary)
+                    } maximumValueLabel: {
+                        Image(systemName: "textformat.size.larger")
+                            .foregroundStyle(SiraatColor.textSecondary)
+                    }
                 }
 
                 Spacer()
-
-                Picker("Script", selection: settingsBinding(\.script)) {
-                    ForEach(QuranScript.allCases) { script in
-                        Text(script.displayName).tag(script)
-                    }
-                }
-                .pickerStyle(.menu)
-
-                Slider(value: settingsBinding(\.fontSize), in: 22...42, step: 1) {
-                    Text("Arabic font size")
-                } minimumValueLabel: {
-                    Image(systemName: "textformat.size.smaller")
-                } maximumValueLabel: {
-                    Image(systemName: "textformat.size.larger")
+            }
+            .padding(SiraatSpacing.lg)
+            .navigationTitle("Display")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -239,38 +281,46 @@ private struct QuranVerseRow: View {
     let onVisible: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: SiraatSpacing.sm) {
             HStack {
                 Text(verse.verseKey)
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(isPlaying ? SiraatColor.gold.opacity(0.25) : SiraatColor.secondaryBackground)
+                    .font(SiraatType.caption.weight(.semibold))
+                    .padding(.horizontal, SiraatSpacing.xs)
+                    .padding(.vertical, SiraatSpacing.xxs)
+                    .foregroundStyle(isPlaying ? SiraatColor.gold : SiraatColor.textSecondary)
+                    .background(isPlaying ? SiraatColor.gold.opacity(0.15) : SiraatColor.background)
                     .clipShape(Capsule())
 
                 Spacer()
 
-                Button(action: onPlay) {
-                    Image(systemName: "play.fill")
-                }
-                .accessibilityLabel("Play verse \(verse.verseKey)")
+                HStack(spacing: SiraatSpacing.md) {
+                    Button(action: onPlay) {
+                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                            .font(SiraatType.caption)
+                    }
+                    .accessibilityLabel(isPlaying ? "Pause verse \(verse.verseKey)" : "Play verse \(verse.verseKey)")
 
-                Button(action: onBookmark) {
-                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                }
-                .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Bookmark verse")
+                    Button(action: onBookmark) {
+                        Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                            .font(SiraatType.caption)
+                    }
+                    .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Bookmark verse")
 
-                Button {
-                    UIPasteboard.general.string = "\(verse.text(for: settings.script))\n\n\(verse.translation)\n\n— Quran \(verse.verseKey), \(settings.translationLanguage.quranTranslationCredit)"
-                } label: {
-                    Image(systemName: "doc.on.doc")
-                }
-                .accessibilityLabel("Copy verse")
+                    Button {
+                        UIPasteboard.general.string = "\(verse.text(for: settings.script))\n\n\(verse.translation)\n\n— Quran \(verse.verseKey), \(settings.translationLanguage.quranTranslationCredit)"
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                            .font(SiraatType.caption)
+                    }
+                    .accessibilityLabel("Copy verse")
 
-                ShareLink(item: "\(verse.verseKey)\n\(verse.text(for: settings.script))\n\(verse.translation)") {
-                    Image(systemName: "square.and.arrow.up")
+                    ShareLink(item: "\(verse.verseKey)\n\(verse.text(for: settings.script))\n\(verse.translation)") {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(SiraatType.caption)
+                    }
+                    .accessibilityLabel("Share verse")
                 }
-                .accessibilityLabel("Share verse")
+                .foregroundStyle(SiraatColor.textSecondary)
             }
 
             ArabicText(
@@ -278,19 +328,19 @@ private struct QuranVerseRow: View {
                 size: CGFloat(settings.fontSize),
                 scripture: settings.script == .uthmani
             )
-            .lineSpacing(8)
+            .lineSpacing(SiraatSpacing.xs)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .multilineTextAlignment(.trailing)
             .environment(\.layoutDirection, .rightToLeft)
 
             if !verse.translation.isEmpty {
                 Text(verse.translation)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                    .font(SiraatType.body)
+                    .foregroundStyle(SiraatColor.textSecondary)
             }
         }
-        .padding()
-        .background(isPlaying ? SiraatColor.gold.opacity(0.12) : SiraatColor.secondaryBackground)
+        .padding(SiraatSpacing.md)
+        .background(isPlaying ? SiraatColor.accent.opacity(0.08) : SiraatColor.secondaryBackground)
         .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
         .onAppear(perform: onVisible)
     }
@@ -301,7 +351,7 @@ private struct QuranPlaybackBar: View {
     let verses: [QuranVerse]
 
     var body: some View {
-        HStack(spacing: 18) {
+        HStack(spacing: SiraatSpacing.lg) {
             Button {
                 player.previous()
             } label: {

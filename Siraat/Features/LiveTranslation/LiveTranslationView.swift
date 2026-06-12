@@ -42,41 +42,53 @@ struct LiveTranslationView: View {
     }
 
     private var transcriptList: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 16) {
+        Group {
+            if viewModel.segments.isEmpty && viewModel.partialTranscript.isEmpty {
+                VStack {
                     if translationUnavailableOnThisOS {
                         InfoBanner(
                             icon: "info.circle",
                             text: "On-device live translation needs iOS 18. Showing the live Arabic transcript."
                         )
+                        .padding(.horizontal, SiraatSpacing.md)
                     }
-
-                    if viewModel.segments.isEmpty {
-                        EmptyTranslationState()
-                            .padding(.top, 60)
-                    }
-
-                    ForEach(viewModel.segments) { segment in
-                        LiveSegmentView(segment: segment, showsTranslation: !translationUnavailableOnThisOS)
-                            .id(segment.id)
-                    }
-
-                    if !viewModel.partialTranscript.isEmpty {
-                        Text.arabic(viewModel.partialTranscript)
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .multilineTextAlignment(.trailing)
-                            .environment(\.layoutDirection, .rightToLeft)
-                    }
+                    Spacer()
+                    EmptyTranslationState()
+                    Spacer()
                 }
-                .padding()
-            }
-            .onChange(of: viewModel.segments.count) {
-                if let last = viewModel.segments.last {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        proxy.scrollTo(last.id, anchor: .bottom)
+            } else {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: SiraatSpacing.md) {
+                            if translationUnavailableOnThisOS {
+                                InfoBanner(
+                                    icon: "info.circle",
+                                    text: "On-device live translation needs iOS 18. Showing the live Arabic transcript."
+                                )
+                            }
+
+                            ForEach(viewModel.segments) { segment in
+                                LiveSegmentView(segment: segment, showsTranslation: !translationUnavailableOnThisOS)
+                                    .id(segment.id)
+                            }
+
+                            if !viewModel.partialTranscript.isEmpty {
+                                Text.arabic(viewModel.partialTranscript)
+                                    .font(SiraatType.body)
+                                    .foregroundStyle(SiraatColor.textSecondary)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .multilineTextAlignment(.trailing)
+                                    .environment(\.layoutDirection, .rightToLeft)
+                            }
+                        }
+                        .padding(SiraatSpacing.md)
+                    }
+                    .onChange(of: viewModel.segments.count) {
+                        if let last = viewModel.segments.last {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                proxy.scrollTo(last.id, anchor: .bottom)
+                            }
+                        }
                     }
                 }
             }
@@ -84,44 +96,52 @@ struct LiveTranslationView: View {
     }
 
     private var controlBar: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: SiraatSpacing.sm) {
             WaveformView(level: viewModel.waveformLevel)
 
-            HStack(spacing: 12) {
-                Picker("Target language", selection: $viewModel.targetLanguage) {
-                    ForEach(TranslationLanguage.allCases) { language in
-                        Text(language.displayName).tag(language)
+            HStack {
+                Label {
+                    Picker("Target language", selection: $viewModel.targetLanguage) {
+                        ForEach(TranslationLanguage.allCases) { language in
+                            Text(language.displayName).tag(language)
+                        }
                     }
+                    .pickerStyle(.menu)
+                    .disabled(translationUnavailableOnThisOS)
+                } icon: {
+                    Image(systemName: "globe")
+                        .foregroundStyle(SiraatColor.textSecondary)
                 }
-                .pickerStyle(.menu)
-                .disabled(translationUnavailableOnThisOS)
+                .fixedSize()
 
                 Spacer()
 
-                Button {
-                    viewModel.saveSession()
-                } label: {
-                    Image(systemName: "square.and.arrow.down")
-                }
-                .buttonStyle(.bordered)
-                .disabled(!viewModel.canSaveSession)
-                .accessibilityLabel("Save khutba")
+                HStack(spacing: SiraatSpacing.xs) {
+                    Button {
+                        viewModel.saveSession()
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(!viewModel.canSaveSession)
+                    .accessibilityLabel("Save khutba")
 
-                Button {
-                    viewModel.clear()
-                } label: {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.bordered)
-                .accessibilityLabel("Clear transcript")
+                    Button {
+                        viewModel.clear()
+                    } label: {
+                        Image(systemName: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel("Clear transcript")
 
-                Button {
-                    viewModel.isRecording ? viewModel.stop() : viewModel.start()
-                } label: {
-                    Label(viewModel.isRecording ? "Stop" : "Record", systemImage: viewModel.isRecording ? "stop.fill" : "mic.fill")
+                    Button {
+                        viewModel.isRecording ? viewModel.stop() : viewModel.start()
+                    } label: {
+                        Label(viewModel.isRecording ? "Stop" : "Record", systemImage: viewModel.isRecording ? "stop.fill" : "mic.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(viewModel.isRecording ? SiraatColor.destructive : SiraatColor.accent)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(viewModel.isRecording ? SiraatColor.destructive : SiraatColor.accent)
             }
         }
         .padding()

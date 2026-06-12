@@ -7,33 +7,39 @@ struct DashboardView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: SiraatSpacing.md) {
                 DashboardHeader(hijriDate: viewModel.hijriDateText)
 
                 if let schedule = viewModel.prayerSchedule, !schedule.times.isEmpty {
                     NextPrayerHero(schedule: schedule)
+
                     PrayerTimesStrip(schedule: schedule)
+                        .padding(.top, SiraatSpacing.xxs)
+
+                    if viewModel.prayerSchedule != nil {
+                        ReminderCard(
+                            statusText: viewModel.reminderStatusText,
+                            isEnabled: viewModel.reminderSettings.isEnabled
+                        ) {
+                            viewModel.schedulePrayerReminders()
+                        }
+                    }
                 } else {
                     LocationPromptCard {
                         viewModel.requestLocation()
                     }
                 }
 
-                if viewModel.prayerSchedule != nil {
-                    ReminderCard(
-                        statusText: viewModel.reminderStatusText,
-                        isEnabled: viewModel.reminderSettings.isEnabled
-                    ) {
-                        viewModel.schedulePrayerReminders()
-                    }
-                }
-
                 if let verse = viewModel.verseOfTheDay {
+                    SectionHeader("VERSE OF THE DAY")
+                        .padding(.top, SiraatSpacing.xs)
                     VerseOfTheDayCard(verse: verse)
                 }
 
                 QiblaCard(direction: viewModel.qiblaDirection)
 
+                SectionHeader("QUICK ACTIONS")
+                    .padding(.top, SiraatSpacing.xs)
                 QuickActionsCard(selectedTab: $selectedTab)
 
                 if let readingPosition = viewModel.readingPosition {
@@ -42,7 +48,7 @@ struct DashboardView: View {
                     }
                 }
             }
-            .padding(20)
+            .padding(SiraatSpacing.lg)
         }
         .background(SiraatColor.background.ignoresSafeArea())
         .navigationTitle("")
@@ -65,6 +71,23 @@ struct DashboardView: View {
     }
 }
 
+// MARK: - Section header
+
+private struct SectionHeader: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title)
+            .font(SiraatType.micro.weight(.semibold))
+            .tracking(1.2)
+            .foregroundStyle(SiraatColor.textSecondary)
+    }
+}
+
 // MARK: - Header
 
 private struct DashboardHeader: View {
@@ -77,19 +100,19 @@ private struct DashboardHeader: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: SiraatSpacing.xxs) {
             Text("Siraat")
-                .font(.system(.largeTitle, design: .serif, weight: .bold))
+                .font(SiraatType.display)
                 .foregroundStyle(SiraatColor.textPrimary)
                 .accessibilityAddTraits(.isHeader)
-            HStack(spacing: 8) {
+            HStack(spacing: SiraatSpacing.xs) {
                 Label(hijriDate, systemImage: "moon.stars.fill")
                     .foregroundStyle(SiraatColor.accent)
                 Text("·").foregroundStyle(SiraatColor.textSecondary)
                 Text(gregorianDate)
                     .foregroundStyle(SiraatColor.textSecondary)
             }
-            .font(.subheadline.weight(.medium))
+            .font(SiraatType.callout.weight(.medium))
             .accessibilityElement(children: .combine)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -153,7 +176,7 @@ private struct NextPrayerHero: View {
                 }
             }
         }
-        .padding(22)
+        .padding(SiraatSpacing.xl)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             LinearGradient(
@@ -221,33 +244,31 @@ private struct PrayerTimesStrip: View {
             let nextID = (schedule.times.first { $0.date > now && $0.name != .sunrise }
                 ?? schedule.times.first { $0.date > now })?.id
 
-            Card(padding: 8) {
-                VStack(spacing: 0) {
-                    ForEach(Array(schedule.times.enumerated()), id: \.element.id) { index, prayer in
-                        let isNext = prayer.id == nextID
-                        let isPast = prayer.date <= now
-                        HStack {
-                            Image(systemName: icon(for: prayer.name))
-                                .font(.body)
-                                .foregroundStyle(isNext ? SiraatColor.accent : SiraatColor.textSecondary)
-                                .frame(width: 26)
-                            Text(prayer.name.displayName)
-                                .font(.body.weight(isNext ? .semibold : .regular))
-                                .foregroundStyle(isNext ? SiraatColor.textPrimary : (isPast ? SiraatColor.textSecondary : SiraatColor.textPrimary))
-                            Spacer()
-                            Text(timeFormatter.string(from: prayer.date))
-                                .font(.body.weight(isNext ? .semibold : .regular))
-                                .foregroundStyle(isNext ? SiraatColor.accent : SiraatColor.textPrimary)
-                                .monospacedDigit()
-                        }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 12)
-                        .background(isNext ? SiraatColor.accent.opacity(0.10) : .clear)
-                        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
+            VStack(spacing: 0) {
+                ForEach(Array(schedule.times.enumerated()), id: \.element.id) { index, prayer in
+                    let isNext = prayer.id == nextID
+                    let isPast = prayer.date <= now
+                    HStack {
+                        Image(systemName: icon(for: prayer.name))
+                            .font(SiraatType.body)
+                            .foregroundStyle(isNext ? SiraatColor.accent : SiraatColor.textSecondary)
+                            .frame(width: 26)
+                        Text(prayer.name.displayName)
+                            .font(SiraatType.body.weight(isNext ? .semibold : .regular))
+                            .foregroundStyle(isNext ? SiraatColor.textPrimary : (isPast ? SiraatColor.textSecondary : SiraatColor.textPrimary))
+                        Spacer()
+                        Text(timeFormatter.string(from: prayer.date))
+                            .font(SiraatType.body.weight(isNext ? .semibold : .regular))
+                            .foregroundStyle(isNext ? SiraatColor.accent : SiraatColor.textPrimary)
+                            .monospacedDigit()
+                    }
+                    .padding(.vertical, SiraatSpacing.sm)
+                    .padding(.horizontal, SiraatSpacing.sm)
+                    .background(isNext ? SiraatColor.accent.opacity(0.10) : .clear)
+                    .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
 
-                        if index < schedule.times.count - 1 {
-                            Divider().overlay(SiraatColor.hairline).padding(.leading, 48)
-                        }
+                    if index < schedule.times.count - 1 {
+                        Divider().overlay(SiraatColor.hairline).padding(.leading, 48)
                     }
                 }
             }

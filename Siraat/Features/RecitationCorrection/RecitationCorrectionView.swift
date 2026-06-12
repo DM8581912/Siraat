@@ -95,27 +95,30 @@ struct RecitationCorrectionView: View {
 
     private var correctionControls: some View {
         SectionBand(title: "Practice") {
-            HStack {
+            VStack(spacing: SiraatSpacing.sm) {
                 Picker("Surah", selection: Binding(get: { viewModel.selectedSurah }, set: { viewModel.selectSurah($0) })) {
                     ForEach(QuranChapter.all) { chapter in
                         Text(chapter.displayName).tag(chapter.number)
                     }
                 }
                 .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Stepper("Ayah \(viewModel.selectedVerseNumber)", value: $viewModel.selectedVerseNumber, in: viewModel.selectedChapterVerseRange)
-                    .onChange(of: viewModel.selectedVerseNumber) {
+                HStack {
+                    Stepper("Ayah \(viewModel.selectedVerseNumber)", value: $viewModel.selectedVerseNumber, in: viewModel.selectedChapterVerseRange)
+                        .onChange(of: viewModel.selectedVerseNumber) {
+                            viewModel.loadVerse()
+                        }
+
+                    Picker("Script", selection: $viewModel.script) {
+                        ForEach(QuranScript.allCases) { script in
+                            Text(script.displayName).tag(script)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: viewModel.script) {
                         viewModel.loadVerse()
                     }
-
-                Picker("Script", selection: $viewModel.script) {
-                    ForEach(QuranScript.allCases) { script in
-                        Text(script.displayName).tag(script)
-                    }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: viewModel.script) {
-                    viewModel.loadVerse()
                 }
             }
 
@@ -134,7 +137,7 @@ private struct WordChip: View {
     let word: RecitationWord
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: SiraatSpacing.xxs) {
             // A non-color status signal so color-blind users (who can't tell green
             // from orange/red) still get feedback. Hidden from VoiceOver because the
             // status is already spoken in the accessibilityLabel below.
@@ -145,11 +148,17 @@ private struct WordChip: View {
             }
             ArabicText(word.originalText, size: 28, weight: .semibold)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(color.opacity(0.18))
-        .foregroundStyle(color)
+        .padding(.horizontal, SiraatSpacing.sm)
+        .padding(.vertical, SiraatSpacing.xs)
+        .background(backgroundColor)
+        .foregroundStyle(foregroundColor)
         .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
+        .overlay(
+            word.status == .pending
+                ? RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous)
+                    .strokeBorder(SiraatColor.hairline, lineWidth: 1)
+                : nil
+        )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(word.originalText), \(word.status.rawValue)")
     }
@@ -163,12 +172,21 @@ private struct WordChip: View {
         }
     }
 
-    private var color: Color {
+    private var foregroundColor: Color {
         switch word.status {
-        case .pending: .primary
+        case .pending: SiraatColor.textPrimary
         case .correct: SiraatColor.accent
         case .uncertain: SiraatColor.warning
         case .missed: SiraatColor.destructive
+        }
+    }
+
+    private var backgroundColor: Color {
+        switch word.status {
+        case .pending: SiraatColor.secondaryBackground
+        case .correct: SiraatColor.accent.opacity(0.18)
+        case .uncertain: SiraatColor.warning.opacity(0.18)
+        case .missed: SiraatColor.destructive.opacity(0.18)
         }
     }
 }
