@@ -1,36 +1,69 @@
 import Foundation
 
 protocol PrayerTimesServicing {
-    func schedule(for date: Date, coordinate: LocationCoordinate, calendar: Calendar) -> DailyPrayerSchedule
+    func schedule(
+        for date: Date,
+        coordinate: LocationCoordinate,
+        calendar: Calendar,
+        method: CalculationMethod,
+        madhab: Madhab
+    ) -> DailyPrayerSchedule
 }
 
 struct PrayerTimesService: PrayerTimesServicing {
-    var fajrAngle: Double = 18
-    var ishaAngle: Double = 17
-    var asrShadowFactor: Double = 1
-
-    func schedule(for date: Date = Date(), coordinate: LocationCoordinate, calendar: Calendar = .current) -> DailyPrayerSchedule {
+    func schedule(
+        for date: Date = Date(),
+        coordinate: LocationCoordinate,
+        calendar: Calendar = .current,
+        method: CalculationMethod = .muslimWorldLeague,
+        madhab: Madhab = .shafii
+    ) -> DailyPrayerSchedule {
         var calendar = calendar
         calendar.timeZone = .current
 
         let solar = solarComponents(for: date, coordinate: coordinate, calendar: calendar)
-        let fajr = dateByAdding(minutes: solar.noonMinutes - hourAngleMinutes(zenith: 90 + fajrAngle, latitude: coordinate.latitude, declination: solar.declination), to: date, calendar: calendar)
-        let sunrise = dateByAdding(minutes: solar.noonMinutes - hourAngleMinutes(zenith: 90.833, latitude: coordinate.latitude, declination: solar.declination), to: date, calendar: calendar)
-        let dhuhr = dateByAdding(minutes: solar.noonMinutes, to: date, calendar: calendar)
-        let asr = dateByAdding(minutes: solar.noonMinutes + asrHourAngleMinutes(latitude: coordinate.latitude, declination: solar.declination), to: date, calendar: calendar)
-        let maghrib = dateByAdding(minutes: solar.noonMinutes + hourAngleMinutes(zenith: 90.833, latitude: coordinate.latitude, declination: solar.declination), to: date, calendar: calendar)
-        let isha = dateByAdding(minutes: solar.noonMinutes + hourAngleMinutes(zenith: 90 + ishaAngle, latitude: coordinate.latitude, declination: solar.declination), to: date, calendar: calendar)
+        let noon = solar.noonMinutes
+
+        // Sunrise/sunset use a fixed 90.833° zenith (refraction + solar radius) and are
+        // valid at all but truly polar latitudes. If they saturate there, fall back to noon.
+        let sunHourAngle = hourAngleMinutes(zenith: 90.833, latitude: coordinate.latitude, declination: solar.declination)
+        let dayHalf = sunHourAngle ?? 0
+        let sunriseMinutes = noon - dayHalf
+        let maghribMinutes = noon + dayHalf
+        // Night length (Maghrib → next Sunrise), used for high-latitude twilight fallback.
+        let nightMinutes = 1440 - 2 * dayHalf
+
+        // Fajr / Isha by twilight angle, with a high-latitude "angle-based" fallback when
+        // the sun never reaches the depression angle (acos saturates).
+        let fajrMinutes: Double
+        if let fajrAngle = hourAngleMinutes(zenith: 90 + method.fajrAngle, latitude: coordinate.latitude, declination: solar.declination) {
+            fajrMinutes = noon - fajrAngle
+        } else {
+            fajrMinutes = sunriseMinutes - (method.fajrAngle / 60) * nightMinutes
+        }
+
+        let ishaMinutes: Double
+        if let interval = method.ishaIntervalMinutes {
+            // Umm al-Qura: fixed interval after Maghrib.
+            ishaMinutes = maghribMinutes + interval
+        } else if let ishaAngle = hourAngleMinutes(zenith: 90 + method.ishaAngle, latitude: coordinate.latitude, declination: solar.declination) {
+            ishaMinutes = noon + ishaAngle
+        } else {
+            ishaMinutes = maghribMinutes + (method.ishaAngle / 60) * nightMinutes
+        }
+
+        let asrMinutes = noon + asrHourAngleMinutes(latitude: coordinate.latitude, declination: solar.declination, shadowFactor: madhab.asrShadowFactor)
 
         return DailyPrayerSchedule(
             date: date,
             coordinate: coordinate,
             times: [
-                PrayerTime(name: .fajr, date: fajr),
-                PrayerTime(name: .sunrise, date: sunrise),
-                PrayerTime(name: .dhuhr, date: dhuhr),
-                PrayerTime(name: .asr, date: asr),
-                PrayerTime(name: .maghrib, date: maghrib),
-                PrayerTime(name: .isha, date: isha)
+                PrayerTime(name: .fajr, date: resolveDate(minutes: fajrMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .sunrise, date: resolveDate(minutes: sunriseMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .dhuhr, date: resolveDate(minutes: noon, on: date, calendar: calendar)),
+                PrayerTime(name: .asr, date: resolveDate(minutes: asrMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .maghrib, date: resolveDate(minutes: maghribMinutes, on: date, calendar: calendar)),
+                PrayerTime(name: .isha, date: resolveDate(minutes: ishaMinutes, on: date, calendar: calendar))
             ]
         )
     }
@@ -59,19 +92,21 @@ struct PrayerTimesService: PrayerTimesServicing {
         return (noonMinutes, declination)
     }
 
-    private func hourAngleMinutes(zenith: Double, latitude: Double, declination: Double) -> Double {
+    /// Half-day arc length in minutes for a given zenith. Returns nil when the sun never
+    /// reaches that zenith (high-latitude case), so callers can apply a twilight fallback.
+    private func hourAngleMinutes(zenith: Double, latitude: Double, declination: Double) -> Double? {
         let cosHourAngle = (
             cos(zenith.degreesToRadians) -
             sin(latitude.degreesToRadians) * sin(declination.degreesToRadians)
         ) / (
             cos(latitude.degreesToRadians) * cos(declination.degreesToRadians)
         )
-        let hourAngle = acos(clamped(cosHourAngle)).radiansToDegrees
-        return hourAngle * 4
+        guard cosHourAngle >= -1, cosHourAngle <= 1 else { return nil }
+        return acos(cosHourAngle).radiansToDegrees * 4
     }
 
-    private func asrHourAngleMinutes(latitude: Double, declination: Double) -> Double {
-        let angle = atan(1 / (asrShadowFactor + tan(abs(latitude - declination).degreesToRadians))).radiansToDegrees
+    private func asrHourAngleMinutes(latitude: Double, declination: Double, shadowFactor: Double) -> Double {
+        let angle = atan(1 / (shadowFactor + tan(abs(latitude - declination).degreesToRadians))).radiansToDegrees
         let cosHourAngle = (
             sin(angle.degreesToRadians) -
             sin(latitude.degreesToRadians) * sin(declination.degreesToRadians)
@@ -81,9 +116,21 @@ struct PrayerTimesService: PrayerTimesServicing {
         return acos(clamped(cosHourAngle)).radiansToDegrees * 4
     }
 
-    private func dateByAdding(minutes: Double, to date: Date, calendar: Calendar) -> Date {
-        let startOfDay = calendar.startOfDay(for: date)
-        return startOfDay.addingTimeInterval(minutes * 60)
+    /// Builds a concrete Date from "minutes after local midnight". Uses calendar component
+    /// resolution rather than raw second arithmetic so it stays correct across DST
+    /// transitions (adding seconds to midnight is off by an hour on transition days).
+    /// Handles minute values outside 0–1440 (e.g. Isha after midnight, or a negative
+    /// high-latitude fallback) by rolling the day.
+    private func resolveDate(minutes: Double, on date: Date, calendar: Calendar) -> Date {
+        let dayStart = calendar.startOfDay(for: date)
+        let totalSeconds = Int((minutes * 60).rounded())
+        let dayOffset = Int(floor(Double(totalSeconds) / 86_400))
+        let secondsInDay = totalSeconds - dayOffset * 86_400
+        let hour = secondsInDay / 3_600
+        let minute = (secondsInDay % 3_600) / 60
+        let second = secondsInDay % 60
+        let baseDay = calendar.date(byAdding: .day, value: dayOffset, to: dayStart) ?? dayStart
+        return calendar.date(bySettingHour: hour, minute: minute, second: second, of: baseDay) ?? baseDay
     }
 
     private func clamped(_ value: Double) -> Double {

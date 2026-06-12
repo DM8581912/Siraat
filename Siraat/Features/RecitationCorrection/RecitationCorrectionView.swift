@@ -30,10 +30,11 @@ struct RecitationCorrectionView: View {
 
                     if !viewModel.transcript.isEmpty {
                         SectionBand(title: "Live Transcript") {
-                            Text(viewModel.transcript)
+                            Text.arabic(viewModel.transcript)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                                 .multilineTextAlignment(.trailing)
                                 .foregroundStyle(.secondary)
+                                .environment(\.layoutDirection, .rightToLeft)
                         }
                     }
                 }
@@ -77,7 +78,6 @@ struct RecitationCorrectionView: View {
         }
         .task {
             viewModel.configure(
-                audioStreamManager: services.audioStreamManager,
                 databaseManager: services.quranDatabaseManager,
                 correctionService: services.recitationCorrectionService,
                 analysisProvider: services.recitationAnalysisProvider
@@ -127,14 +127,34 @@ private struct WordChip: View {
     let word: RecitationWord
 
     var body: some View {
-        Text(word.originalText)
-            .font(.system(size: 28, weight: .semibold, design: .serif))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(color.opacity(0.18))
-            .foregroundStyle(color)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .accessibilityLabel("\(word.originalText), \(word.status.rawValue)")
+        HStack(spacing: 6) {
+            // A non-color status signal so color-blind users (who can't tell green
+            // from orange/red) still get feedback. Hidden from VoiceOver because the
+            // status is already spoken in the accessibilityLabel below.
+            if let symbol = statusSymbol {
+                Image(systemName: symbol)
+                    .font(.system(size: 15, weight: .bold))
+                    .accessibilityHidden(true)
+            }
+            Text.arabic(word.originalText)
+                .font(.system(size: 28, weight: .semibold, design: .serif))
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(color.opacity(0.18))
+        .foregroundStyle(color)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(word.originalText), \(word.status.rawValue)")
+    }
+
+    private var statusSymbol: String? {
+        switch word.status {
+        case .pending: nil
+        case .correct: "checkmark"
+        case .uncertain: "questionmark"
+        case .missed: "exclamationmark"
+        }
     }
 
     private var color: Color {

@@ -9,6 +9,17 @@ enum SiraatColor {
     static let destructive = Color(red: 0.78, green: 0.19, blue: 0.18)
 }
 
+extension Text {
+    /// Builds Arabic-script text tagged with the Arabic typesetting language. This
+    /// gives the text run a language identity so it shapes correctly and VoiceOver
+    /// can pronounce it with an Arabic voice instead of the device UI-language voice
+    /// (which renders Arabic as unintelligible noise). Returns `Text` so callers can
+    /// keep chaining `.font`, `.foregroundStyle`, etc.
+    static func arabic(_ string: String) -> Text {
+        Text(string).typesettingLanguage(Locale.Language(identifier: "ar"))
+    }
+}
+
 struct SectionBand<Content: View>: View {
     let title: String
     @ViewBuilder var content: Content

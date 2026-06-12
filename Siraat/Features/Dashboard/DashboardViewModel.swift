@@ -64,6 +64,12 @@ final class DashboardViewModel: ObservableObject {
             readingPosition = await databaseManager.readingPosition()
             reminderSettings = prayerNotificationService?.reminderSettings() ?? .default
             reminderStatusText = reminderSettings.isEnabled ? "Reminders enabled \(reminderSettings.minutesBefore) minutes before each prayer" : "Prayer reminders are off"
+
+            // Recompute prayer times with the freshly loaded calculation method/madhab
+            // (e.g. after the user changes them in Settings) using the last fix.
+            if let coordinate = locationManager?.coordinate {
+                updateUtilities(for: coordinate)
+            }
         }
     }
 
@@ -89,7 +95,13 @@ final class DashboardViewModel: ObservableObject {
 
     private func updateUtilities(for coordinate: LocationCoordinate) {
         locationStatusText = String(format: "%.3f, %.3f", coordinate.latitude, coordinate.longitude)
-        prayerSchedule = prayerTimesService?.schedule(for: Date(), coordinate: coordinate, calendar: .current)
+        prayerSchedule = prayerTimesService?.schedule(
+            for: Date(),
+            coordinate: coordinate,
+            calendar: .current,
+            method: settings.calculationMethod,
+            madhab: settings.madhab
+        )
         qiblaDirection = qiblaService?.direction(from: coordinate, headingDegrees: locationManager?.headingDegrees)
     }
 }

@@ -14,10 +14,12 @@ final class RecitationCorrectionViewModel: ObservableObject {
     @Published var script: QuranScript = .uthmani
     @Published var errorMessage: String?
 
-    private var audioStreamManager: AudioStreamManager?
+    // Owned, not shared: this feature has its own microphone engine.
+    private let audioStreamManager = AudioStreamManager()
     private var databaseManager: QuranDatabaseManaging?
     private var correctionService: RecitationCorrectionServicing?
     private var analysisProvider: RecitationAnalysisProviding?
+    private var didConfigure = false
     private var analysisTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
 
@@ -36,13 +38,12 @@ final class RecitationCorrectionViewModel: ObservableObject {
     }
 
     func configure(
-        audioStreamManager: AudioStreamManager,
         databaseManager: QuranDatabaseManaging,
         correctionService: RecitationCorrectionServicing,
         analysisProvider: RecitationAnalysisProviding
     ) {
-        guard self.audioStreamManager == nil else { return }
-        self.audioStreamManager = audioStreamManager
+        guard !didConfigure else { return }
+        didConfigure = true
         self.databaseManager = databaseManager
         self.correctionService = correctionService
         self.analysisProvider = analysisProvider
@@ -60,6 +61,15 @@ final class RecitationCorrectionViewModel: ObservableObject {
 
         audioStreamManager.$isRecording
             .assign(to: &$isListening)
+
+        // Surface permission/recording errors (e.g. denied microphone) that the
+        // manager publishes, so the Listen button doesn't silently do nothing.
+        audioStreamManager.$errorMessage
+            .compactMap { $0 }
+            .sink { [weak self] message in
+                self?.errorMessage = message
+            }
+            .store(in: &cancellables)
     }
 
     func loadVerse() {
@@ -81,7 +91,7 @@ final class RecitationCorrectionViewModel: ObservableObject {
     func startListening() {
         Task {
             do {
-                try await audioStreamManager?.start(languageIdentifier: "ar-SA")
+                try await audioStreamManager.start(languageIdentifier: "ar-SA")
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -89,7 +99,7 @@ final class RecitationCorrectionViewModel: ObservableObject {
     }
 
     func stopListening() {
-        audioStreamManager?.stop()
+        audioStreamManager.stop()
     }
 
     func reset() {

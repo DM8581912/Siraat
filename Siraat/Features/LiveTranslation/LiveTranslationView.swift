@@ -20,12 +20,12 @@ struct LiveTranslationView: View {
                         }
 
                         if !viewModel.partialTranscript.isEmpty {
-                            Text(viewModel.partialTranscript)
+                            Text.arabic(viewModel.partialTranscript)
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                                 .multilineTextAlignment(.trailing)
-                                .accessibilityLabel("Arabic transcript \(viewModel.partialTranscript)")
+                                .environment(\.layoutDirection, .rightToLeft)
                         }
                     }
                     .padding()
@@ -79,7 +79,7 @@ struct LiveTranslationView: View {
             Text(viewModel.errorMessage ?? "")
         }
         .task {
-            viewModel.configure(audioStreamManager: services.audioStreamManager, translationService: services.translationService)
+            viewModel.configure(translationService: services.translationService)
         }
     }
 }
@@ -110,11 +110,12 @@ private struct TranslationSegmentView: View {
                 .lineSpacing(5)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text(segment.sourceText)
+            Text.arabic(segment.sourceText)
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .multilineTextAlignment(.trailing)
+                .environment(\.layoutDirection, .rightToLeft)
         }
         .padding()
         .background(SiraatColor.secondaryBackground)

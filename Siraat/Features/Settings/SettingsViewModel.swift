@@ -4,7 +4,7 @@ import Foundation
 final class SettingsViewModel: ObservableObject {
     @Published var settings: ReaderSettings = .default
     @Published var prayerReminderSettings: PrayerReminderSettings = .default
-    @Published var secretsStatus = "External providers are optional. Keys are loaded from xcconfig or Keychain."
+    @Published var secretsStatus = "External translation providers are optional. When no key is configured, the app uses an on-device mock provider and nothing leaves your phone."
 
     private var databaseManager: QuranDatabaseManaging?
     private var prayerNotificationService: PrayerNotificationServicing?
