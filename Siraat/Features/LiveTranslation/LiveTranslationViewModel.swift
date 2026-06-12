@@ -3,7 +3,7 @@ import Foundation
 
 /// One finalized sentence of the khutba: the recognized Arabic plus its translation
 /// (nil until the on-device translator fills it in).
-struct LiveSegment: Identifiable, Equatable {
+struct LiveSegment: Identifiable, Equatable, Codable, Hashable {
     let id: UUID
     let sourceText: String
     var translatedText: String?
@@ -24,9 +24,18 @@ final class LiveTranslationViewModel: ObservableObject {
     @Published private(set) var isRecording = false
     @Published var errorMessage: String?
 
+    @Published var didSaveSession = false
+
     // Owned, not shared: this feature has its own microphone engine.
     private let audioStreamManager = AudioStreamManager()
+    private let library = KhutbaLibraryStore()
     private var didConfigure = false
+
+    private static let titleFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE d MMM, h:mm a"
+        return formatter
+    }()
     private var cancellables = Set<AnyCancellable>()
     private var transcriptSegmenter = TranscriptSegmenter()
     private var seenSources = Set<String>()
@@ -73,6 +82,20 @@ final class LiveTranslationViewModel: ObservableObject {
         seenSources.removeAll()
         transcriptSegmenter.reset()
         partialTranscript = ""
+    }
+
+    var canSaveSession: Bool { !segments.isEmpty }
+
+    /// Saves the captured khutba (Arabic + translations) to the library to revisit later.
+    func saveSession() {
+        guard canSaveSession else { return }
+        let session = KhutbaSession(
+            date: Date(),
+            title: "Khutba · \(Self.titleFormatter.string(from: Date()))",
+            segments: segments
+        )
+        library.save(session)
+        didSaveSession = true
     }
 
     /// True while any captured sentence still needs translating.

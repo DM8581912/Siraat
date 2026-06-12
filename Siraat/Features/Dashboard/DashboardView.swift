@@ -28,6 +28,10 @@ struct DashboardView: View {
                     }
                 }
 
+                if let verse = viewModel.verseOfTheDay {
+                    VerseOfTheDayCard(verse: verse)
+                }
+
                 QiblaCard(direction: viewModel.qiblaDirection)
 
                 QuickActionsCard(selectedTab: $selectedTab)
@@ -349,6 +353,38 @@ private struct QiblaCard: View {
                         .foregroundStyle(SiraatColor.textSecondary)
                 }
                 Spacer()
+            }
+        }
+    }
+}
+
+private struct VerseOfTheDayCard: View {
+    let verse: QuranVerse
+
+    var body: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 12) {
+                Label("Verse of the Day", systemImage: "sun.haze")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(SiraatColor.gold)
+
+                Text.arabic(verse.textUthmani)
+                    .font(.system(size: 24, design: .serif))
+                    .lineSpacing(8)
+                    .foregroundStyle(SiraatColor.textPrimary)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .multilineTextAlignment(.trailing)
+                    .environment(\.layoutDirection, .rightToLeft)
+
+                if !verse.translation.isEmpty {
+                    Text(verse.translation)
+                        .font(.subheadline)
+                        .foregroundStyle(SiraatColor.textSecondary)
+                }
+
+                Text("Qur'an \(verse.verseKey) · Saheeh International")
+                    .font(.caption2)
+                    .foregroundStyle(SiraatColor.textSecondary)
             }
         }
     }

@@ -11,6 +11,11 @@ struct MoreView: View {
                 MoreRow(icon: "hands.and.sparkles.fill", tint: SiraatColor.accentDeep,
                         title: "Quranic Duas", subtitle: "Supplications from the Qur'an") { DuasView() }
             }
+
+            Section("Library") {
+                MoreRow(icon: "books.vertical.fill", tint: SiraatColor.accent,
+                        title: "Khutba Library", subtitle: "Saved sermon translations") { KhutbaLibraryView() }
+            }
         }
         .navigationTitle("More")
         .background(SiraatColor.background)

@@ -70,4 +70,12 @@ final class QuranDatabaseManagerTests: XCTestCase {
         let ayahs = await manager.ayahs(inJuz: 30, language: .english, reciterID: QuranReciter.misharyAlafasy.rawValue)
         XCTAssertEqual(ayahs.first?.verseKey, "78:1")
     }
+
+    func testVerseByGlobalNumber() async {
+        let manager = QuranDatabaseManager(userDefaults: userDefaults)
+        let first = await manager.verse(globalNumber: 1)
+        XCTAssertEqual(first?.verseKey, "1:1")
+        let last = await manager.verse(globalNumber: 6236)
+        XCTAssertEqual(last?.verseKey, "114:6")
+    }
 }

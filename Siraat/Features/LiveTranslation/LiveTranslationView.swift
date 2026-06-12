@@ -16,10 +16,25 @@ struct LiveTranslationView: View {
         }
         .navigationTitle("Live Translation")
         .background(translationEngine)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    KhutbaLibraryView()
+                } label: {
+                    Image(systemName: "books.vertical")
+                }
+                .accessibilityLabel("Khutba library")
+            }
+        }
         .alert("Translation Error", isPresented: Binding(get: { viewModel.errorMessage != nil }, set: { _ in viewModel.errorMessage = nil })) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
+        }
+        .alert("Khutba saved", isPresented: $viewModel.didSaveSession) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("You can revisit it any time from the Khutba Library.")
         }
         .task {
             viewModel.configure()
@@ -82,6 +97,15 @@ struct LiveTranslationView: View {
                 .disabled(translationUnavailableOnThisOS)
 
                 Spacer()
+
+                Button {
+                    viewModel.saveSession()
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .buttonStyle(.bordered)
+                .disabled(!viewModel.canSaveSession)
+                .accessibilityLabel("Save khutba")
 
                 Button {
                     viewModel.clear()
