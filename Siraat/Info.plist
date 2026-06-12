@@ -18,10 +18,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>DEEPL_API_KEY</key>
-	<string>$(DEEPL_API_KEY)</string>
-	<key>GOOGLE_TRANSLATE_API_KEY</key>
-	<string>$(GOOGLE_TRANSLATE_API_KEY)</string>
+	<!-- Export compliance: app uses only standard HTTPS/system crypto. Answering this
+	     here avoids the App Store / TestFlight encryption prompt on every build. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Siraat uses the microphone only when you start live translation or recitation correction.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -32,7 +32,5 @@
 	<string>$(QURAN_CONTENT_API_BASE_URL)</string>
 	<key>UILaunchScreen</key>
 	<dict/>
-	<key>WHISPER_API_KEY</key>
-	<string>$(WHISPER_API_KEY)</string>
 </dict>
 </plist>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Privacy manifest. REQUIRED for App Store submission (missing it triggers ITMS-91053).
+  ACTION: add this file to the Siraat app target's "Copy Bundle Resources" build phase
+  (Xcode → file inspector → Target Membership) or it won't ship in the bundle.
+
+  - The app does not track users and contains no third-party analytics/ad SDKs.
+  - Location is computed into prayer times entirely on device and is never transmitted,
+    so it is not declared as "collected". Revisit NSPrivacyCollectedDataTypes if any
+    analytics, crash reporting, or server upload is ever added.
+  - Required-reason API: UserDefaults (settings, bookmarks, reading position, caches).
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
