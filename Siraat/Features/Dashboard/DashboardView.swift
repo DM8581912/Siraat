@@ -129,6 +129,8 @@ private struct NextPrayerHero: View {
                     Text(upcoming?.name.displayName ?? "—")
                         .font(.system(size: 40, weight: .bold, design: .serif))
                         .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     if let upcoming {
                         Text(timeFormatter.string(from: upcoming.date))
                             .font(.title3.weight(.medium))
@@ -160,7 +162,7 @@ private struct NextPrayerHero: View {
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Next prayer \(upcoming?.name.displayName ?? ""), \(upcoming.map { countdown(from: now, to: $0.date) } ?? "") remaining")
     }
@@ -241,7 +243,7 @@ private struct PrayerTimesStrip: View {
                         .padding(.vertical, 12)
                         .padding(.horizontal, 12)
                         .background(isNext ? SiraatColor.accent.opacity(0.10) : .clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
 
                         if index < schedule.times.count - 1 {
                             Divider().overlay(SiraatColor.hairline).padding(.leading, 48)
@@ -368,8 +370,7 @@ private struct VerseOfTheDayCard: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(SiraatColor.gold)
 
-                Text.arabic(verse.textUthmani)
-                    .font(.system(size: 24, design: .serif))
+                ArabicText(verse.textUthmani, size: 24, scripture: true)
                     .lineSpacing(8)
                     .foregroundStyle(SiraatColor.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .trailing)

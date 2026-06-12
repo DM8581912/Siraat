@@ -30,8 +30,7 @@ struct TasbihView: View {
             dhikrPicker
 
             VStack(spacing: 6) {
-                Text.arabic(dhikr.arabic)
-                    .font(.system(size: 34, weight: .semibold, design: .serif))
+                ArabicText(dhikr.arabic, size: 34, weight: .semibold)
                     .foregroundStyle(SiraatColor.textPrimary)
                     .multilineTextAlignment(.center)
                 Text(dhikr.transliteration)
@@ -58,7 +57,7 @@ struct TasbihView: View {
                         .padding(.vertical, 10)
                         .background(target == value ? SiraatColor.accent.opacity(0.15) : SiraatColor.secondaryBackground)
                         .foregroundStyle(target == value ? SiraatColor.accent : SiraatColor.textSecondary)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
                 }
 
                 Button {
@@ -71,7 +70,7 @@ struct TasbihView: View {
                 }
                 .foregroundStyle(SiraatColor.destructive)
                 .background(SiraatColor.secondaryBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
             }
             .buttonStyle(.plain)
 
@@ -116,6 +115,7 @@ struct TasbihView: View {
                         .font(.system(size: 72, weight: .bold, design: .rounded))
                         .foregroundStyle(SiraatColor.textPrimary)
                         .monospacedDigit()
+                        .contentTransition(.numericText(value: Double(count)))
                     Text("of \(target)")
                         .font(.subheadline)
                         .foregroundStyle(SiraatColor.textSecondary)
@@ -129,13 +129,15 @@ struct TasbihView: View {
     }
 
     private func increment() {
-        count += 1
-        if count >= target {
-            count = 0
-            rounds += 1
-            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-        } else {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        withAnimation(.snappy(duration: 0.18)) {
+            if count + 1 >= target {
+                count = 0
+                rounds += 1
+                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+            } else {
+                count += 1
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
         }
     }
 

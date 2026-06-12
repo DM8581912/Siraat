@@ -33,8 +33,7 @@ struct NamesOfAllahView: View {
 
                 Spacer()
 
-                Text.arabic(name.arabic)
-                    .font(.system(size: 26, design: .serif))
+                ArabicText(name.arabic, size: 26)
                     .foregroundStyle(SiraatColor.accentDeep)
             }
             .padding(.vertical, 4)

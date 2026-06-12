@@ -152,7 +152,7 @@ private struct ReaderToolbar: View {
             }
             .padding(10)
             .background(SiraatColor.secondaryBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
 
             HStack(spacing: 10) {
                 Button { showSurahIndex = true } label: {
@@ -266,12 +266,15 @@ private struct QuranVerseRow: View {
                 .accessibilityLabel("Share verse")
             }
 
-            Text.arabic(verse.text(for: settings.script))
-                .font(.system(size: settings.fontSize, weight: .regular, design: .serif))
-                .lineSpacing(8)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .multilineTextAlignment(.trailing)
-                .environment(\.layoutDirection, .rightToLeft)
+            ArabicText(
+                verse.text(for: settings.script),
+                size: CGFloat(settings.fontSize),
+                scripture: settings.script == .uthmani
+            )
+            .lineSpacing(8)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .multilineTextAlignment(.trailing)
+            .environment(\.layoutDirection, .rightToLeft)
 
             if !verse.translation.isEmpty {
                 Text(verse.translation)
@@ -281,7 +284,7 @@ private struct QuranVerseRow: View {
         }
         .padding()
         .background(isPlaying ? SiraatColor.gold.opacity(0.12) : SiraatColor.secondaryBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
         .onAppear(perform: onVisible)
     }
 }

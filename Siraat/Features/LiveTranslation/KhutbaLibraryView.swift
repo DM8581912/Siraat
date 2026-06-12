@@ -67,7 +67,7 @@ private struct KhutbaDetailView: View {
                     }
                     .padding()
                     .background(SiraatColor.secondaryBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous))
                 }
             }
             .padding()
