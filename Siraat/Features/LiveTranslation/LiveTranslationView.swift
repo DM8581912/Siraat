@@ -42,41 +42,53 @@ struct LiveTranslationView: View {
     }
 
     private var transcriptList: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 16) {
+        Group {
+            if viewModel.segments.isEmpty && viewModel.partialTranscript.isEmpty {
+                VStack {
                     if translationUnavailableOnThisOS {
                         InfoBanner(
                             icon: "info.circle",
                             text: "On-device live translation needs iOS 18. Showing the live Arabic transcript."
                         )
+                        .padding(.horizontal, SiraatSpacing.md)
                     }
-
-                    if viewModel.segments.isEmpty {
-                        EmptyTranslationState()
-                            .padding(.top, 60)
-                    }
-
-                    ForEach(viewModel.segments) { segment in
-                        LiveSegmentView(segment: segment, showsTranslation: !translationUnavailableOnThisOS)
-                            .id(segment.id)
-                    }
-
-                    if !viewModel.partialTranscript.isEmpty {
-                        Text.arabic(viewModel.partialTranscript)
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .multilineTextAlignment(.trailing)
-                            .environment(\.layoutDirection, .rightToLeft)
-                    }
+                    Spacer()
+                    EmptyTranslationState()
+                    Spacer()
                 }
-                .padding()
-            }
-            .onChange(of: viewModel.segments.count) {
-                if let last = viewModel.segments.last {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        proxy.scrollTo(last.id, anchor: .bottom)
+            } else {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: SiraatSpacing.md) {
+                            if translationUnavailableOnThisOS {
+                                InfoBanner(
+                                    icon: "info.circle",
+                                    text: "On-device live translation needs iOS 18. Showing the live Arabic transcript."
+                                )
+                            }
+
+                            ForEach(viewModel.segments) { segment in
+                                LiveSegmentView(segment: segment, showsTranslation: !translationUnavailableOnThisOS)
+                                    .id(segment.id)
+                            }
+
+                            if !viewModel.partialTranscript.isEmpty {
+                                Text.arabic(viewModel.partialTranscript)
+                                    .font(SiraatType.body)
+                                    .foregroundStyle(SiraatColor.textSecondary)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .multilineTextAlignment(.trailing)
+                                    .environment(\.layoutDirection, .rightToLeft)
+                            }
+                        }
+                        .padding(SiraatSpacing.md)
+                    }
+                    .onChange(of: viewModel.segments.count) {
+                        if let last = viewModel.segments.last {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                proxy.scrollTo(last.id, anchor: .bottom)
+                            }
+                        }
                     }
                 }
             }
