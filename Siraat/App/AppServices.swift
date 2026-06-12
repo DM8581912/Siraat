@@ -23,23 +23,26 @@ final class AppServices: ObservableObject {
         quranDatabaseManager: QuranDatabaseManaging = QuranDatabaseManager(),
         recitationCorrectionService: RecitationCorrectionServicing = RecitationCorrectionService(),
         recitationAnalysisProvider: RecitationAnalysisProviding = HybridRecitationAnalysisProvider(),
-        quranAudioPlayer: QuranAudioPlayer = QuranAudioPlayer(),
-        locationManager: LocationManager = LocationManager(),
+        quranAudioPlayer: QuranAudioPlayer? = nil,
+        locationManager: LocationManager? = nil,
         prayerTimesService: PrayerTimesServicing = PrayerTimesService(),
         prayerNotificationService: PrayerNotificationServicing = PrayerNotificationService(),
         qiblaService: QiblaServicing = QiblaService(),
-        appearanceController: AppearanceController = AppearanceController()
+        appearanceController: AppearanceController? = nil
     ) {
         self.translationService = translationService ?? TranslationServiceFactory.makeDefault(secretsProvider: secretsProvider)
         self.quranDatabaseManager = quranDatabaseManager
         self.recitationCorrectionService = recitationCorrectionService
         self.recitationAnalysisProvider = recitationAnalysisProvider
-        self.quranAudioPlayer = quranAudioPlayer
-        self.locationManager = locationManager
+        // These are @MainActor types: their init() can't be a default-argument
+        // expression (evaluated in a nonisolated context), so construct them here in
+        // the main-actor-isolated init body instead.
+        self.quranAudioPlayer = quranAudioPlayer ?? QuranAudioPlayer()
+        self.locationManager = locationManager ?? LocationManager()
         self.prayerTimesService = prayerTimesService
         self.prayerNotificationService = prayerNotificationService
         self.qiblaService = qiblaService
         self.secretsProvider = secretsProvider
-        self.appearanceController = appearanceController
+        self.appearanceController = appearanceController ?? AppearanceController()
     }
 }
