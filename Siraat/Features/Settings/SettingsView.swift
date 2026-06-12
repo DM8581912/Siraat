@@ -65,7 +65,6 @@ struct SettingsView: View {
 
             Section("Prayer Time Adjustments") {
                 PrayerAdjustmentStepper("Fajr", value: $viewModel.settings.prayerAdjustments.fajr)
-                PrayerAdjustmentStepper("Sunrise", value: $viewModel.settings.prayerAdjustments.sunrise)
                 PrayerAdjustmentStepper("Dhuhr", value: $viewModel.settings.prayerAdjustments.dhuhr)
                 PrayerAdjustmentStepper("Asr", value: $viewModel.settings.prayerAdjustments.asr)
                 PrayerAdjustmentStepper("Maghrib", value: $viewModel.settings.prayerAdjustments.maghrib)
