@@ -1,0 +1,31 @@
+name: Prepare adhan sound
+
+# One-off: converts a CC BY-SA 4.0 adhan recording (Wikimedia Commons, author Atcovi)
+# into an iOS-compatible notification sound (Adhan.caf, <30s) on the macOS runner, which
+# has ffmpeg + afconvert. Download the artifact, commit it to Siraat/Resources/, done.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  convert:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - name: Download and convert adhan to .caf
+        run: |
+          set -euo pipefail
+          curl -sL "https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3" -o adhan.mp3
+          echo "Downloaded:"; ls -lh adhan.mp3
+          # Trim to 28s (iOS notification sounds must be <30s), mono 44.1kHz.
+          ffmpeg -y -i adhan.mp3 -t 28 -ar 44100 -ac 1 adhan.wav
+          # afconvert produces an iOS-friendly IMA4 CAF.
+          afconvert adhan.wav Adhan.caf -d ima4 -f caff -v
+          echo "Converted:"; ls -lh Adhan.caf
+
+      - name: Upload Adhan.caf
+        uses: actions/upload-artifact@v5
+        with:
+          name: adhan-caf
+          path: Adhan.caf
+          if-no-files-found: error
+          retention-days: 7
