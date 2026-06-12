@@ -46,10 +46,10 @@ struct BundledAyah: Decodable, Hashable {
         hizbQuarter = try c.decodeIfPresent(Int.self, forKey: .hizbQuarter) ?? 1
         ruku = try c.decodeIfPresent(Int.self, forKey: .ruku) ?? 1
         manzil = try c.decodeIfPresent(Int.self, forKey: .manzil) ?? 1
-        // Source data ships sajda as a plain Bool; alquran.cloud's raw form uses an object
-        // for sajda ayat. Decoding a Bool succeeds for our data; anything non-Bool (an
-        // object) means it IS a sajda ayah.
-        sajda = (try? c.decode(Bool.self, forKey: .sajda)) ?? true
+        // Shipped data ships sajda as a plain Bool, so this always decodes. Default the
+        // absent/malformed case to false: only 15 of 6236 ayat are sajda, so "not a
+        // sajda" is the safe fallback for unknown data.
+        sajda = (try? c.decode(Bool.self, forKey: .sajda)) ?? false
     }
 }
 

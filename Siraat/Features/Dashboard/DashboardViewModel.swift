@@ -71,7 +71,9 @@ final class DashboardViewModel: ObservableObject {
             // Verse of the day: deterministic per calendar day, spread across the whole
             // Qur'an so consecutive days aren't adjacent ayat.
             let day = Calendar.current.ordinality(of: .day, in: .era, for: Date()) ?? 1
-            let globalNumber = (abs(day &* 2_654_435_761) % 6236) + 1
+            // Use unsigned magnitude rather than abs(): the overflow-multiply can land on
+            // Int.min, and abs(Int.min) traps. .magnitude is total over every Int.
+            let globalNumber = Int((day &* 2_654_435_761).magnitude % 6236) + 1
             verseOfTheDay = await databaseManager.verse(globalNumber: globalNumber)
 
             // Recompute prayer times with the freshly loaded calculation method/madhab

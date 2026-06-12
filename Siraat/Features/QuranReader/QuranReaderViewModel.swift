@@ -19,6 +19,7 @@ final class QuranReaderViewModel: ObservableObject {
     private var audioPlayer: QuranAudioPlayer?
     private var hasRestoredReadingPosition = false
     private var persistPositionTask: Task<Void, Never>?
+    private var loadTask: Task<Void, Never>?
 
     var selectedChapter: QuranChapter {
         QuranChapter.chapter(number: selectedSurah)
@@ -51,7 +52,10 @@ final class QuranReaderViewModel: ObservableObject {
     }
 
     func load() {
-        Task {
+        // Supersede any in-flight load: rapid surah/settings switches otherwise race, and
+        // a slower earlier load could finish last and flash the wrong surah's verses.
+        loadTask?.cancel()
+        loadTask = Task {
             guard let databaseManager else { return }
             isLoading = true
             defer { isLoading = false }
@@ -59,6 +63,7 @@ final class QuranReaderViewModel: ObservableObject {
             if surahs.isEmpty {
                 surahs = await databaseManager.surahMetadata()
             }
+            guard !Task.isCancelled else { return }
 
             do {
                 settings = await databaseManager.readerSettings()
@@ -68,13 +73,16 @@ final class QuranReaderViewModel: ObservableObject {
                     selectedSurah = readingPosition.surahNumber
                     hasRestoredReadingPosition = true
                 }
-                verses = try await databaseManager.verses(
+                let loaded = try await databaseManager.verses(
                     forSurah: selectedSurah,
                     language: settings.translationLanguage,
                     reciterID: settings.selectedReciterID
                 )
+                guard !Task.isCancelled else { return }
+                verses = loaded
                 audioPlayer?.load(verses)
             } catch {
+                guard !Task.isCancelled else { return }
                 errorMessage = error.localizedDescription
             }
         }
