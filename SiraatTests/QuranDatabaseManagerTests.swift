@@ -47,4 +47,27 @@ final class QuranDatabaseManagerTests: XCTestCase {
 
         XCTAssertEqual(restored, settings)
     }
+
+    func testBundleLoadsFatihahOffline() async throws {
+        let manager = QuranDatabaseManager(userDefaults: userDefaults)
+        let verses = try await manager.verses(forSurah: 1, language: .english, reciterID: QuranReciter.misharyAlafasy.rawValue)
+
+        XCTAssertEqual(verses.count, 7)
+        XCTAssertEqual(verses.first?.verseKey, "1:1")
+        XCTAssertFalse(verses.first?.textUthmani.isEmpty ?? true)
+        XCTAssertFalse(verses.first?.translation.isEmpty ?? true)
+        XCTAssertEqual(verses.first?.audioURL?.absoluteString, "https://everyayah.com/data/Alafasy_128kbps/001001.mp3")
+    }
+
+    func testSurahMetadataHas114Surahs() async {
+        let manager = QuranDatabaseManager(userDefaults: userDefaults)
+        let meta = await manager.surahMetadata()
+        XCTAssertEqual(meta.count, 114)
+    }
+
+    func testJuz30StartsAtAnNaba() async {
+        let manager = QuranDatabaseManager(userDefaults: userDefaults)
+        let ayahs = await manager.ayahs(inJuz: 30, language: .english, reciterID: QuranReciter.misharyAlafasy.rawValue)
+        XCTAssertEqual(ayahs.first?.verseKey, "78:1")
+    }
 }

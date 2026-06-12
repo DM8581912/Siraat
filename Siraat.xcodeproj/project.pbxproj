@@ -52,6 +52,14 @@
 		BF000000000000000000002B /* HijriDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000031 /* HijriDate.swift */; };
 		BF000000000000000000002C /* PrayerTimesValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000032 /* PrayerTimesValidationTests.swift */; };
 		BF000000000000000000002D /* TasbihView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000033 /* TasbihView.swift */; };
+		BF000000000000000000002E /* QuranBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000034 /* QuranBundle.swift */; };
+		BF000000000000000000002F /* AudioURLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000035 /* AudioURLBuilder.swift */; };
+		BF0000000000000000000030 /* SurahIndexView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000036 /* SurahIndexView.swift */; };
+		BF0000000000000000000031 /* JuzIndexView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000037 /* JuzIndexView.swift */; };
+		BF0000000000000000000032 /* FullQuran.json in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000038 /* FullQuran.json */; };
+		BF0000000000000000000033 /* QuranBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000039 /* QuranBundleTests.swift */; };
+		BF0000000000000000000034 /* AudioURLBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003A /* AudioURLBuilderTests.swift */; };
+		BF0000000000000000000035 /* QuranReaderViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003B /* QuranReaderViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +122,14 @@
 		FR0000000000000000000031 /* HijriDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Utilities/HijriDate.swift; sourceTree = "<group>"; };
 		FR0000000000000000000032 /* PrayerTimesValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/PrayerTimesValidationTests.swift; sourceTree = "<group>"; };
 		FR0000000000000000000033 /* TasbihView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/Tasbih/TasbihView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000034 /* QuranBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Models/QuranBundle.swift; sourceTree = "<group>"; };
+		FR0000000000000000000035 /* AudioURLBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/AudioURLBuilder.swift; sourceTree = "<group>"; };
+		FR0000000000000000000036 /* SurahIndexView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/QuranReader/SurahIndexView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000037 /* JuzIndexView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/QuranReader/JuzIndexView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000038 /* FullQuran.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Siraat/Resources/FullQuran.json; sourceTree = "<group>"; };
+		FR0000000000000000000039 /* QuranBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QuranBundleTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000003A /* AudioURLBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/AudioURLBuilderTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000003B /* QuranReaderViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QuranReaderViewModelTests.swift; sourceTree = "<group>"; };
 		PR0000000000000000000001 /* Siraat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siraat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		PR0000000000000000000002 /* SiraatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SiraatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -184,7 +200,12 @@
 				FR0000000000000000000015 /* SettingsView.swift */,
 				FR0000000000000000000016 /* SettingsViewModel.swift */,
 				FR0000000000000000000033 /* TasbihView.swift */,
+				FR0000000000000000000034 /* QuranBundle.swift */,
+				FR0000000000000000000035 /* AudioURLBuilder.swift */,
+				FR0000000000000000000036 /* SurahIndexView.swift */,
+				FR0000000000000000000037 /* JuzIndexView.swift */,
 				FR0000000000000000000017 /* SampleQuran.json */,
+				FR0000000000000000000038 /* FullQuran.json */,
 				FR000000000000000000001B /* Info.plist */,
 			);
 			name = Siraat;
@@ -202,6 +223,9 @@
 				FR000000000000000000002A /* QuranChapterTests.swift */,
 				FR000000000000000000002C /* TranscriptSegmenterTests.swift */,
 				FR0000000000000000000032 /* PrayerTimesValidationTests.swift */,
+				FR0000000000000000000039 /* QuranBundleTests.swift */,
+				FR000000000000000000003A /* AudioURLBuilderTests.swift */,
+				FR000000000000000000003B /* QuranReaderViewModelTests.swift */,
 			);
 			name = SiraatTests;
 			sourceTree = "<group>";
@@ -307,6 +331,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BF0000000000000000000017 /* SampleQuran.json in Resources */,
+				BF0000000000000000000032 /* FullQuran.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,6 +384,10 @@
 				BF0000000000000000000015 /* SettingsView.swift in Sources */,
 				BF0000000000000000000016 /* SettingsViewModel.swift in Sources */,
 				BF000000000000000000002D /* TasbihView.swift in Sources */,
+				BF000000000000000000002E /* QuranBundle.swift in Sources */,
+				BF000000000000000000002F /* AudioURLBuilder.swift in Sources */,
+				BF0000000000000000000030 /* SurahIndexView.swift in Sources */,
+				BF0000000000000000000031 /* JuzIndexView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -375,6 +404,9 @@
 				BF0000000000000000000026 /* QuranChapterTests.swift in Sources */,
 				BF0000000000000000000028 /* TranscriptSegmenterTests.swift in Sources */,
 				BF000000000000000000002C /* PrayerTimesValidationTests.swift in Sources */,
+				BF0000000000000000000033 /* QuranBundleTests.swift in Sources */,
+				BF0000000000000000000034 /* AudioURLBuilderTests.swift in Sources */,
+				BF0000000000000000000035 /* QuranReaderViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

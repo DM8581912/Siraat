@@ -2,6 +2,8 @@ import Foundation
 
 protocol QuranDatabaseManaging {
     func verses(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) async throws -> [QuranVerse]
+    func surahMetadata() async -> [BundledSurah]
+    func ayahs(inJuz juz: Int, language: TranslationLanguage, reciterID: Int) async -> [QuranVerse]
     func cachedBookmarks() async -> [Bookmark]
     func saveBookmarks(_ bookmarks: [Bookmark]) async
     func readingPosition() async -> QuranReadingPosition?
@@ -29,6 +31,12 @@ actor QuranDatabaseManager: QuranDatabaseManaging {
     private let encoder: JSONEncoder
     private let userDefaults: UserDefaults
 
+    // Lazily-parsed bundled full Quran (offline source of truth). Nil if the resource is
+    // missing/corrupt, in which case the manager falls back to the online path + sample.
+    private var bundleLoaded = false
+    private var surahLookup: [Int: BundledSurah] = [:]
+    private var orderedSurahs: [BundledSurah] = []
+
     init(
         session: URLSession = .shared,
         secretsProvider: SecretsProviding = SecretsProvider(),
@@ -44,6 +52,11 @@ actor QuranDatabaseManager: QuranDatabaseManaging {
     }
 
     func verses(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) async throws -> [QuranVerse] {
+        // English ships fully offline in the bundle — instant, no network.
+        if language == .english, let verses = bundleVerses(forSurah: surah, includeEnglish: true, reciterID: reciterID) {
+            return verses
+        }
+
         if let cached = cachedVerses(forSurah: surah, language: language, reciterID: reciterID), !cached.isEmpty {
             return cached
         }
@@ -53,9 +66,57 @@ actor QuranDatabaseManager: QuranDatabaseManaging {
             saveCachedVerses(remote, surah: surah, language: language, reciterID: reciterID)
             return remote
         } catch {
+            // Offline fallback: bundle Arabic + English so the screen is never blank.
+            if let verses = bundleVerses(forSurah: surah, includeEnglish: true, reciterID: reciterID) {
+                return verses
+            }
             let fallback = try loadSampleVerses()
             guard !fallback.isEmpty else { throw error }
             return fallback
+        }
+    }
+
+    func surahMetadata() async -> [BundledSurah] {
+        loadBundleIfNeeded()
+        return orderedSurahs
+    }
+
+    func ayahs(inJuz juz: Int, language: TranslationLanguage, reciterID: Int) async -> [QuranVerse] {
+        loadBundleIfNeeded()
+        var result: [QuranVerse] = []
+        for surah in orderedSurahs {
+            for ayah in surah.ayahs where ayah.juz == juz {
+                result.append(ayah.toQuranVerse(
+                    surahNumber: surah.number,
+                    includeEnglish: language == .english,
+                    audioURL: AudioURLBuilder.url(reciterID: reciterID, surah: surah.number, ayah: ayah.numberInSurah)
+                ))
+            }
+        }
+        return result
+    }
+
+    private func loadBundleIfNeeded() {
+        guard !bundleLoaded else { return }
+        bundleLoaded = true
+        guard
+            let url = Bundle.main.url(forResource: "FullQuran", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let bundle = try? decoder.decode(QuranBundle.self, from: data)
+        else { return }
+        orderedSurahs = bundle.surahs
+        surahLookup = Dictionary(uniqueKeysWithValues: bundle.surahs.map { ($0.number, $0) })
+    }
+
+    private func bundleVerses(forSurah surah: Int, includeEnglish: Bool, reciterID: Int) -> [QuranVerse]? {
+        loadBundleIfNeeded()
+        guard let bundledSurah = surahLookup[surah], !bundledSurah.ayahs.isEmpty else { return nil }
+        return bundledSurah.ayahs.map { ayah in
+            ayah.toQuranVerse(
+                surahNumber: surah,
+                includeEnglish: includeEnglish,
+                audioURL: AudioURLBuilder.url(reciterID: reciterID, surah: surah, ayah: ayah.numberInSurah)
+            )
         }
     }
 
