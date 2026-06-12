@@ -43,6 +43,69 @@ final class PrayerTimesValidationTests: XCTestCase {
         ]
     }
 
+    /// High-latitude cities where the Adhan library's recommended high-latitude rule
+    /// (seventhOfTheNight for lat > 48°) is exercised. Validated against Aladhan with
+    /// latitudeAdjustmentMethod=ONE_SEVENTH on 2026-03-15 (near equinox — avoids polar
+    /// day/night extremes while still requiring the rule). Tolerance widened to 8 min
+    /// because the two implementations apply the one-seventh cap at slightly different
+    /// rounding/truncation points.
+    private var highLatitudeReferences: [Reference] {
+        [
+            Reference(city: "Reykjavik", latitude: 64.1466, longitude: -21.9426,
+                      timeZone: "Atlantic/Reykjavik", method: .muslimWorldLeague,
+                      fajr: hm(6, 1), sunrise: hm(7, 46), dhuhr: hm(13, 37),
+                      asr: hm(16, 23), maghrib: hm(19, 29), isha: hm(21, 14)),
+            Reference(city: "Tromso", latitude: 69.6493, longitude: 18.9553,
+                      timeZone: "Europe/Oslo", method: .muslimWorldLeague,
+                      fajr: hm(4, 20), sunrise: hm(6, 7), dhuhr: hm(11, 53),
+                      asr: hm(14, 21), maghrib: hm(17, 42), isha: hm(19, 28)),
+        ]
+    }
+
+    func testHighLatitudePrayerTimesMatchAladhanReference() {
+        let service = PrayerTimesService()
+        let tolerance = 8
+
+        for ref in highLatitudeReferences {
+            let timeZone = TimeZone(identifier: ref.timeZone)!
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = timeZone
+            // Near-equinox date: high-latitude rule applies but no polar day/night.
+            let date = calendar.date(from: DateComponents(year: 2026, month: 3, day: 15, hour: 12))!
+
+            let schedule = service.schedule(
+                for: date,
+                coordinate: LocationCoordinate(latitude: ref.latitude, longitude: ref.longitude),
+                calendar: calendar,
+                method: ref.method,
+                madhab: .shafi,
+                highLatitudeRule: nil  // let Adhan pick seventhOfTheNight automatically
+            )
+
+            XCTAssertFalse(schedule.times.isEmpty, "\(ref.city): schedule returned no times")
+
+            func minutesOfDay(_ name: PrayerName) -> Int {
+                guard let prayer = schedule.times.first(where: { $0.name == name }) else { return -1 }
+                let comps = calendar.dateComponents([.hour, .minute], from: prayer.date)
+                return (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
+            }
+
+            let expected: [(PrayerName, Int)] = [
+                (.fajr, ref.fajr), (.sunrise, ref.sunrise), (.dhuhr, ref.dhuhr),
+                (.asr, ref.asr), (.maghrib, ref.maghrib), (.isha, ref.isha)
+            ]
+
+            for (name, want) in expected {
+                let got = minutesOfDay(name)
+                let delta = abs(got - want)
+                XCTAssertLessThanOrEqual(
+                    delta, tolerance,
+                    "\(ref.city) \(name.rawValue): computed \(got / 60):\(String(format: "%02d", got % 60)) vs reference \(want / 60):\(String(format: "%02d", want % 60)) — Δ\(delta) min"
+                )
+            }
+        }
+    }
+
     func testPrayerTimesMatchAladhanReference() {
         let service = PrayerTimesService()
         let tolerance = 6
@@ -82,5 +145,42 @@ final class PrayerTimesValidationTests: XCTestCase {
                 )
             }
         }
+    }
+
+    /// Prove that per-prayer manual adjustments shift times by the expected amount.
+    func testPrayerAdjustmentsShiftTimes() {
+        let service = PrayerTimesService()
+        let ref = references[0] // Houston
+        let timeZone = TimeZone(identifier: ref.timeZone)!
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let date = calendar.date(from: DateComponents(year: 2026, month: 6, day: 15, hour: 12))!
+        let coord = LocationCoordinate(latitude: ref.latitude, longitude: ref.longitude)
+
+        let baseline = service.schedule(
+            for: date, coordinate: coord, calendar: calendar,
+            method: ref.method, madhab: .shafi, highLatitudeRule: nil
+        )
+
+        let adjusted = service.schedule(
+            for: date, coordinate: coord, calendar: calendar,
+            method: ref.method, madhab: .shafi, highLatitudeRule: nil,
+            adjustments: PrayerAdjustments(fajr: 3, dhuhr: -2, asr: 5)
+        )
+
+        func minutes(from schedule: DailyPrayerSchedule, prayer: PrayerName) -> Int {
+            guard let p = schedule.times.first(where: { $0.name == prayer }) else { return -1 }
+            let comps = calendar.dateComponents([.hour, .minute], from: p.date)
+            return (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
+        }
+
+        XCTAssertEqual(minutes(from: adjusted, prayer: .fajr) - minutes(from: baseline, prayer: .fajr), 3,
+                       "Fajr should shift +3 min")
+        XCTAssertEqual(minutes(from: adjusted, prayer: .dhuhr) - minutes(from: baseline, prayer: .dhuhr), -2,
+                       "Dhuhr should shift -2 min")
+        XCTAssertEqual(minutes(from: adjusted, prayer: .asr) - minutes(from: baseline, prayer: .asr), 5,
+                       "Asr should shift +5 min")
+        XCTAssertEqual(minutes(from: adjusted, prayer: .maghrib), minutes(from: baseline, prayer: .maghrib),
+                       "Maghrib should be unchanged")
     }
 }

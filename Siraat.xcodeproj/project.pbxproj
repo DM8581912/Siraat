@@ -75,6 +75,7 @@
 		BF0000000000000000000042 /* Translation-ur.json in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000048 /* Translation-ur.json */; };
 		BF0000000000000000000043 /* Translation-id.json in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000049 /* Translation-id.json */; };
 		BF0000000000000000000044 /* Translation-tr.json in Resources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000004A /* Translation-tr.json */; };
+		BF0000000000000000000045 /* QiblaMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000004B /* QiblaMathTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -160,6 +161,7 @@
 		FR0000000000000000000048 /* Translation-ur.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Siraat/Resources/Translations/Translation-ur.json"; sourceTree = "<group>"; };
 		FR0000000000000000000049 /* Translation-id.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Siraat/Resources/Translations/Translation-id.json"; sourceTree = "<group>"; };
 		FR000000000000000000004A /* Translation-tr.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Siraat/Resources/Translations/Translation-tr.json"; sourceTree = "<group>"; };
+		FR000000000000000000004B /* QiblaMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QiblaMathTests.swift; sourceTree = "<group>"; };
 		PR0000000000000000000001 /* Siraat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siraat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		PR0000000000000000000002 /* SiraatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SiraatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -271,6 +273,7 @@
 				FR0000000000000000000041 /* AsmaulHusnaTests.swift */,
 				FR0000000000000000000042 /* QuranicDuasTests.swift */,
 				FR0000000000000000000045 /* KhutbaLibraryTests.swift */,
+				FR000000000000000000004B /* QiblaMathTests.swift */,
 			);
 			name = SiraatTests;
 			sourceTree = "<group>";
@@ -467,6 +470,7 @@
 				BF000000000000000000003B /* AsmaulHusnaTests.swift in Sources */,
 				BF000000000000000000003C /* QuranicDuasTests.swift in Sources */,
 				BF000000000000000000003F /* KhutbaLibraryTests.swift in Sources */,
+				BF0000000000000000000045 /* QiblaMathTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

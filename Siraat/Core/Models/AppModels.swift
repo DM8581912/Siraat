@@ -180,6 +180,10 @@ struct ReaderSettings: Codable, Equatable {
     var highLatitudeRule: HighLatitudeRule?
     /// Manual ±days nudge for the Hijri date to match local moon-sighting (-2...2).
     var hijriDayAdjustment: Int
+    /// Per-prayer minute adjustments so users can match their local mosque's timetable.
+    /// Backed by the Adhan library's PrayerAdjustments (applied after the engine computes
+    /// times). Positive = later, negative = earlier. Clamped to -30...30 in the UI.
+    var prayerAdjustments: PrayerAdjustments
 
     init(
         script: QuranScript,
@@ -191,7 +195,8 @@ struct ReaderSettings: Codable, Equatable {
         calculationMethod: CalculationMethod = .muslimWorldLeague,
         madhab: Madhab = .shafi,
         highLatitudeRule: HighLatitudeRule? = nil,
-        hijriDayAdjustment: Int = 0
+        hijriDayAdjustment: Int = 0,
+        prayerAdjustments: PrayerAdjustments = PrayerAdjustments()
     ) {
         self.script = script
         self.readingMode = readingMode
@@ -203,6 +208,7 @@ struct ReaderSettings: Codable, Equatable {
         self.madhab = madhab
         self.highLatitudeRule = highLatitudeRule
         self.hijriDayAdjustment = hijriDayAdjustment
+        self.prayerAdjustments = prayerAdjustments
     }
 
     // Decode defensively: prayer-calculation fields were added later, so settings
@@ -221,6 +227,7 @@ struct ReaderSettings: Codable, Equatable {
         madhab = try container.decodeIfPresent(Madhab.self, forKey: .madhab) ?? .shafi
         highLatitudeRule = try container.decodeIfPresent(HighLatitudeRule.self, forKey: .highLatitudeRule)
         hijriDayAdjustment = try container.decodeIfPresent(Int.self, forKey: .hijriDayAdjustment) ?? 0
+        prayerAdjustments = try container.decodeIfPresent(PrayerAdjustments.self, forKey: .prayerAdjustments) ?? PrayerAdjustments()
     }
 
     static let `default` = ReaderSettings(
@@ -233,7 +240,8 @@ struct ReaderSettings: Codable, Equatable {
         calculationMethod: .regionalDefault(),
         madhab: .shafi,
         highLatitudeRule: nil,
-        hijriDayAdjustment: 0
+        hijriDayAdjustment: 0,
+        prayerAdjustments: PrayerAdjustments()
     )
 }
 

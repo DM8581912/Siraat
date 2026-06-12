@@ -117,7 +117,8 @@ final class DashboardViewModel: ObservableObject {
             calendar: .current,
             method: settings.calculationMethod,
             madhab: settings.madhab,
-            highLatitudeRule: settings.highLatitudeRule
+            highLatitudeRule: settings.highLatitudeRule,
+            adjustments: settings.prayerAdjustments
         )
         qiblaDirection = qiblaService?.direction(from: coordinate, headingDegrees: locationManager?.headingDegrees)
         autoRescheduleRemindersIfNeeded(for: coordinate)
@@ -149,7 +150,8 @@ final class DashboardViewModel: ObservableObject {
                 calendar: calendar,
                 method: settings.calculationMethod,
                 madhab: settings.madhab,
-                highLatitudeRule: settings.highLatitudeRule
+                highLatitudeRule: settings.highLatitudeRule,
+                adjustments: settings.prayerAdjustments
             )
         }
     }
