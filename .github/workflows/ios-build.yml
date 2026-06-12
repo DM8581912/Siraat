@@ -6,7 +6,7 @@ name: Build unsigned IPA
 
 on:
   push:
-    branches: [main, luh-mk-inthestu]
+    branches: [main, luh-mk-inthestu, feat/correctness-overhaul]
   workflow_dispatch: {}   # lets you run it by hand from the Actions tab
 
 jobs:
@@ -27,6 +27,15 @@ jobs:
         run: |
           xcodebuild -version
           xcodebuild -list -project Siraat.xcodeproj
+
+      - name: Run tests (correctness validation)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Siraat.xcodeproj \
+            -scheme Siraat \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            test
 
       - name: Build (Release, no code signing)
         run: |

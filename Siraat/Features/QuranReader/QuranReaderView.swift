@@ -28,6 +28,13 @@ struct QuranReaderView: View {
                 }
             }
 
+            Text("Translation: \(viewModel.settings.translationLanguage.quranTranslationCredit)  ·  Arabic: Uthmani (King Fahd Complex)")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+
             QuranPlaybackBar(player: services.quranAudioPlayer, verses: viewModel.verses)
                 .padding()
                 .background(.regularMaterial)

@@ -31,6 +31,20 @@ enum TranslationLanguage: String, CaseIterable, Identifiable, Codable, Hashable 
         case .indonesian: 33
         }
     }
+
+    /// Translator credit for the quran.com edition above. Quran translations are
+    /// established, attributed works and must be credited in-app — never presented as
+    /// app-generated.
+    var quranTranslationCredit: String {
+        switch self {
+        case .english: "Dr. Mustafa Khattab — The Clear Quran"
+        case .spanish: "Sheikh Isa García"
+        case .french: "Muhammad Hamidullah"
+        case .urdu: "Tafheem-ul-Quran — Abul A'la Maududi"
+        case .turkish: "Diyanet İşleri"
+        case .indonesian: "Kementerian Agama Republik Indonesia"
+        }
+    }
 }
 
 enum QuranReciter: Int, CaseIterable, Identifiable, Codable, Hashable {
@@ -150,6 +164,10 @@ struct ReaderSettings: Codable, Equatable {
     var appearanceMode: AppearanceMode
     var calculationMethod: CalculationMethod
     var madhab: Madhab
+    /// nil = let Adhan pick the recommended high-latitude rule automatically.
+    var highLatitudeRule: HighLatitudeRule?
+    /// Manual ±days nudge for the Hijri date to match local moon-sighting (-2...2).
+    var hijriDayAdjustment: Int
 
     init(
         script: QuranScript,
@@ -159,7 +177,9 @@ struct ReaderSettings: Codable, Equatable {
         selectedReciterID: Int,
         appearanceMode: AppearanceMode,
         calculationMethod: CalculationMethod = .muslimWorldLeague,
-        madhab: Madhab = .shafii
+        madhab: Madhab = .shafi,
+        highLatitudeRule: HighLatitudeRule? = nil,
+        hijriDayAdjustment: Int = 0
     ) {
         self.script = script
         self.readingMode = readingMode
@@ -169,11 +189,14 @@ struct ReaderSettings: Codable, Equatable {
         self.appearanceMode = appearanceMode
         self.calculationMethod = calculationMethod
         self.madhab = madhab
+        self.highLatitudeRule = highLatitudeRule
+        self.hijriDayAdjustment = hijriDayAdjustment
     }
 
     // Decode defensively: prayer-calculation fields were added later, so settings
     // persisted by older builds won't contain them. decodeIfPresent preserves the
-    // user's other reader preferences instead of failing the whole decode.
+    // user's other reader preferences instead of failing the whole decode. New users
+    // get a region-appropriate calculation method instead of MWL-for-everyone.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         script = try container.decode(QuranScript.self, forKey: .script)
@@ -182,8 +205,10 @@ struct ReaderSettings: Codable, Equatable {
         translationLanguage = try container.decode(TranslationLanguage.self, forKey: .translationLanguage)
         selectedReciterID = try container.decode(Int.self, forKey: .selectedReciterID)
         appearanceMode = try container.decode(AppearanceMode.self, forKey: .appearanceMode)
-        calculationMethod = try container.decodeIfPresent(CalculationMethod.self, forKey: .calculationMethod) ?? .muslimWorldLeague
-        madhab = try container.decodeIfPresent(Madhab.self, forKey: .madhab) ?? .shafii
+        calculationMethod = try container.decodeIfPresent(CalculationMethod.self, forKey: .calculationMethod) ?? .regionalDefault()
+        madhab = try container.decodeIfPresent(Madhab.self, forKey: .madhab) ?? .shafi
+        highLatitudeRule = try container.decodeIfPresent(HighLatitudeRule.self, forKey: .highLatitudeRule)
+        hijriDayAdjustment = try container.decodeIfPresent(Int.self, forKey: .hijriDayAdjustment) ?? 0
     }
 
     static let `default` = ReaderSettings(
@@ -193,8 +218,10 @@ struct ReaderSettings: Codable, Equatable {
         translationLanguage: .english,
         selectedReciterID: QuranReciter.misharyAlafasy.rawValue,
         appearanceMode: .system,
-        calculationMethod: .muslimWorldLeague,
-        madhab: .shafii
+        calculationMethod: .regionalDefault(),
+        madhab: .shafi,
+        highLatitudeRule: nil,
+        hijriDayAdjustment: 0
     )
 }
 

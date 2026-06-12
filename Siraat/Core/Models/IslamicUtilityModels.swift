@@ -80,80 +80,77 @@ struct PrayerReminderSettings: Codable, Equatable {
     static let `default` = PrayerReminderSettings(isEnabled: false, minutesBefore: 10)
 }
 
-/// Prayer-time calculation conventions. Different Islamic authorities use different
-/// Fajr/Isha twilight depression angles (and Umm al-Qura uses a fixed interval after
-/// Maghrib for Isha). Imposing a single one on every user produces times that disagree
-/// with their local mosque by 10–30 minutes.
-enum CalculationMethod: String, CaseIterable, Identifiable, Codable, Hashable {
-    case muslimWorldLeague
-    case isna
-    case egyptian
-    case ummAlQura
-    case karachi
+// Prayer-time calculation is delegated to the vendored, battle-tested Adhan library
+// (github.com/batoulapps/adhan-swift) rather than hand-rolled astronomical math.
+// `CalculationMethod`, `Madhab`, and `HighLatitudeRule` below are Adhan's own types;
+// we only add display/UI conveniences and a region-based default here.
 
-    var id: String { rawValue }
+extension CalculationMethod: Identifiable {
+    public var id: String { rawValue }
+
+    /// Methods we offer in the UI (Adhan's `.other` is an internal sentinel, hidden).
+    static var selectable: [CalculationMethod] {
+        [.muslimWorldLeague, .northAmerica, .egyptian, .ummAlQura, .karachi,
+         .dubai, .qatar, .kuwait, .singapore, .turkey, .tehran, .moonsightingCommittee]
+    }
 
     var displayName: String {
         switch self {
         case .muslimWorldLeague: "Muslim World League"
-        case .isna: "ISNA (North America)"
+        case .northAmerica: "ISNA (North America)"
         case .egyptian: "Egyptian General Authority"
         case .ummAlQura: "Umm al-Qura (Makkah)"
         case .karachi: "University of Karachi"
+        case .dubai: "Dubai (UAE)"
+        case .qatar: "Qatar"
+        case .kuwait: "Kuwait"
+        case .singapore: "Singapore / SE Asia"
+        case .turkey: "Diyanet (Turkey)"
+        case .tehran: "Tehran (Iran)"
+        case .moonsightingCommittee: "Moonsighting Committee"
+        case .other: "Custom"
         }
     }
 
-    var fajrAngle: Double {
-        switch self {
-        case .muslimWorldLeague: 18
-        case .isna: 15
-        case .egyptian: 19.5
-        case .ummAlQura: 18.5
-        case .karachi: 18
-        }
-    }
-
-    /// Twilight angle for Isha. Ignored when `ishaIntervalMinutes` is non-nil.
-    var ishaAngle: Double {
-        switch self {
-        case .muslimWorldLeague: 17
-        case .isna: 15
-        case .egyptian: 17.5
-        case .ummAlQura: 18.5 // unused; Isha is a fixed interval after Maghrib
-        case .karachi: 18
-        }
-    }
-
-    /// Umm al-Qura defines Isha as a fixed number of minutes after Maghrib rather
-    /// than by a twilight angle. nil means "use `ishaAngle`".
-    var ishaIntervalMinutes: Double? {
-        switch self {
-        case .ummAlQura: 90
-        default: nil
+    /// Best-guess default seeded from the device region the first time only; the user
+    /// can override in Settings. Falls back to MWL globally. Never overrides a saved choice.
+    static func regionalDefault(regionCode: String? = Locale.current.region?.identifier) -> CalculationMethod {
+        switch regionCode?.uppercased() {
+        case "US", "CA", "MX": return .northAmerica
+        case "SA", "BH", "OM", "YE": return .ummAlQura
+        case "AE": return .dubai
+        case "KW": return .kuwait
+        case "QA": return .qatar
+        case "EG", "LY", "SD", "DZ", "MA", "TN", "JO", "SY", "IQ", "LB", "PS": return .egyptian
+        case "PK", "IN", "BD", "AF", "LK": return .karachi
+        case "SG", "MY", "ID", "BN", "PH": return .singapore
+        case "TR": return .turkey
+        case "IR": return .tehran
+        case "GB", "IE": return .moonsightingCommittee
+        default: return .muslimWorldLeague
         }
     }
 }
 
-/// Asr begins when an object's shadow equals its own length plus its noon shadow,
-/// multiplied by this factor. Shafi'i/Maliki/Hanbali use 1; Hanafi uses 2 (later Asr).
-/// Hardcoding Shafi'i made Asr up to an hour early for Hanafi users.
-enum Madhab: String, CaseIterable, Identifiable, Codable, Hashable {
-    case shafii
-    case hanafi
-
-    var id: String { rawValue }
+extension Madhab: Identifiable {
+    public var id: Int { rawValue }
 
     var displayName: String {
         switch self {
-        case .shafii: "Shafi'i / Maliki / Hanbali"
+        case .shafi: "Standard (Shafi'i, Maliki, Hanbali)"
         case .hanafi: "Hanafi"
         }
     }
+}
 
-    var asrShadowFactor: Double {
+extension HighLatitudeRule: Identifiable {
+    public var id: String { rawValue }
+
+    var displayName: String {
         switch self {
-        case .shafii: 1
-        case .hanafi: 2
+        case .middleOfTheNight: "Middle of the night"
+        case .seventhOfTheNight: "One-seventh of the night"
+        case .twilightAngle: "Twilight angle"
         }
     }
 }

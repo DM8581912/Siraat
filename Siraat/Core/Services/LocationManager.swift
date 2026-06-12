@@ -35,11 +35,16 @@ final class LocationManager: NSObject, ObservableObject {
     func startHeadingUpdates() {
         guard CLLocationManager.headingAvailable() else { return }
         manager.headingFilter = 2
+        manager.headingOrientation = .portrait
+        // trueHeading is only computed while location updates are running. Without this
+        // the device can only give magneticHeading, which is wrong against a true bearing.
+        manager.startUpdatingLocation()
         manager.startUpdatingHeading()
     }
 
     func stopHeadingUpdates() {
         manager.stopUpdatingHeading()
+        manager.stopUpdatingLocation()
     }
 }
 
@@ -68,9 +73,17 @@ extension LocationManager: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        let heading = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
+        // trueHeading is negative when it can't be determined (location off / no fix yet).
+        // The qibla is a TRUE bearing, so feeding magneticHeading would make the arrow
+        // wrong by the local magnetic declination. Publish nil instead — the UI then
+        // shows the static bearing-from-north rather than a confidently-wrong arrow.
+        let trueHeading: Double? = newHeading.trueHeading >= 0 ? newHeading.trueHeading : nil
         Task { @MainActor in
-            self.headingDegrees = heading
+            self.headingDegrees = trueHeading
         }
+    }
+
+    nonisolated func locationManagerShouldDisplayHeadingCalibration(_ manager: CLLocationManager) -> Bool {
+        true
     }
 }

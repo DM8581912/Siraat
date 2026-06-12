@@ -44,7 +44,7 @@ struct SettingsView: View {
 
             Section("Prayer Times") {
                 Picker("Calculation method", selection: $viewModel.settings.calculationMethod) {
-                    ForEach(CalculationMethod.allCases) { method in
+                    ForEach(CalculationMethod.selectable) { method in
                         Text(method.displayName).tag(method)
                     }
                 }
@@ -54,6 +54,24 @@ struct SettingsView: View {
                         Text(madhab.displayName).tag(madhab)
                     }
                 }
+
+                Picker("High-latitude rule", selection: $viewModel.settings.highLatitudeRule) {
+                    Text("Automatic").tag(HighLatitudeRule?.none)
+                    ForEach(HighLatitudeRule.allCases) { rule in
+                        Text(rule.displayName).tag(HighLatitudeRule?.some(rule))
+                    }
+                }
+            }
+
+            Section("Hijri Date") {
+                Stepper(
+                    hijriAdjustmentLabel,
+                    value: $viewModel.settings.hijriDayAdjustment,
+                    in: -2...2
+                )
+                Text("Nudge the Hijri date ±1–2 days to match your local moon-sighting authority.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Privacy") {
@@ -100,5 +118,12 @@ struct SettingsView: View {
         .onChange(of: viewModel.prayerReminderSettings) {
             viewModel.save()
         }
+    }
+
+    private var hijriAdjustmentLabel: String {
+        let value = viewModel.settings.hijriDayAdjustment
+        let sign = value > 0 ? "+" : ""
+        let unit = abs(value) == 1 ? "day" : "days"
+        return "Adjustment: \(sign)\(value) \(unit)"
     }
 }
