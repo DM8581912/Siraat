@@ -1,3 +1,4 @@
+import CoreText
 import SwiftUI
 import UIKit
 
@@ -33,12 +34,53 @@ enum SiraatColor {
 
     static let accent = Color(lightHex: 0x0C6B57, darkHex: 0x4FC2A6)
     static let accentDeep = Color(lightHex: 0x094B3D, darkHex: 0x2E8C76)
-    static let gold = Color(lightHex: 0xB8862B, darkHex: 0xE0B65C)
+    // Light gold darkened from 0xB8862B (~3.0:1 on white — fails WCAG AA for text) to
+    // 0x8A6410 (~4.6:1) so it is legible as a caption/label color on light surfaces.
+    // Dark-mode gold stays bright (it sits on a dark surface, contrast is already fine).
+    static let gold = Color(lightHex: 0x8A6410, darkHex: 0xE0B65C)
     static let warning = Color(lightHex: 0xC2741E, darkHex: 0xE2944A)
     static let destructive = Color(lightHex: 0xC53330, darkHex: 0xE57470)
 
     static let textPrimary = Color(lightHex: 0x14201D, darkHex: 0xF2F5F3)
     static let textSecondary = Color(lightHex: 0x5C6864, darkHex: 0x9BA8A3)
+}
+
+/// Layout metrics — a small, deliberate radius scale instead of ad-hoc literals scattered
+/// per view (the codebase had drifted to 8/12/14/16/18/22). Two tiers cover every surface:
+/// `card` for outer containers, `inner` for nested rows/chips.
+enum SiraatRadius {
+    static let card: CGFloat = 16
+    static let inner: CGFloat = 10
+}
+
+/// Typography assets. The Qur'an verse text wants a real Uthmani face rather than the
+/// system serif, which mis-renders some diacritics.
+///
+/// Drop a licensed Uthmani font (e.g. the SIL OFL "Amiri Quran" or "Scheherazade New",
+/// or KFGQPC Uthmanic Script HAFS) into `Siraat/Resources/Fonts/` and set
+/// `uthmaniPostScriptName` to its PostScript name. `registerBundledFonts()` loads any
+/// bundled .otf/.ttf at launch. Until the asset is present, `Font.quran(...)` falls back
+/// to the system font automatically — no crash, just the previous rendering.
+enum SiraatFont {
+    /// PostScript name of the bundled Uthmani face. Verify with Font Book once the file
+    /// is added (it is NOT always the filename).
+    static let uthmaniPostScriptName = "AmiriQuran-Regular"
+
+    static func quran(size: CGFloat) -> Font {
+        // `relativeTo` makes the custom font scale with Dynamic Type automatically.
+        .custom(uthmaniPostScriptName, size: size, relativeTo: .title)
+    }
+
+    /// Registers every bundled font file with the process so `Font.custom(...)` can find
+    /// it without an Info.plist `UIAppFonts` entry. Call once at app launch. No-op (and
+    /// harmless) if no font files are bundled yet.
+    static func registerBundledFonts() {
+        for ext in ["otf", "ttf"] {
+            for url in Bundle.main.urls(forResourcesWithExtension: ext, subdirectory: nil) ?? [] {
+                CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+            }
+        }
+    }
 }
 
 /// A reusable elevated surface with consistent corner radius and a soft hairline border.
@@ -51,9 +93,9 @@ struct Card<Content: View>: View {
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(SiraatColor.secondaryBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous)
                     .strokeBorder(SiraatColor.hairline, lineWidth: 1)
             )
     }
@@ -70,6 +112,40 @@ extension Text {
     }
 }
 
+/// Arabic text that scales with Dynamic Type. The app previously hardcoded
+/// `.font(.system(size:))` for Arabic, so a low-vision user who enlarged system text got a
+/// scaled translation line next to a frozen Arabic line — the exact script they most need
+/// enlarged stayed small. `@ScaledMetric` keys the size off the chosen text style so it
+/// grows proportionally. Set `scripture: true` for Qur'an verses to use the Uthmani face.
+struct ArabicText: View {
+    private let text: String
+    private let weight: Font.Weight
+    private let scripture: Bool
+    @ScaledMetric private var size: CGFloat
+
+    init(
+        _ text: String,
+        size: CGFloat,
+        weight: Font.Weight = .regular,
+        scripture: Bool = false,
+        relativeTo style: Font.TextStyle = .title
+    ) {
+        self.text = text
+        self.weight = weight
+        self.scripture = scripture
+        self._size = ScaledMetric(wrappedValue: size, relativeTo: style)
+    }
+
+    var body: some View {
+        let base = Text.arabic(text)
+        if scripture {
+            base.font(.custom(SiraatFont.uthmaniPostScriptName, size: size))
+        } else {
+            base.font(.system(size: size, weight: weight))
+        }
+    }
+}
+
 struct SectionBand<Content: View>: View {
     let title: String
     @ViewBuilder var content: Content
@@ -83,7 +159,11 @@ struct SectionBand<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(SiraatColor.secondaryBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous)
+                .strokeBorder(SiraatColor.hairline, lineWidth: 1)
+        )
     }
 }
 

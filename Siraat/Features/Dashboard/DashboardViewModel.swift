@@ -21,6 +21,7 @@ final class DashboardViewModel: ObservableObject {
     private var prayerNotificationService: PrayerNotificationServicing?
     private var qiblaService: QiblaServicing?
     private var cancellables = Set<AnyCancellable>()
+    private var didAutoRescheduleReminders = false
 
     func configure(
         databaseManager: QuranDatabaseManaging,
@@ -71,7 +72,9 @@ final class DashboardViewModel: ObservableObject {
             // Verse of the day: deterministic per calendar day, spread across the whole
             // Qur'an so consecutive days aren't adjacent ayat.
             let day = Calendar.current.ordinality(of: .day, in: .era, for: Date()) ?? 1
-            let globalNumber = (abs(day &* 2_654_435_761) % 6236) + 1
+            // Use unsigned magnitude rather than abs(): the overflow-multiply can land on
+            // Int.min, and abs(Int.min) traps. .magnitude is total over every Int.
+            let globalNumber = Int((day &* 2_654_435_761).magnitude % 6236) + 1
             verseOfTheDay = await databaseManager.verse(globalNumber: globalNumber)
 
             // Recompute prayer times with the freshly loaded calculation method/madhab
@@ -88,14 +91,18 @@ final class DashboardViewModel: ObservableObject {
 
     func schedulePrayerReminders() {
         Task {
-            guard let prayerSchedule, let prayerNotificationService else {
+            guard let prayerNotificationService else { return }
+            guard let coordinate = locationManager?.coordinate else {
                 errorMessage = "Prayer times are needed before reminders can be scheduled."
                 return
             }
 
             do {
-                try await prayerNotificationService.scheduleReminders(for: prayerSchedule, settings: reminderSettings)
-                reminderStatusText = reminderSettings.isEnabled ? "Today’s prayer reminders are scheduled" : "Prayer reminders are off"
+                let schedules = upcomingSchedules(from: coordinate, days: reminderScheduleDays)
+                try await prayerNotificationService.scheduleReminders(for: schedules, settings: reminderSettings)
+                reminderStatusText = reminderSettings.isEnabled
+                    ? "Reminders set for the next \(reminderScheduleDays) days"
+                    : "Prayer reminders are off"
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -113,5 +120,37 @@ final class DashboardViewModel: ObservableObject {
             highLatitudeRule: settings.highLatitudeRule
         )
         qiblaDirection = qiblaService?.direction(from: coordinate, headingDegrees: locationManager?.headingDegrees)
+        autoRescheduleRemindersIfNeeded(for: coordinate)
+    }
+
+    /// Re-arm reminders once per launch as soon as we have a location and reminders are on.
+    /// One-shot triggers (see `PrayerNotificationService`) only cover the days we schedule,
+    /// so re-arming each launch is what keeps upcoming reminders accurate over time — the
+    /// previous design only re-armed when the user manually tapped "Schedule".
+    private func autoRescheduleRemindersIfNeeded(for coordinate: LocationCoordinate) {
+        guard !didAutoRescheduleReminders, reminderSettings.isEnabled else { return }
+        didAutoRescheduleReminders = true
+        Task {
+            let schedules = upcomingSchedules(from: coordinate, days: reminderScheduleDays)
+            try? await prayerNotificationService?.scheduleReminders(for: schedules, settings: reminderSettings)
+        }
+    }
+
+    private let reminderScheduleDays = 7
+
+    private func upcomingSchedules(from coordinate: LocationCoordinate, days: Int) -> [DailyPrayerSchedule] {
+        guard let prayerTimesService else { return [] }
+        let calendar = Calendar.current
+        return (0..<days).compactMap { offset in
+            guard let day = calendar.date(byAdding: .day, value: offset, to: Date()) else { return nil }
+            return prayerTimesService.schedule(
+                for: day,
+                coordinate: coordinate,
+                calendar: calendar,
+                method: settings.calculationMethod,
+                madhab: settings.madhab,
+                highLatitudeRule: settings.highLatitudeRule
+            )
+        }
     }
 }

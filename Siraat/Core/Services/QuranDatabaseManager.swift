@@ -1,7 +1,17 @@
 import Foundation
 
+/// A loaded page of verses plus the credit for the translation that is ACTUALLY shown.
+/// `translationCredit` and `isOfflineEnglishFallback` exist so the reader never displays
+/// text under the wrong translator's name (e.g. English under an Urdu credit when offline).
+struct QuranVersePage {
+    let verses: [QuranVerse]
+    let translationCredit: String
+    let isOfflineEnglishFallback: Bool
+}
+
 protocol QuranDatabaseManaging {
     func verses(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) async throws -> [QuranVerse]
+    func versePage(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) async throws -> QuranVersePage
     func surahMetadata() async -> [BundledSurah]
     func ayahs(inJuz juz: Int, language: TranslationLanguage, reciterID: Int) async -> [QuranVerse]
     func ayah(surah: Int, ayah: Int) async -> QuranVerse?
@@ -12,6 +22,16 @@ protocol QuranDatabaseManaging {
     func saveReadingPosition(_ position: QuranReadingPosition) async
     func readerSettings() async -> ReaderSettings
     func saveReaderSettings(_ settings: ReaderSettings) async
+}
+
+extension QuranDatabaseManaging {
+    /// Default for conformers (e.g. test mocks) that only implement `verses`: assume the
+    /// requested language's translation is what was shown. The real `QuranDatabaseManager`
+    /// overrides this with offline-edition handling and a misattribution-safe fallback.
+    func versePage(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) async throws -> QuranVersePage {
+        let verses = try await verses(forSurah: surah, language: language, reciterID: reciterID)
+        return QuranVersePage(verses: verses, translationCredit: language.quranTranslationCredit, isOfflineEnglishFallback: false)
+    }
 }
 
 enum QuranDatabaseError: LocalizedError {
@@ -38,6 +58,8 @@ actor QuranDatabaseManager: QuranDatabaseManaging {
     private var bundleLoaded = false
     private var surahLookup: [Int: BundledSurah] = [:]
     private var orderedSurahs: [BundledSurah] = []
+    // Lazily-parsed offline translation editions, keyed by language (global ayah # → text).
+    private var translationLookups: [TranslationLanguage: [Int: String]] = [:]
 
     init(
         session: URLSession = .shared,
@@ -54,27 +76,42 @@ actor QuranDatabaseManager: QuranDatabaseManaging {
     }
 
     func verses(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) async throws -> [QuranVerse] {
-        // English ships fully offline in the bundle — instant, no network.
-        if language == .english, let verses = bundleVerses(forSurah: surah, includeEnglish: true, reciterID: reciterID) {
-            return verses
+        try await versePage(forSurah: surah, language: language, reciterID: reciterID).verses
+    }
+
+    func versePage(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) async throws -> QuranVersePage {
+        // English and the bundled non-English editions (ur/id/tr) ship fully offline —
+        // instant, no network, correct attribution.
+        if let verses = bundleVerses(forSurah: surah, language: language, reciterID: reciterID) {
+            return QuranVersePage(verses: verses, translationCredit: language.quranTranslationCredit, isOfflineEnglishFallback: false)
         }
 
         if let cached = cachedVerses(forSurah: surah, language: language, reciterID: reciterID), !cached.isEmpty {
-            return cached
+            return QuranVersePage(verses: cached, translationCredit: language.quranTranslationCredit, isOfflineEnglishFallback: false)
         }
 
         do {
             let remote = try await fetchRemoteVerses(forSurah: surah, language: language, reciterID: reciterID)
             saveCachedVerses(remote, surah: surah, language: language, reciterID: reciterID)
-            return remote
+            return QuranVersePage(verses: remote, translationCredit: language.quranTranslationCredit, isOfflineEnglishFallback: false)
         } catch {
-            // Offline fallback: bundle Arabic + English so the screen is never blank.
-            if let verses = bundleVerses(forSurah: surah, includeEnglish: true, reciterID: reciterID) {
-                return verses
+            // Offline and no edition/cache for this language (es/fr). Show English so the
+            // screen is never blank, but attribute it HONESTLY to Saheeh International and
+            // flag the fallback — never English text under, say, the French credit.
+            if let verses = bundleVerses(forSurah: surah, language: .english, reciterID: reciterID) {
+                return QuranVersePage(
+                    verses: verses,
+                    translationCredit: TranslationLanguage.english.quranTranslationCredit,
+                    isOfflineEnglishFallback: true
+                )
             }
             let fallback = try loadSampleVerses()
             guard !fallback.isEmpty else { throw error }
-            return fallback
+            return QuranVersePage(
+                verses: fallback,
+                translationCredit: TranslationLanguage.english.quranTranslationCredit,
+                isOfflineEnglishFallback: true
+            )
         }
     }
 
@@ -128,17 +165,53 @@ actor QuranDatabaseManager: QuranDatabaseManaging {
         surahLookup = Dictionary(uniqueKeysWithValues: bundle.surahs.map { ($0.number, $0) })
     }
 
-    private func bundleVerses(forSurah surah: Int, includeEnglish: Bool, reciterID: Int) -> [QuranVerse]? {
+    /// Builds a surah's verses entirely from bundled assets, or nil when no offline edition
+    /// covers `language`. English text lives inside FullQuran.json; other languages load a
+    /// side-car `Translation-<code>.json` and overlay it on the bundle's Arabic.
+    private func bundleVerses(forSurah surah: Int, language: TranslationLanguage, reciterID: Int) -> [QuranVerse]? {
         loadBundleIfNeeded()
         guard let bundledSurah = surahLookup[surah], !bundledSurah.ayahs.isEmpty else { return nil }
+
+        let translationLookup: [Int: String]
+        if language == .english {
+            translationLookup = [:]   // use each ayah's bundled English text
+        } else if let lookup = bundledTranslationLookup(for: language) {
+            translationLookup = lookup
+        } else {
+            return nil                // no bundled edition for this language
+        }
+
         return bundledSurah.ayahs.map { ayah in
             ayah.toQuranVerse(
                 surahNumber: surah,
-                includeEnglish: includeEnglish,
-                audioURL: AudioURLBuilder.url(reciterID: reciterID, surah: surah, ayah: ayah.numberInSurah)
+                includeEnglish: language == .english,
+                audioURL: AudioURLBuilder.url(reciterID: reciterID, surah: surah, ayah: ayah.numberInSurah),
+                translationOverride: language == .english ? nil : (translationLookup[ayah.number] ?? "")
             )
         }
     }
+
+    /// Loads and caches a bundled translation edition as a global-ayah-number → text map.
+    /// `texts[i]` is ayah `i + 1` (mushaf order); see Scripts/build_translations.py.
+    private func bundledTranslationLookup(for language: TranslationLanguage) -> [Int: String]? {
+        if let cached = translationLookups[language] { return cached }
+        guard
+            let url = Bundle.main.url(forResource: "Translation-\(language.rawValue)", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let edition = try? decoder.decode(BundledTranslation.self, from: data),
+            edition.texts.count == Self.totalAyahCount
+        else {
+            return nil
+        }
+        var lookup = [Int: String](minimumCapacity: edition.texts.count)
+        for (index, text) in edition.texts.enumerated() {
+            lookup[index + 1] = text
+        }
+        translationLookups[language] = lookup
+        return lookup
+    }
+
+    private static let totalAyahCount = 6236
 
     func cachedBookmarks() async -> [Bookmark] {
         guard let data = userDefaults.data(forKey: StorageKey.bookmarks.rawValue),
@@ -241,6 +314,15 @@ private enum StorageKey: String {
     case bookmarks = "bookmarks"
     case readingPosition = "readingPosition"
     case readerSettings = "readerSettings"
+}
+
+/// A bundled offline translation edition (Resources/Translations/Translation-<code>.json),
+/// produced by Scripts/build_translations.py. `texts` is mushaf-ordered: index i = ayah i+1.
+private struct BundledTranslation: Decodable {
+    let language: String
+    let resourceId: Int
+    let credit: String
+    let texts: [String]
 }
 
 private struct QuranVersesResponse: Decodable {

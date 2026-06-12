@@ -225,7 +225,7 @@ private struct LiveSegmentView: View {
         }
         .padding()
         .background(SiraatColor.secondaryBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous))
     }
 }
 
@@ -240,7 +240,7 @@ private struct InfoBanner: View {
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(SiraatColor.secondaryBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
     }
 }
 

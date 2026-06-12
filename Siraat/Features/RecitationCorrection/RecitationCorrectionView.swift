@@ -16,6 +16,13 @@ struct RecitationCorrectionView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
 
+                        Label(
+                            "A follow-along guide that highlights words as you recite — not a tajweed ruling. Real pronunciation feedback is coming.",
+                            systemImage: "info.circle"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(SiraatColor.textSecondary)
+
                         FlowLayout(spacing: 8) {
                             ForEach(viewModel.words) { word in
                                 WordChip(word: word)
@@ -136,14 +143,13 @@ private struct WordChip: View {
                     .font(.system(size: 15, weight: .bold))
                     .accessibilityHidden(true)
             }
-            Text.arabic(word.originalText)
-                .font(.system(size: 28, weight: .semibold, design: .serif))
+            ArabicText(word.originalText, size: 28, weight: .semibold)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background(color.opacity(0.18))
         .foregroundStyle(color)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(word.originalText), \(word.status.rawValue)")
     }

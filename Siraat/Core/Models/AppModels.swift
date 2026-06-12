@@ -26,9 +26,21 @@ enum TranslationLanguage: String, CaseIterable, Identifiable, Codable, Hashable 
         case .english: 131
         case .spanish: 83
         case .french: 31
-        case .urdu: 97
+        // Urdu uses Jalandhari (public domain) rather than Maududi/Tafheem (copyrighted)
+        // so the edition can be bundled offline and shipped without a licensing question.
+        case .urdu: 234
         case .turkish: 77
         case .indonesian: 33
+        }
+    }
+
+    /// True when a full offline edition for this language ships in the app bundle
+    /// (`Resources/Translations/Translation-<code>.json`, built by Scripts/build_translations.py).
+    var hasBundledEdition: Bool {
+        switch self {
+        case .urdu, .turkish, .indonesian: true
+        case .english: true   // English ships inside FullQuran.json
+        case .spanish, .french: false
         }
     }
 
@@ -40,7 +52,7 @@ enum TranslationLanguage: String, CaseIterable, Identifiable, Codable, Hashable 
         case .english: "Saheeh International"
         case .spanish: "Sheikh Isa García"
         case .french: "Muhammad Hamidullah"
-        case .urdu: "Tafheem-ul-Quran — Abul A'la Maududi"
+        case .urdu: "Fatah Muhammad Jalandhari"
         case .turkish: "Diyanet İşleri"
         case .indonesian: "Kementerian Agama Republik Indonesia"
         }

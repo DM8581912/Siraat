@@ -11,6 +11,10 @@ final class QuranReaderViewModel: ObservableObject {
     @Published private(set) var readingPosition: QuranReadingPosition?
     @Published private(set) var surahs: [BundledSurah] = []
     @Published private(set) var isLoading = false
+    /// Credit for the translation actually displayed, and whether it is an offline English
+    /// fallback. The reader shows these so text is never attributed to the wrong translator.
+    @Published private(set) var translationCredit = TranslationLanguage.english.quranTranslationCredit
+    @Published private(set) var isOfflineTranslationFallback = false
     @Published var errorMessage: String?
     /// verseKey the reader should scroll to (jump-to-ayah / start-of-juz).
     @Published var scrollTarget: String?
@@ -19,6 +23,7 @@ final class QuranReaderViewModel: ObservableObject {
     private var audioPlayer: QuranAudioPlayer?
     private var hasRestoredReadingPosition = false
     private var persistPositionTask: Task<Void, Never>?
+    private var loadTask: Task<Void, Never>?
 
     var selectedChapter: QuranChapter {
         QuranChapter.chapter(number: selectedSurah)
@@ -51,7 +56,10 @@ final class QuranReaderViewModel: ObservableObject {
     }
 
     func load() {
-        Task {
+        // Supersede any in-flight load: rapid surah/settings switches otherwise race, and
+        // a slower earlier load could finish last and flash the wrong surah's verses.
+        loadTask?.cancel()
+        loadTask = Task {
             guard let databaseManager else { return }
             isLoading = true
             defer { isLoading = false }
@@ -59,6 +67,7 @@ final class QuranReaderViewModel: ObservableObject {
             if surahs.isEmpty {
                 surahs = await databaseManager.surahMetadata()
             }
+            guard !Task.isCancelled else { return }
 
             do {
                 settings = await databaseManager.readerSettings()
@@ -68,13 +77,18 @@ final class QuranReaderViewModel: ObservableObject {
                     selectedSurah = readingPosition.surahNumber
                     hasRestoredReadingPosition = true
                 }
-                verses = try await databaseManager.verses(
+                let page = try await databaseManager.versePage(
                     forSurah: selectedSurah,
                     language: settings.translationLanguage,
                     reciterID: settings.selectedReciterID
                 )
+                guard !Task.isCancelled else { return }
+                verses = page.verses
+                translationCredit = page.translationCredit
+                isOfflineTranslationFallback = page.isOfflineEnglishFallback
                 audioPlayer?.load(verses)
             } catch {
+                guard !Task.isCancelled else { return }
                 errorMessage = error.localizedDescription
             }
         }

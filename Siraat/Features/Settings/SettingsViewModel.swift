@@ -35,7 +35,7 @@ final class SettingsViewModel: ObservableObject {
             appearanceController?.update(mode: settings.appearanceMode)
             prayerNotificationService?.saveReminderSettings(prayerReminderSettings)
             if !prayerReminderSettings.isEnabled {
-                prayerNotificationService?.cancelPrayerReminders()
+                await prayerNotificationService?.cancelPrayerReminders()
             }
         }
     }

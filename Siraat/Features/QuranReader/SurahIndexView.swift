@@ -30,7 +30,7 @@ struct SurahIndexView: View {
                             .foregroundStyle(SiraatColor.accent)
                             .frame(width: 34, height: 34)
                             .background(SiraatColor.accent.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(surah.englishName)
@@ -43,8 +43,7 @@ struct SurahIndexView: View {
 
                         Spacer()
 
-                        Text.arabic(surah.nameArabic)
-                            .font(.system(size: 22, design: .serif))
+                        ArabicText(surah.nameArabic, size: 22)
                             .foregroundStyle(SiraatColor.textPrimary)
                     }
                 }
