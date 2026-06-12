@@ -42,11 +42,7 @@ final class AudioStreamManager: NSObject, ObservableObject {
             }
         }
 
-        let microphoneGranted = await withCheckedContinuation { continuation in
-            AVAudioSession.sharedInstance().requestRecordPermission { granted in
-                continuation.resume(returning: granted)
-            }
-        }
+        let microphoneGranted = await AVAudioApplication.requestRecordPermission()
         let allowed = speechStatus == .authorized && microphoneGranted
 
         if !allowed {
