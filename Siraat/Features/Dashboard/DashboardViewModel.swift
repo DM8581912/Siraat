@@ -8,6 +8,7 @@ final class DashboardViewModel: ObservableObject {
     @Published private(set) var readingPosition: QuranReadingPosition?
     @Published private(set) var prayerSchedule: DailyPrayerSchedule?
     @Published private(set) var qiblaDirection: QiblaDirection?
+    @Published private(set) var hijriDateText = HijriDate.formatted()
     @Published private(set) var locationStatusText = "Location not set"
     @Published private(set) var reminderSettings: PrayerReminderSettings = .default
     @Published private(set) var reminderStatusText = "Prayer reminders are off"
@@ -64,6 +65,7 @@ final class DashboardViewModel: ObservableObject {
             readingPosition = await databaseManager.readingPosition()
             reminderSettings = prayerNotificationService?.reminderSettings() ?? .default
             reminderStatusText = reminderSettings.isEnabled ? "Reminders enabled \(reminderSettings.minutesBefore) minutes before each prayer" : "Prayer reminders are off"
+            hijriDateText = HijriDate.formatted(dayAdjustment: settings.hijriDayAdjustment)
 
             // Recompute prayer times with the freshly loaded calculation method/madhab
             // (e.g. after the user changes them in Settings) using the last fix.
@@ -100,7 +102,8 @@ final class DashboardViewModel: ObservableObject {
             coordinate: coordinate,
             calendar: .current,
             method: settings.calculationMethod,
-            madhab: settings.madhab
+            madhab: settings.madhab,
+            highLatitudeRule: settings.highLatitudeRule
         )
         qiblaDirection = qiblaService?.direction(from: coordinate, headingDegrees: locationManager?.headingDegrees)
     }
