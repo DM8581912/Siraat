@@ -95,27 +95,30 @@ struct RecitationCorrectionView: View {
 
     private var correctionControls: some View {
         SectionBand(title: "Practice") {
-            HStack {
+            VStack(spacing: SiraatSpacing.sm) {
                 Picker("Surah", selection: Binding(get: { viewModel.selectedSurah }, set: { viewModel.selectSurah($0) })) {
                     ForEach(QuranChapter.all) { chapter in
                         Text(chapter.displayName).tag(chapter.number)
                     }
                 }
                 .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Stepper("Ayah \(viewModel.selectedVerseNumber)", value: $viewModel.selectedVerseNumber, in: viewModel.selectedChapterVerseRange)
-                    .onChange(of: viewModel.selectedVerseNumber) {
+                HStack {
+                    Stepper("Ayah \(viewModel.selectedVerseNumber)", value: $viewModel.selectedVerseNumber, in: viewModel.selectedChapterVerseRange)
+                        .onChange(of: viewModel.selectedVerseNumber) {
+                            viewModel.loadVerse()
+                        }
+
+                    Picker("Script", selection: $viewModel.script) {
+                        ForEach(QuranScript.allCases) { script in
+                            Text(script.displayName).tag(script)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: viewModel.script) {
                         viewModel.loadVerse()
                     }
-
-                Picker("Script", selection: $viewModel.script) {
-                    ForEach(QuranScript.allCases) { script in
-                        Text(script.displayName).tag(script)
-                    }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: viewModel.script) {
-                    viewModel.loadVerse()
                 }
             }
 

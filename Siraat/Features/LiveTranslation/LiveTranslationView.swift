@@ -84,44 +84,52 @@ struct LiveTranslationView: View {
     }
 
     private var controlBar: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: SiraatSpacing.sm) {
             WaveformView(level: viewModel.waveformLevel)
 
-            HStack(spacing: 12) {
-                Picker("Target language", selection: $viewModel.targetLanguage) {
-                    ForEach(TranslationLanguage.allCases) { language in
-                        Text(language.displayName).tag(language)
+            HStack {
+                Label {
+                    Picker("Target language", selection: $viewModel.targetLanguage) {
+                        ForEach(TranslationLanguage.allCases) { language in
+                            Text(language.displayName).tag(language)
+                        }
                     }
+                    .pickerStyle(.menu)
+                    .disabled(translationUnavailableOnThisOS)
+                } icon: {
+                    Image(systemName: "globe")
+                        .foregroundStyle(SiraatColor.textSecondary)
                 }
-                .pickerStyle(.menu)
-                .disabled(translationUnavailableOnThisOS)
+                .fixedSize()
 
                 Spacer()
 
-                Button {
-                    viewModel.saveSession()
-                } label: {
-                    Image(systemName: "square.and.arrow.down")
-                }
-                .buttonStyle(.bordered)
-                .disabled(!viewModel.canSaveSession)
-                .accessibilityLabel("Save khutba")
+                HStack(spacing: SiraatSpacing.xs) {
+                    Button {
+                        viewModel.saveSession()
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(!viewModel.canSaveSession)
+                    .accessibilityLabel("Save khutba")
 
-                Button {
-                    viewModel.clear()
-                } label: {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.bordered)
-                .accessibilityLabel("Clear transcript")
+                    Button {
+                        viewModel.clear()
+                    } label: {
+                        Image(systemName: "trash")
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel("Clear transcript")
 
-                Button {
-                    viewModel.isRecording ? viewModel.stop() : viewModel.start()
-                } label: {
-                    Label(viewModel.isRecording ? "Stop" : "Record", systemImage: viewModel.isRecording ? "stop.fill" : "mic.fill")
+                    Button {
+                        viewModel.isRecording ? viewModel.stop() : viewModel.start()
+                    } label: {
+                        Label(viewModel.isRecording ? "Stop" : "Record", systemImage: viewModel.isRecording ? "stop.fill" : "mic.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(viewModel.isRecording ? SiraatColor.destructive : SiraatColor.accent)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(viewModel.isRecording ? SiraatColor.destructive : SiraatColor.accent)
             }
         }
         .padding()
