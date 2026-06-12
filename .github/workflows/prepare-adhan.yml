@@ -4,6 +4,8 @@ name: Prepare adhan sound
 # into an iOS-compatible notification sound (Adhan.caf, <30s) on the macOS runner, which
 # has ffmpeg + afconvert. Download the artifact, commit it to Siraat/Resources/, done.
 on:
+  push:
+    branches: [feat/adhan-audio]
   workflow_dispatch: {}
 
 jobs:
