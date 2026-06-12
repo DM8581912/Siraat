@@ -3,6 +3,7 @@ name: Build unsigned IPA
 # Builds Siraat on a free macOS runner and produces an UNSIGNED .ipa.
 # You then sign + install it on your iPhone from Windows with Sideloadly
 # (or AltStore/SideStore) using your own Apple ID — no Mac required.
+# Also captures per-screen simulator screenshots for the design sprint.
 
 on:
   push:
@@ -12,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -28,13 +29,29 @@ jobs:
           xcodebuild -version
           xcodebuild -list -project Siraat.xcodeproj
 
+      - name: Prepare iOS Simulator
+        # Runner images vary and some ship with no pre-created simulators (only
+        # placeholders), which breaks a hardcoded `name=iPhone 16` destination. Create and
+        # boot one explicitly, then reuse its UDID for tests + screenshots.
+        run: |
+          set -o pipefail
+          RUNTIME=$(xcrun simctl list runtimes | grep -oE 'com.apple.CoreSimulator.SimRuntime.iOS-[0-9-]+' | tail -1)
+          echo "Runtime: $RUNTIME"
+          SIM_UDID=$(xcrun simctl create "ci-iphone" "iPhone 16" "$RUNTIME" 2>/dev/null \
+            || xcrun simctl create "ci-iphone" "iPhone 15" "$RUNTIME" 2>/dev/null \
+            || xcrun simctl create "ci-iphone" "iPhone SE (3rd generation)" "$RUNTIME")
+          echo "Created simulator: $SIM_UDID"
+          xcrun simctl boot "$SIM_UDID"
+          xcrun simctl bootstatus "$SIM_UDID" -b
+          echo "SIM_UDID=$SIM_UDID" >> "$GITHUB_ENV"
+
       - name: Run tests (correctness validation)
         run: |
           set -o pipefail
           xcodebuild \
             -project Siraat.xcodeproj \
             -scheme Siraat \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination "id=$SIM_UDID" \
             test
 
       - name: Capture per-screen screenshots (design sprint before/after)
@@ -54,22 +71,16 @@ jobs:
           APP="build-sim/Build/Products/Debug-iphonesimulator/Siraat.app"
           BUNDLE_ID="com.siraat.app"
 
-          DEVICE=$(xcrun simctl list devices available | grep -m1 "iPhone 16 (" | grep -oE '[0-9A-Fa-f-]{36}')
-          if [ -z "$DEVICE" ]; then DEVICE=$(xcrun simctl create shot-iphone "iPhone 16"); fi
-          echo "Simulator: $DEVICE"
-          xcrun simctl boot "$DEVICE" || true
-          xcrun simctl bootstatus "$DEVICE" -b || true
-
-          xcrun simctl install "$DEVICE" "$APP"
-          xcrun simctl privacy "$DEVICE" grant location-always "$BUNDLE_ID" || true
-          xcrun simctl location "$DEVICE" set 29.7604,-95.3698 || true
+          xcrun simctl install "$SIM_UDID" "$APP"
+          xcrun simctl privacy "$SIM_UDID" grant location-always "$BUNDLE_ID" || true
+          xcrun simctl location "$SIM_UDID" set 29.7604,-95.3698 || true
 
           mkdir -p screenshots
           for SCREEN in dashboard reader recitation khutba; do
-            xcrun simctl terminate "$DEVICE" "$BUNDLE_ID" 2>/dev/null || true
-            SIMCTL_CHILD_UITEST_SCREEN="$SCREEN" xcrun simctl launch "$DEVICE" "$BUNDLE_ID"
-            sleep 7
-            xcrun simctl io "$DEVICE" screenshot "screenshots/$SCREEN.png" && echo "captured $SCREEN"
+            xcrun simctl terminate "$SIM_UDID" "$BUNDLE_ID" 2>/dev/null || true
+            SIMCTL_CHILD_UITEST_SCREEN="$SCREEN" xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID"
+            sleep 8
+            xcrun simctl io "$SIM_UDID" screenshot "screenshots/$SCREEN.png" && echo "captured $SCREEN"
           done
           ls -la screenshots
 
