@@ -34,26 +34,53 @@ final class AudioStreamManager: NSObject, ObservableObject {
     private var recognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private var interruptionObserver: NSObjectProtocol?
 
-    func requestPermissions() async -> Bool {
+    override init() {
+        super.init()
+        // Pause cleanly if the OS interrupts us (incoming call, Siri, another app
+        // taking the mic). Without this, isRecording stays stuck true and the next
+        // start() throws because the session was deactivated underneath us.
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard
+                let info = notification.userInfo,
+                let raw = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+                AVAudioSession.InterruptionType(rawValue: raw) == .began
+            else { return }
+            Task { @MainActor in self?.stop() }
+        }
+    }
+
+    deinit {
+        if let interruptionObserver {
+            NotificationCenter.default.removeObserver(interruptionObserver)
+        }
+    }
+
+    /// Requests microphone + speech permission, throwing the specific error so the
+    /// UI can surface it. Previously a denial returned silently, leaving the Record
+    /// button doing nothing with no feedback.
+    private func ensurePermissions() async throws {
         let speechStatus = await withCheckedContinuation { continuation in
             SFSpeechRecognizer.requestAuthorization { status in
                 continuation.resume(returning: status)
             }
         }
-
-        let microphoneGranted = await AVAudioApplication.requestRecordPermission()
-        let allowed = speechStatus == .authorized && microphoneGranted
-
-        if !allowed {
-            errorMessage = speechStatus == .authorized ? AudioStreamError.microphoneDenied.localizedDescription : AudioStreamError.speechDenied.localizedDescription
+        guard speechStatus == .authorized else {
+            throw AudioStreamError.speechDenied
         }
 
-        return allowed
+        guard await AVAudioApplication.requestRecordPermission() else {
+            throw AudioStreamError.microphoneDenied
+        }
     }
 
     func start(languageIdentifier: String = "ar-SA") async throws {
-        guard await requestPermissions() else { return }
+        try await ensurePermissions()
 
         stop()
 
@@ -110,10 +137,12 @@ final class AudioStreamManager: NSObject, ObservableObject {
     }
 
     func stop() {
+        // Teardown order matters: stop the engine and remove the tap FIRST so no
+        // more buffers can be appended, THEN end and cancel the recognition request.
         if audioEngine.isRunning {
             audioEngine.stop()
-            audioEngine.inputNode.removeTap(onBus: 0)
         }
+        audioEngine.inputNode.removeTap(onBus: 0)
 
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
@@ -121,6 +150,10 @@ final class AudioStreamManager: NSObject, ObservableObject {
         recognitionRequest = nil
         isRecording = false
         waveformLevel = 0
+
+        // Release the recording category so playback (Quran audio, other apps) is
+        // not left muted/ducked by a stale .record session.
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     nonisolated private static func level(from buffer: AVAudioPCMBuffer) -> Double {

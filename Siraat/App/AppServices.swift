@@ -2,7 +2,9 @@ import Foundation
 
 @MainActor
 final class AppServices: ObservableObject {
-    let audioStreamManager: AudioStreamManager
+    // Note: AudioStreamManager is intentionally NOT shared here. Each audio feature
+    // (Live Translation, Recitation Correction) owns its own instance so the two
+    // can never fight over a single microphone engine. See the feature view models.
     let translationService: TranslationServicing
     let quranDatabaseManager: QuranDatabaseManaging
     let recitationCorrectionService: RecitationCorrectionServicing
@@ -16,7 +18,6 @@ final class AppServices: ObservableObject {
     let appearanceController: AppearanceController
 
     init(
-        audioStreamManager: AudioStreamManager = AudioStreamManager(),
         secretsProvider: SecretsProviding = SecretsProvider(),
         translationService: TranslationServicing? = nil,
         quranDatabaseManager: QuranDatabaseManaging = QuranDatabaseManager(),
@@ -29,7 +30,6 @@ final class AppServices: ObservableObject {
         qiblaService: QiblaServicing = QiblaService(),
         appearanceController: AppearanceController = AppearanceController()
     ) {
-        self.audioStreamManager = audioStreamManager
         self.translationService = translationService ?? TranslationServiceFactory.makeDefault(secretsProvider: secretsProvider)
         self.quranDatabaseManager = quranDatabaseManager
         self.recitationCorrectionService = recitationCorrectionService

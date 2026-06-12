@@ -148,6 +148,43 @@ struct ReaderSettings: Codable, Equatable {
     var translationLanguage: TranslationLanguage
     var selectedReciterID: Int
     var appearanceMode: AppearanceMode
+    var calculationMethod: CalculationMethod
+    var madhab: Madhab
+
+    init(
+        script: QuranScript,
+        readingMode: ReadingMode,
+        fontSize: Double,
+        translationLanguage: TranslationLanguage,
+        selectedReciterID: Int,
+        appearanceMode: AppearanceMode,
+        calculationMethod: CalculationMethod = .muslimWorldLeague,
+        madhab: Madhab = .shafii
+    ) {
+        self.script = script
+        self.readingMode = readingMode
+        self.fontSize = fontSize
+        self.translationLanguage = translationLanguage
+        self.selectedReciterID = selectedReciterID
+        self.appearanceMode = appearanceMode
+        self.calculationMethod = calculationMethod
+        self.madhab = madhab
+    }
+
+    // Decode defensively: prayer-calculation fields were added later, so settings
+    // persisted by older builds won't contain them. decodeIfPresent preserves the
+    // user's other reader preferences instead of failing the whole decode.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        script = try container.decode(QuranScript.self, forKey: .script)
+        readingMode = try container.decode(ReadingMode.self, forKey: .readingMode)
+        fontSize = try container.decode(Double.self, forKey: .fontSize)
+        translationLanguage = try container.decode(TranslationLanguage.self, forKey: .translationLanguage)
+        selectedReciterID = try container.decode(Int.self, forKey: .selectedReciterID)
+        appearanceMode = try container.decode(AppearanceMode.self, forKey: .appearanceMode)
+        calculationMethod = try container.decodeIfPresent(CalculationMethod.self, forKey: .calculationMethod) ?? .muslimWorldLeague
+        madhab = try container.decodeIfPresent(Madhab.self, forKey: .madhab) ?? .shafii
+    }
 
     static let `default` = ReaderSettings(
         script: .uthmani,
@@ -155,7 +192,9 @@ struct ReaderSettings: Codable, Equatable {
         fontSize: 28,
         translationLanguage: .english,
         selectedReciterID: QuranReciter.misharyAlafasy.rawValue,
-        appearanceMode: .system
+        appearanceMode: .system,
+        calculationMethod: .muslimWorldLeague,
+        madhab: .shafii
     )
 }
 

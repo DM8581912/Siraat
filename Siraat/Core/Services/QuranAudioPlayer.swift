@@ -12,17 +12,6 @@ final class QuranAudioPlayer: NSObject, ObservableObject {
     private var currentIndex = 0
     private var endObserver: NSObjectProtocol?
 
-    override init() {
-        super.init()
-        endObserver = NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemDidPlayToEndTime,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in self?.handlePlaybackEnded() }
-        }
-    }
-
     deinit {
         if let endObserver {
             NotificationCenter.default.removeObserver(endObserver)
@@ -46,8 +35,29 @@ final class QuranAudioPlayer: NSObject, ObservableObject {
             return
         }
 
+        // Ensure the shared session is in a playback category. A prior recording
+        // session (Live Translation / Recitation) leaves it in .record, which would
+        // silently mute this playback.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
+        try? AVAudioSession.sharedInstance().setActive(true)
+
         let item = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: item)
+
+        // Observe end-of-play for THIS item only. Observing with object: nil fired
+        // handlePlaybackEnded() for any AVPlayerItem in the process, spuriously
+        // advancing the queue.
+        if let endObserver {
+            NotificationCenter.default.removeObserver(endObserver)
+        }
+        endObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: item,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.handlePlaybackEnded() }
+        }
+
         currentVerseKey = queue[currentIndex].verseKey
         player?.play()
         isPlaying = true

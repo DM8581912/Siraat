@@ -63,19 +63,36 @@ final class PrayerNotificationService: PrayerNotificationServicing {
 
         cancelPrayerReminders()
 
+        // iOS keeps at most 64 pending notifications per app. We only schedule the
+        // five daily prayers (sunrise excluded), so we stay well under the cap, but
+        // guard defensively in case that ever changes.
+        let maxPendingReminders = 60
+        var scheduled = 0
+
         for prayer in schedule.times where prayer.name != .sunrise {
+            guard scheduled < maxPendingReminders else { break }
+
             let reminderDate = prayer.date.addingTimeInterval(TimeInterval(-settings.minutesBefore * 60))
-            guard reminderDate > Date() else { continue }
 
             let content = UNMutableNotificationContent()
             content.title = "\(prayer.name.displayName) soon"
             content.body = settings.minutesBefore == 0 ? "It is time for \(prayer.name.displayName)." : "\(prayer.name.displayName) begins in \(settings.minutesBefore) minutes."
             content.sound = .default
 
-            let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminderDate)
-            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+            // Repeat daily on the prayer's clock time so reminders never silently stop
+            // after the first day. Times drift a minute or two over weeks; the app
+            // re-arms with fresh times each time the Dashboard recomputes the schedule.
+            let components = Calendar.current.dateComponents([.hour, .minute], from: reminderDate)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
             let request = UNNotificationRequest(identifier: notificationIdentifier(for: prayer), content: content, trigger: trigger)
-            try await center.add(request)
+
+            // Isolate failures: one bad request must not abort the remaining prayers.
+            do {
+                try await center.add(request)
+                scheduled += 1
+            } catch {
+                continue
+            }
         }
     }
 

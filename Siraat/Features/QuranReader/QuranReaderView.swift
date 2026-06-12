@@ -221,7 +221,7 @@ private struct QuranVerseRow: View {
                 .accessibilityLabel("Share verse")
             }
 
-            Text(verse.text(for: settings.script))
+            Text.arabic(verse.text(for: settings.script))
                 .font(.system(size: settings.fontSize, weight: .regular, design: .serif))
                 .lineSpacing(8)
                 .frame(maxWidth: .infinity, alignment: .trailing)

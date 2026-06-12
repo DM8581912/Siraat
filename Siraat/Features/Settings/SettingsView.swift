@@ -42,10 +42,24 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Prayer Times") {
+                Picker("Calculation method", selection: $viewModel.settings.calculationMethod) {
+                    ForEach(CalculationMethod.allCases) { method in
+                        Text(method.displayName).tag(method)
+                    }
+                }
+
+                Picker("Asr (madhab)", selection: $viewModel.settings.madhab) {
+                    ForEach(Madhab.allCases) { madhab in
+                        Text(madhab.displayName).tag(madhab)
+                    }
+                }
+            }
+
             Section("Privacy") {
                 Label("Microphone access starts only after you tap Record or Listen.", systemImage: "mic")
                 Label("Location is used only for prayer times and qibla direction.", systemImage: "location")
-                Label("API keys are read from xcconfig or Keychain, never from source code.", systemImage: "lock.shield")
+                Label("API keys are read from build configuration, never committed to source.", systemImage: "lock.shield")
                 Text(viewModel.secretsStatus)
                     .font(.footnote)
                     .foregroundStyle(.secondary)

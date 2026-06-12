@@ -10,15 +10,17 @@ final class LiveTranslationViewModel: ObservableObject {
     @Published private(set) var isRecording = false
     @Published var errorMessage: String?
 
-    private var audioStreamManager: AudioStreamManager?
+    // Owned, not shared: this feature has its own microphone engine.
+    private let audioStreamManager = AudioStreamManager()
     private var translationService: TranslationServicing?
+    private var didConfigure = false
     private var cancellables = Set<AnyCancellable>()
     private var translatedSources = Set<String>()
     private var transcriptSegmenter = TranscriptSegmenter()
 
-    func configure(audioStreamManager: AudioStreamManager, translationService: TranslationServicing) {
-        guard self.audioStreamManager == nil else { return }
-        self.audioStreamManager = audioStreamManager
+    func configure(translationService: TranslationServicing) {
+        guard !didConfigure else { return }
+        didConfigure = true
         self.translationService = translationService
 
         audioStreamManager.$latestSegment
@@ -45,7 +47,7 @@ final class LiveTranslationViewModel: ObservableObject {
     func start() {
         Task {
             do {
-                try await audioStreamManager?.start(languageIdentifier: "ar-SA")
+                try await audioStreamManager.start(languageIdentifier: "ar-SA")
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -53,7 +55,7 @@ final class LiveTranslationViewModel: ObservableObject {
     }
 
     func stop() {
-        audioStreamManager?.stop()
+        audioStreamManager.stop()
         Task { await translateIfNeeded(partialTranscript) }
     }
 
