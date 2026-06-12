@@ -53,6 +53,43 @@ enum SiraatRadius {
     static let inner: CGFloat = 10
 }
 
+/// Spacing scale — the single source of truth for padding/gaps. The codebase had drifted to
+/// ad-hoc 2/6/8/10/12/14/18/20/22 values; converge on these steps (screens request changes
+/// from the coordinator, they do not invent new spacing literals).
+enum SiraatSpacing {
+    static let xxs: CGFloat = 4
+    static let xs: CGFloat = 8
+    static let sm: CGFloat = 12
+    static let md: CGFloat = 16
+    static let lg: CGFloat = 20
+    static let xl: CGFloat = 24
+    static let xxl: CGFloat = 32
+}
+
+/// Type ramp. The app's Latin text rides SwiftUI's semantic styles (so it scales with Dynamic
+/// Type for free); these tokens name the rungs so screens stay consistent. Arabic text goes
+/// through `ArabicText` (below), which carries its own Dynamic-Type scaling and the Uthmani
+/// scripture face. Hierarchy is built from scale + weight contrast, never flat.
+enum SiraatType {
+    static let display = Font.system(.largeTitle, design: .serif).weight(.bold) // screen title / brand
+    static let title = Font.title2.weight(.semibold)                            // card / section heading
+    static let heading = Font.headline                                          // row title
+    static let body = Font.body                                                 // translation, prose
+    static let callout = Font.subheadline                                       // supporting line
+    static let caption = Font.caption                                           // metadata
+    static let micro = Font.caption2                                            // credits, fine print
+
+    /// Default Arabic display sizes (points at default Dynamic Type), centralized so the
+    /// Arabic ramp is consistent. `ArabicText` scales these with the user's text-size setting.
+    enum Arabic {
+        static let verseOfDay: CGFloat = 24
+        static let surahName: CGFloat = 22
+        static let name99: CGFloat = 26
+        static let dua: CGFloat = 28
+        static let dhikr: CGFloat = 34
+    }
+}
+
 /// Typography assets. The Qur'an verse text wants a real Uthmani face rather than the
 /// system serif, which mis-renders some diacritics.
 ///
