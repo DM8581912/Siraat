@@ -76,8 +76,24 @@ struct QiblaDirection: Equatable {
 struct PrayerReminderSettings: Codable, Equatable {
     var isEnabled: Bool
     var minutesBefore: Int
+    var playAdhanSound: Bool
 
-    static let `default` = PrayerReminderSettings(isEnabled: false, minutesBefore: 10)
+    init(isEnabled: Bool, minutesBefore: Int, playAdhanSound: Bool = false) {
+        self.isEnabled = isEnabled
+        self.minutesBefore = minutesBefore
+        self.playAdhanSound = playAdhanSound
+    }
+
+    // Backward-compatible: playAdhanSound was added later; old persisted settings won't
+    // have it, so default to false rather than failing the whole decode.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        isEnabled = try container.decode(Bool.self, forKey: .isEnabled)
+        minutesBefore = try container.decode(Int.self, forKey: .minutesBefore)
+        playAdhanSound = try container.decodeIfPresent(Bool.self, forKey: .playAdhanSound) ?? false
+    }
+
+    static let `default` = PrayerReminderSettings(isEnabled: false, minutesBefore: 10, playAdhanSound: false)
 }
 
 // Prayer-time calculation is delegated to the vendored, battle-tested Adhan library

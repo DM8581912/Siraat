@@ -93,6 +93,12 @@ struct SettingsView: View {
                     step: 5
                 )
                 .disabled(!viewModel.prayerReminderSettings.isEnabled)
+
+                Toggle("Play adhan sound", isOn: $viewModel.prayerReminderSettings.playAdhanSound)
+                    .disabled(!viewModel.prayerReminderSettings.isEnabled)
+                Text("Adhan recording by Atcovi (Wikimedia Commons, CC BY-SA 4.0).")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
             Section {
