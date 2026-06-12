@@ -1,40 +1,52 @@
 import Foundation
 
+/// Splits a live, continuously-rewritten speech transcript into completed sentences.
+///
+/// SFSpeechRecognizer doesn't only append — it can rewrite earlier words as it gains
+/// confidence. Tracking progress by character *count* breaks when the transcript is
+/// replaced by different text of similar length (the old offset then points into the
+/// middle of unrelated text). Instead we remember the actual emitted text prefix and, if
+/// a new transcript no longer begins with it, treat it as a fresh transcript and restart.
 struct TranscriptSegmenter {
-    private var emittedCharacterCount = 0
+    /// The portion of the transcript already emitted, up to and including the last
+    /// sentence delimiter (or the whole transcript after a final flush).
+    private var emittedText = ""
     private let delimiters = CharacterSet(charactersIn: ".!?؟۔\n")
 
     mutating func reset() {
-        emittedCharacterCount = 0
+        emittedText = ""
     }
 
     mutating func consume(_ text: String, isFinal: Bool) -> [String] {
-        let normalizedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !normalizedText.isEmpty else { return [] }
+        let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return [] }
 
-        if normalizedText.count < emittedCharacterCount {
-            emittedCharacterCount = 0
+        // If the recognizer rewrote/shrank the transcript so it no longer starts with
+        // what we've already emitted, start over from the beginning of the new text.
+        if !normalized.hasPrefix(emittedText) {
+            emittedText = ""
         }
 
-        let searchStart = normalizedText.index(normalizedText.startIndex, offsetBy: min(emittedCharacterCount, normalizedText.count))
+        // Only scan the not-yet-emitted remainder.
+        let remainderStart = normalized.index(normalized.startIndex, offsetBy: emittedText.count)
         var segments: [String] = []
-        var segmentStart = searchStart
-        var cursor = searchStart
+        var segmentStart = remainderStart
+        var cursor = remainderStart
 
-        while cursor < normalizedText.endIndex {
-            let scalar = normalizedText[cursor].unicodeScalars.first
+        while cursor < normalized.endIndex {
+            let scalar = normalized[cursor].unicodeScalars.first
             if let scalar, delimiters.contains(scalar) {
-                let end = normalizedText.index(after: cursor)
-                appendSegment(String(normalizedText[segmentStart..<end]), to: &segments)
+                let end = normalized.index(after: cursor)
+                appendSegment(String(normalized[segmentStart..<end]), to: &segments)
                 segmentStart = end
-                emittedCharacterCount = normalizedText.distance(from: normalizedText.startIndex, to: end)
+                emittedText = String(normalized[normalized.startIndex..<end])
             }
-            cursor = normalizedText.index(after: cursor)
+            cursor = normalized.index(after: cursor)
         }
 
-        if isFinal, segmentStart < normalizedText.endIndex {
-            appendSegment(String(normalizedText[segmentStart..<normalizedText.endIndex]), to: &segments)
-            emittedCharacterCount = normalizedText.count
+        if isFinal, segmentStart < normalized.endIndex {
+            appendSegment(String(normalized[segmentStart..<normalized.endIndex]), to: &segments)
+            emittedText = normalized
         }
 
         return segments
