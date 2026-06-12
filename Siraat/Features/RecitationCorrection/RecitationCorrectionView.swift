@@ -16,6 +16,13 @@ struct RecitationCorrectionView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
 
+                        Label(
+                            "A follow-along guide that highlights words as you recite — not a tajweed ruling. Real pronunciation feedback is coming.",
+                            systemImage: "info.circle"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(SiraatColor.textSecondary)
+
                         FlowLayout(spacing: 8) {
                             ForEach(viewModel.words) { word in
                                 WordChip(word: word)

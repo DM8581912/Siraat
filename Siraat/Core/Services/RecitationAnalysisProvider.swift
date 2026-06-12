@@ -7,8 +7,12 @@ enum RecitationAnalysisEngine: String, Codable {
 
     var displayName: String {
         switch self {
-        case .localMatcher: "Local Quran matcher"
-        case .coreML: "Core ML tajweed model"
+        // Honest labels: the local engine is a text follow-along aid, not a tajweed judge.
+        // The on-device acoustic model is the seam for real tajweed evaluation (not yet
+        // shipping — `CoreMLTajweedModelAdapter` returns nil until a model is bundled), so
+        // this label never currently appears to users.
+        case .localMatcher: "Word follow‑along (beta)"
+        case .coreML: "On‑device tajweed model"
         }
     }
 }

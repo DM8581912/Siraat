@@ -33,15 +33,18 @@ final class RecitationCorrectionService: RecitationCorrectionServicing {
             } else if expected.hasPrefix(spoken) || spoken.hasPrefix(expected) || levenshtein(spoken, expected) <= 1 {
                 evaluated.status = .uncertain
                 evaluated.tip = CorrectionTip(
-                    title: "Listen closely",
-                    message: "Try the word \(word.originalText) again with a clear, unhurried sound."
+                    title: "Keep going",
+                    message: "We heard something close to \(word.originalText). This is a follow-along guide, not a tajweed ruling — recite at your own pace."
                 )
             } else {
-                evaluated.status = .missed
-                evaluated.tip = CorrectionTip(
-                    title: "Review this word",
-                    message: "Expected \(word.originalText). Slow down and recite from the highlighted point."
-                )
+                // Deliberately NOT a "wrong" verdict. On-device speech recognition mis-hears
+                // classical Quranic Arabic frequently, so a mismatch here is at least as
+                // likely a recognizer slip as a recitation error. Telling a correct reciter
+                // they erred is a trust failure in a religious app — stay neutral. Real
+                // tajweed evaluation is the job of the acoustic model behind
+                // RecitationAnalysisProviding, not this text matcher.
+                evaluated.status = .pending
+                evaluated.tip = nil
             }
 
             return evaluated
