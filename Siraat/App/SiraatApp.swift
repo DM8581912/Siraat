@@ -11,6 +11,7 @@ struct SiraatApp: App {
     var body: some Scene {
         WindowGroup {
             rootView
+                .tint(SiraatColor.accent)
                 .environmentObject(services)
                 .environmentObject(services.appearanceController)
         }
