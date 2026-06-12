@@ -60,6 +60,13 @@
 		BF0000000000000000000033 /* QuranBundleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000039 /* QuranBundleTests.swift */; };
 		BF0000000000000000000034 /* AudioURLBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003A /* AudioURLBuilderTests.swift */; };
 		BF0000000000000000000035 /* QuranReaderViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003B /* QuranReaderViewModelTests.swift */; };
+		BF0000000000000000000036 /* NamesOfAllah.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003C /* NamesOfAllah.swift */; };
+		BF0000000000000000000037 /* QuranicDuas.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003D /* QuranicDuas.swift */; };
+		BF0000000000000000000038 /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003E /* MoreView.swift */; };
+		BF0000000000000000000039 /* NamesOfAllahView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000003F /* NamesOfAllahView.swift */; };
+		BF000000000000000000003A /* DuasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000040 /* DuasView.swift */; };
+		BF000000000000000000003B /* AsmaulHusnaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000041 /* AsmaulHusnaTests.swift */; };
+		BF000000000000000000003C /* QuranicDuasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000042 /* QuranicDuasTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +137,13 @@
 		FR0000000000000000000039 /* QuranBundleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QuranBundleTests.swift; sourceTree = "<group>"; };
 		FR000000000000000000003A /* AudioURLBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/AudioURLBuilderTests.swift; sourceTree = "<group>"; };
 		FR000000000000000000003B /* QuranReaderViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QuranReaderViewModelTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000003C /* NamesOfAllah.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/More/NamesOfAllah.swift; sourceTree = "<group>"; };
+		FR000000000000000000003D /* QuranicDuas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/More/QuranicDuas.swift; sourceTree = "<group>"; };
+		FR000000000000000000003E /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/More/MoreView.swift; sourceTree = "<group>"; };
+		FR000000000000000000003F /* NamesOfAllahView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/More/NamesOfAllahView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000040 /* DuasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/More/DuasView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000041 /* AsmaulHusnaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/AsmaulHusnaTests.swift; sourceTree = "<group>"; };
+		FR0000000000000000000042 /* QuranicDuasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QuranicDuasTests.swift; sourceTree = "<group>"; };
 		PR0000000000000000000001 /* Siraat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siraat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		PR0000000000000000000002 /* SiraatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SiraatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -204,6 +218,11 @@
 				FR0000000000000000000035 /* AudioURLBuilder.swift */,
 				FR0000000000000000000036 /* SurahIndexView.swift */,
 				FR0000000000000000000037 /* JuzIndexView.swift */,
+				FR000000000000000000003C /* NamesOfAllah.swift */,
+				FR000000000000000000003D /* QuranicDuas.swift */,
+				FR000000000000000000003E /* MoreView.swift */,
+				FR000000000000000000003F /* NamesOfAllahView.swift */,
+				FR0000000000000000000040 /* DuasView.swift */,
 				FR0000000000000000000017 /* SampleQuran.json */,
 				FR0000000000000000000038 /* FullQuran.json */,
 				FR000000000000000000001B /* Info.plist */,
@@ -226,6 +245,8 @@
 				FR0000000000000000000039 /* QuranBundleTests.swift */,
 				FR000000000000000000003A /* AudioURLBuilderTests.swift */,
 				FR000000000000000000003B /* QuranReaderViewModelTests.swift */,
+				FR0000000000000000000041 /* AsmaulHusnaTests.swift */,
+				FR0000000000000000000042 /* QuranicDuasTests.swift */,
 			);
 			name = SiraatTests;
 			sourceTree = "<group>";
@@ -388,6 +409,11 @@
 				BF000000000000000000002F /* AudioURLBuilder.swift in Sources */,
 				BF0000000000000000000030 /* SurahIndexView.swift in Sources */,
 				BF0000000000000000000031 /* JuzIndexView.swift in Sources */,
+				BF0000000000000000000036 /* NamesOfAllah.swift in Sources */,
+				BF0000000000000000000037 /* QuranicDuas.swift in Sources */,
+				BF0000000000000000000038 /* MoreView.swift in Sources */,
+				BF0000000000000000000039 /* NamesOfAllahView.swift in Sources */,
+				BF000000000000000000003A /* DuasView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -407,6 +433,8 @@
 				BF0000000000000000000033 /* QuranBundleTests.swift in Sources */,
 				BF0000000000000000000034 /* AudioURLBuilderTests.swift in Sources */,
 				BF0000000000000000000035 /* QuranReaderViewModelTests.swift in Sources */,
+				BF000000000000000000003B /* AsmaulHusnaTests.swift in Sources */,
+				BF000000000000000000003C /* QuranicDuasTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

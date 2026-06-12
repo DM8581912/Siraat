@@ -3,7 +3,7 @@ import SwiftUI
 enum AppTab: Hashable {
     case dashboard
     case quran
-    case tasbih
+    case more
     case liveTranslation
     case settings
 }
@@ -31,12 +31,12 @@ struct MainTabView: View {
             .tag(AppTab.quran)
 
             NavigationStack {
-                TasbihView()
+                MoreView()
             }
             .tabItem {
-                Label("Tasbih", systemImage: "circle.hexagongrid")
+                Label("More", systemImage: "square.grid.2x2")
             }
-            .tag(AppTab.tasbih)
+            .tag(AppTab.more)
 
             NavigationStack {
                 LiveTranslationView()
