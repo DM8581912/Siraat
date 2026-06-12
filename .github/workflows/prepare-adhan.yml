@@ -18,11 +18,26 @@ jobs:
           set -euo pipefail
           curl -sL "https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3" -o adhan.mp3
           echo "Downloaded:"; ls -lh adhan.mp3
-          # Trim to 28s (iOS notification sounds must be <30s), mono 44.1kHz.
-          ffmpeg -y -i adhan.mp3 -t 28 -ar 44100 -ac 1 adhan.wav
-          # afconvert produces an iOS-friendly IMA4 CAF.
-          afconvert adhan.wav Adhan.caf -d ima4 -f caff -v
+          # Decode mp3 -> wav with afconvert (Apple tool, always present; no ffmpeg needed).
+          afconvert adhan.mp3 adhan_full.wav -d LEI16 -f WAVE
+          # Trim to 28s with Python stdlib (iOS notification sounds must be < 30s).
+          python3 - <<'PY'
+          import wave
+          src = wave.open('adhan_full.wav', 'rb')
+          rate = src.getframerate()
+          frames = src.readframes(int(rate * 28))
+          out = wave.open('adhan_trim.wav', 'wb')
+          out.setnchannels(src.getnchannels())
+          out.setsampwidth(src.getsampwidth())
+          out.setframerate(rate)
+          out.writeframes(frames)
+          out.close()
+          print('trimmed: rate', rate, 'channels', src.getnchannels())
+          PY
+          # IMA4 CAF is the iOS-friendly notification-sound format.
+          afconvert adhan_trim.wav Adhan.caf -d ima4 -f caff -v
           echo "Converted:"; ls -lh Adhan.caf
+          afinfo Adhan.caf || true
 
       - name: Upload Adhan.caf
         uses: actions/upload-artifact@v5
