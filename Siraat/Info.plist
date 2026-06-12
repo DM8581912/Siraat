@@ -28,8 +28,6 @@
 	<string>Siraat uses your location to calculate local prayer times and qibla direction.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Siraat uses speech recognition to transcribe Arabic audio for translation and recitation feedback.</string>
-	<key>QURAN_CONTENT_API_BASE_URL</key>
-	<string>$(QURAN_CONTENT_API_BASE_URL)</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 </dict>

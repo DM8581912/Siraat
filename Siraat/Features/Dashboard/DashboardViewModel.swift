@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import SwiftUI
 
 @MainActor
 final class DashboardViewModel: ObservableObject {
@@ -87,6 +88,20 @@ final class DashboardViewModel: ObservableObject {
 
     func requestLocation() {
         locationManager?.requestLocation()
+    }
+
+    /// Stop the magnetometer + GPS when backgrounded, restart when foregrounded.
+    /// Without this, startHeadingUpdates() runs the sensors indefinitely.
+    func scenePhaseChanged(_ phase: ScenePhase) {
+        switch phase {
+        case .active:
+            locationManager?.startHeadingUpdates()
+            load()
+        case .background, .inactive:
+            locationManager?.stopHeadingUpdates()
+        @unknown default:
+            break
+        }
     }
 
     func schedulePrayerReminders() {
