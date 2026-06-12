@@ -1,0 +1,611 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BF0000000000000000000001 /* AppServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000001 /* AppServices.swift */; };
+		BF0000000000000000000002 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000002 /* DesignSystem.swift */; };
+		BF0000000000000000000003 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000003 /* MainTabView.swift */; };
+		BF0000000000000000000004 /* SiraatApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000004 /* SiraatApp.swift */; };
+		BF0000000000000000000005 /* AppModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000005 /* AppModels.swift */; };
+		BF0000000000000000000006 /* AudioStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000006 /* AudioStreamManager.swift */; };
+		BF0000000000000000000007 /* QuranAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000007 /* QuranAudioPlayer.swift */; };
+		BF0000000000000000000008 /* QuranDatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000008 /* QuranDatabaseManager.swift */; };
+		BF0000000000000000000009 /* RecitationCorrectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000009 /* RecitationCorrectionService.swift */; };
+		BF000000000000000000000A /* SecretsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000000A /* SecretsProvider.swift */; };
+		BF000000000000000000000B /* TranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000000B /* TranslationService.swift */; };
+		BF000000000000000000000C /* ArabicTextNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000000C /* ArabicTextNormalizer.swift */; };
+		BF000000000000000000000D /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000000D /* DashboardView.swift */; };
+		BF000000000000000000000E /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000000E /* DashboardViewModel.swift */; };
+		BF000000000000000000000F /* LiveTranslationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000000F /* LiveTranslationView.swift */; };
+		BF0000000000000000000010 /* LiveTranslationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000010 /* LiveTranslationViewModel.swift */; };
+		BF0000000000000000000011 /* QuranReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000011 /* QuranReaderView.swift */; };
+		BF0000000000000000000012 /* QuranReaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000012 /* QuranReaderViewModel.swift */; };
+		BF0000000000000000000013 /* RecitationCorrectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000013 /* RecitationCorrectionView.swift */; };
+		BF0000000000000000000014 /* RecitationCorrectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000014 /* RecitationCorrectionViewModel.swift */; };
+		BF0000000000000000000015 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000015 /* SettingsView.swift */; };
+		BF0000000000000000000016 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000016 /* SettingsViewModel.swift */; };
+		BF0000000000000000000017 /* SampleQuran.json in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000017 /* SampleQuran.json */; };
+		BF0000000000000000000018 /* ArabicTextNormalizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000018 /* ArabicTextNormalizerTests.swift */; };
+		BF0000000000000000000019 /* RecitationCorrectionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000019 /* RecitationCorrectionServiceTests.swift */; };
+		BF000000000000000000001A /* TranslationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000001A /* TranslationServiceTests.swift */; };
+		BF000000000000000000001B /* IslamicUtilityModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000001F /* IslamicUtilityModels.swift */; };
+		BF000000000000000000001C /* QiblaMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000020 /* QiblaMath.swift */; };
+		BF000000000000000000001D /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000021 /* LocationManager.swift */; };
+		BF000000000000000000001E /* QiblaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000022 /* QiblaService.swift */; };
+		BF000000000000000000001F /* PrayerTimesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000023 /* PrayerTimesService.swift */; };
+		BF0000000000000000000020 /* IslamicUtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000024 /* IslamicUtilityTests.swift */; };
+		BF0000000000000000000021 /* PrayerNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000025 /* PrayerNotificationService.swift */; };
+		BF0000000000000000000022 /* RecitationAnalysisProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000026 /* RecitationAnalysisProvider.swift */; };
+		BF0000000000000000000023 /* RecitationAnalysisProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000027 /* RecitationAnalysisProviderTests.swift */; };
+		BF0000000000000000000024 /* QuranDatabaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000028 /* QuranDatabaseManagerTests.swift */; };
+		BF0000000000000000000025 /* QuranChapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000029 /* QuranChapter.swift */; };
+		BF0000000000000000000026 /* QuranChapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000002A /* QuranChapterTests.swift */; };
+		BF0000000000000000000027 /* TranscriptSegmenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000002B /* TranscriptSegmenter.swift */; };
+		BF0000000000000000000028 /* TranscriptSegmenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000002C /* TranscriptSegmenterTests.swift */; };
+		BF0000000000000000000029 /* AppearanceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000002D /* AppearanceController.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CP0000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = PJ0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = NT0000000000000000000001;
+			remoteInfo = Siraat;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		FR0000000000000000000001 /* AppServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/App/AppServices.swift; sourceTree = "<group>"; };
+		FR0000000000000000000002 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/App/DesignSystem.swift; sourceTree = "<group>"; };
+		FR0000000000000000000003 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/App/MainTabView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000004 /* SiraatApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/App/SiraatApp.swift; sourceTree = "<group>"; };
+		FR0000000000000000000005 /* AppModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Models/AppModels.swift; sourceTree = "<group>"; };
+		FR0000000000000000000006 /* AudioStreamManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/AudioStreamManager.swift; sourceTree = "<group>"; };
+		FR0000000000000000000007 /* QuranAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/QuranAudioPlayer.swift; sourceTree = "<group>"; };
+		FR0000000000000000000008 /* QuranDatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/QuranDatabaseManager.swift; sourceTree = "<group>"; };
+		FR0000000000000000000009 /* RecitationCorrectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/RecitationCorrectionService.swift; sourceTree = "<group>"; };
+		FR000000000000000000000A /* SecretsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/SecretsProvider.swift; sourceTree = "<group>"; };
+		FR000000000000000000000B /* TranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/TranslationService.swift; sourceTree = "<group>"; };
+		FR000000000000000000000C /* ArabicTextNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Utilities/ArabicTextNormalizer.swift; sourceTree = "<group>"; };
+		FR000000000000000000000D /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
+		FR000000000000000000000E /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/Dashboard/DashboardViewModel.swift; sourceTree = "<group>"; };
+		FR000000000000000000000F /* LiveTranslationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/LiveTranslation/LiveTranslationView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000010 /* LiveTranslationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/LiveTranslation/LiveTranslationViewModel.swift; sourceTree = "<group>"; };
+		FR0000000000000000000011 /* QuranReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/QuranReader/QuranReaderView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000012 /* QuranReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/QuranReader/QuranReaderViewModel.swift; sourceTree = "<group>"; };
+		FR0000000000000000000013 /* RecitationCorrectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/RecitationCorrection/RecitationCorrectionView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000014 /* RecitationCorrectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/RecitationCorrection/RecitationCorrectionViewModel.swift; sourceTree = "<group>"; };
+		FR0000000000000000000015 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		FR0000000000000000000016 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/Settings/SettingsViewModel.swift; sourceTree = "<group>"; };
+		FR0000000000000000000017 /* SampleQuran.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Siraat/Resources/SampleQuran.json; sourceTree = "<group>"; };
+		FR0000000000000000000018 /* ArabicTextNormalizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/ArabicTextNormalizerTests.swift; sourceTree = "<group>"; };
+		FR0000000000000000000019 /* RecitationCorrectionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/RecitationCorrectionServiceTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000001A /* TranslationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/TranslationServiceTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000001B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Siraat/Info.plist; sourceTree = "<group>"; };
+		FR000000000000000000001C /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Debug.xcconfig; sourceTree = "<group>"; };
+		FR000000000000000000001D /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Release.xcconfig; sourceTree = "<group>"; };
+		FR000000000000000000001E /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Secrets.xcconfig.example; sourceTree = "<group>"; };
+		FR000000000000000000001F /* IslamicUtilityModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Models/IslamicUtilityModels.swift; sourceTree = "<group>"; };
+		FR0000000000000000000020 /* QiblaMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Utilities/QiblaMath.swift; sourceTree = "<group>"; };
+		FR0000000000000000000021 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/LocationManager.swift; sourceTree = "<group>"; };
+		FR0000000000000000000022 /* QiblaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/QiblaService.swift; sourceTree = "<group>"; };
+		FR0000000000000000000023 /* PrayerTimesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/PrayerTimesService.swift; sourceTree = "<group>"; };
+		FR0000000000000000000024 /* IslamicUtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/IslamicUtilityTests.swift; sourceTree = "<group>"; };
+		FR0000000000000000000025 /* PrayerNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/PrayerNotificationService.swift; sourceTree = "<group>"; };
+		FR0000000000000000000026 /* RecitationAnalysisProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/RecitationAnalysisProvider.swift; sourceTree = "<group>"; };
+		FR0000000000000000000027 /* RecitationAnalysisProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/RecitationAnalysisProviderTests.swift; sourceTree = "<group>"; };
+		FR0000000000000000000028 /* QuranDatabaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QuranDatabaseManagerTests.swift; sourceTree = "<group>"; };
+		FR0000000000000000000029 /* QuranChapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Models/QuranChapter.swift; sourceTree = "<group>"; };
+		FR000000000000000000002A /* QuranChapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/QuranChapterTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000002B /* TranscriptSegmenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Utilities/TranscriptSegmenter.swift; sourceTree = "<group>"; };
+		FR000000000000000000002C /* TranscriptSegmenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/TranscriptSegmenterTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000002D /* AppearanceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/App/AppearanceController.swift; sourceTree = "<group>"; };
+		PR0000000000000000000001 /* Siraat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siraat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		PR0000000000000000000002 /* SiraatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SiraatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FW0000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FW0000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		GR0000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				GR0000000000000000000002 /* Siraat */,
+				GR0000000000000000000003 /* SiraatTests */,
+				GR0000000000000000000004 /* Config */,
+				GR0000000000000000000005 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GR0000000000000000000002 /* Siraat */ = {
+			isa = PBXGroup;
+			children = (
+				FR0000000000000000000001 /* AppServices.swift */,
+				FR000000000000000000002D /* AppearanceController.swift */,
+				FR0000000000000000000002 /* DesignSystem.swift */,
+				FR0000000000000000000003 /* MainTabView.swift */,
+				FR0000000000000000000004 /* SiraatApp.swift */,
+				FR0000000000000000000005 /* AppModels.swift */,
+				FR000000000000000000001F /* IslamicUtilityModels.swift */,
+				FR0000000000000000000029 /* QuranChapter.swift */,
+				FR0000000000000000000006 /* AudioStreamManager.swift */,
+				FR0000000000000000000021 /* LocationManager.swift */,
+				FR0000000000000000000007 /* QuranAudioPlayer.swift */,
+				FR0000000000000000000008 /* QuranDatabaseManager.swift */,
+				FR0000000000000000000023 /* PrayerTimesService.swift */,
+				FR0000000000000000000025 /* PrayerNotificationService.swift */,
+				FR0000000000000000000022 /* QiblaService.swift */,
+				FR0000000000000000000026 /* RecitationAnalysisProvider.swift */,
+				FR0000000000000000000009 /* RecitationCorrectionService.swift */,
+				FR000000000000000000000A /* SecretsProvider.swift */,
+				FR000000000000000000000B /* TranslationService.swift */,
+				FR000000000000000000000C /* ArabicTextNormalizer.swift */,
+				FR0000000000000000000020 /* QiblaMath.swift */,
+				FR000000000000000000002B /* TranscriptSegmenter.swift */,
+				FR000000000000000000000D /* DashboardView.swift */,
+				FR000000000000000000000E /* DashboardViewModel.swift */,
+				FR000000000000000000000F /* LiveTranslationView.swift */,
+				FR0000000000000000000010 /* LiveTranslationViewModel.swift */,
+				FR0000000000000000000011 /* QuranReaderView.swift */,
+				FR0000000000000000000012 /* QuranReaderViewModel.swift */,
+				FR0000000000000000000013 /* RecitationCorrectionView.swift */,
+				FR0000000000000000000014 /* RecitationCorrectionViewModel.swift */,
+				FR0000000000000000000015 /* SettingsView.swift */,
+				FR0000000000000000000016 /* SettingsViewModel.swift */,
+				FR0000000000000000000017 /* SampleQuran.json */,
+				FR000000000000000000001B /* Info.plist */,
+			);
+			name = Siraat;
+			sourceTree = "<group>";
+		};
+		GR0000000000000000000003 /* SiraatTests */ = {
+			isa = PBXGroup;
+			children = (
+				FR0000000000000000000018 /* ArabicTextNormalizerTests.swift */,
+				FR0000000000000000000019 /* RecitationCorrectionServiceTests.swift */,
+				FR000000000000000000001A /* TranslationServiceTests.swift */,
+				FR0000000000000000000024 /* IslamicUtilityTests.swift */,
+				FR0000000000000000000027 /* RecitationAnalysisProviderTests.swift */,
+				FR0000000000000000000028 /* QuranDatabaseManagerTests.swift */,
+				FR000000000000000000002A /* QuranChapterTests.swift */,
+				FR000000000000000000002C /* TranscriptSegmenterTests.swift */,
+			);
+			name = SiraatTests;
+			sourceTree = "<group>";
+		};
+		GR0000000000000000000004 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				FR000000000000000000001C /* Debug.xcconfig */,
+				FR000000000000000000001D /* Release.xcconfig */,
+				FR000000000000000000001E /* Secrets.xcconfig.example */,
+			);
+			name = Config;
+			sourceTree = "<group>";
+		};
+		GR0000000000000000000005 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				PR0000000000000000000001 /* Siraat.app */,
+				PR0000000000000000000002 /* SiraatTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		NT0000000000000000000001 /* Siraat */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CL0000000000000000000002 /* Build configuration list for PBXNativeTarget "Siraat" */;
+			buildPhases = (
+				SB0000000000000000000001 /* Sources */,
+				FW0000000000000000000001 /* Frameworks */,
+				RB0000000000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Siraat;
+			productName = Siraat;
+			productReference = PR0000000000000000000001 /* Siraat.app */;
+			productType = "com.apple.product-type.application";
+		};
+		NT0000000000000000000002 /* SiraatTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CL0000000000000000000003 /* Build configuration list for PBXNativeTarget "SiraatTests" */;
+			buildPhases = (
+				SB0000000000000000000002 /* Sources */,
+				FW0000000000000000000002 /* Frameworks */,
+				RB0000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				TD0000000000000000000001 /* PBXTargetDependency */,
+			);
+			name = SiraatTests;
+			productName = SiraatTests;
+			productReference = PR0000000000000000000002 /* SiraatTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		PJ0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					NT0000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					NT0000000000000000000002 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = NT0000000000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = CL0000000000000000000001 /* Build configuration list for PBXProject "Siraat" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = GR0000000000000000000001;
+			productRefGroup = GR0000000000000000000005 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				NT0000000000000000000001 /* Siraat */,
+				NT0000000000000000000002 /* SiraatTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		RB0000000000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0000000000000000000017 /* SampleQuran.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		RB0000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		SB0000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0000000000000000000001 /* AppServices.swift in Sources */,
+				BF0000000000000000000029 /* AppearanceController.swift in Sources */,
+				BF0000000000000000000002 /* DesignSystem.swift in Sources */,
+				BF0000000000000000000003 /* MainTabView.swift in Sources */,
+				BF0000000000000000000004 /* SiraatApp.swift in Sources */,
+				BF0000000000000000000005 /* AppModels.swift in Sources */,
+				BF000000000000000000001B /* IslamicUtilityModels.swift in Sources */,
+				BF0000000000000000000025 /* QuranChapter.swift in Sources */,
+				BF0000000000000000000006 /* AudioStreamManager.swift in Sources */,
+				BF000000000000000000001D /* LocationManager.swift in Sources */,
+				BF0000000000000000000007 /* QuranAudioPlayer.swift in Sources */,
+				BF0000000000000000000008 /* QuranDatabaseManager.swift in Sources */,
+				BF000000000000000000001F /* PrayerTimesService.swift in Sources */,
+				BF0000000000000000000021 /* PrayerNotificationService.swift in Sources */,
+				BF000000000000000000001E /* QiblaService.swift in Sources */,
+				BF0000000000000000000022 /* RecitationAnalysisProvider.swift in Sources */,
+				BF0000000000000000000009 /* RecitationCorrectionService.swift in Sources */,
+				BF000000000000000000000A /* SecretsProvider.swift in Sources */,
+				BF000000000000000000000B /* TranslationService.swift in Sources */,
+				BF000000000000000000000C /* ArabicTextNormalizer.swift in Sources */,
+				BF000000000000000000001C /* QiblaMath.swift in Sources */,
+				BF0000000000000000000027 /* TranscriptSegmenter.swift in Sources */,
+				BF000000000000000000000D /* DashboardView.swift in Sources */,
+				BF000000000000000000000E /* DashboardViewModel.swift in Sources */,
+				BF000000000000000000000F /* LiveTranslationView.swift in Sources */,
+				BF0000000000000000000010 /* LiveTranslationViewModel.swift in Sources */,
+				BF0000000000000000000011 /* QuranReaderView.swift in Sources */,
+				BF0000000000000000000012 /* QuranReaderViewModel.swift in Sources */,
+				BF0000000000000000000013 /* RecitationCorrectionView.swift in Sources */,
+				BF0000000000000000000014 /* RecitationCorrectionViewModel.swift in Sources */,
+				BF0000000000000000000015 /* SettingsView.swift in Sources */,
+				BF0000000000000000000016 /* SettingsViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		SB0000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF0000000000000000000018 /* ArabicTextNormalizerTests.swift in Sources */,
+				BF0000000000000000000019 /* RecitationCorrectionServiceTests.swift in Sources */,
+				BF000000000000000000001A /* TranslationServiceTests.swift in Sources */,
+				BF0000000000000000000020 /* IslamicUtilityTests.swift in Sources */,
+				BF0000000000000000000023 /* RecitationAnalysisProviderTests.swift in Sources */,
+				BF0000000000000000000024 /* QuranDatabaseManagerTests.swift in Sources */,
+				BF0000000000000000000026 /* QuranChapterTests.swift in Sources */,
+				BF0000000000000000000028 /* TranscriptSegmenterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		TD0000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = NT0000000000000000000001 /* Siraat */;
+			targetProxy = CP0000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BC0000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FR000000000000000000001C /* Debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		BC0000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FR000000000000000000001D /* Release.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BC0000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Siraat/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BC0000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Siraat/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BC0000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.siraat.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Siraat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Siraat";
+			};
+			name = Debug;
+		};
+		BC0000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.siraat.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Siraat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Siraat";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CL0000000000000000000001 /* Build configuration list for PBXProject "Siraat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC0000000000000000000001 /* Debug */,
+				BC0000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CL0000000000000000000002 /* Build configuration list for PBXNativeTarget "Siraat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC0000000000000000000003 /* Debug */,
+				BC0000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CL0000000000000000000003 /* Build configuration list for PBXNativeTarget "SiraatTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC0000000000000000000005 /* Debug */,
+				BC0000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = PJ0000000000000000000001 /* Project object */;
+}

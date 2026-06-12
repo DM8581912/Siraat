@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>$(APP_DISPLAY_NAME)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>DEEPL_API_KEY</key>
+	<string>$(DEEPL_API_KEY)</string>
+	<key>GOOGLE_TRANSLATE_API_KEY</key>
+	<string>$(GOOGLE_TRANSLATE_API_KEY)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Siraat uses the microphone only when you start live translation or recitation correction.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Siraat uses your location to calculate local prayer times and qibla direction.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Siraat uses speech recognition to transcribe Arabic audio for translation and recitation feedback.</string>
+	<key>QURAN_CONTENT_API_BASE_URL</key>
+	<string>$(QURAN_CONTENT_API_BASE_URL)</string>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>WHISPER_API_KEY</key>
+	<string>$(WHISPER_API_KEY)</string>
+</dict>
+</plist>

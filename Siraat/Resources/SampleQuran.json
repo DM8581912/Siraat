@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "surahNumber": 1,
+    "verseNumber": 1,
+    "verseKey": "1:1",
+    "textUthmani": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+    "textIndopak": "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ",
+    "translation": "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+    "audioURL": null
+  },
+  {
+    "id": 2,
+    "surahNumber": 1,
+    "verseNumber": 2,
+    "verseKey": "1:2",
+    "textUthmani": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+    "textIndopak": "اَلْحَمْدُ لِلّٰهِ رَبِّ الْعٰلَمِيْنَ",
+    "translation": "All praise is due to Allah, Lord of the worlds.",
+    "audioURL": null
+  },
+  {
+    "id": 3,
+    "surahNumber": 1,
+    "verseNumber": 3,
+    "verseKey": "1:3",
+    "textUthmani": "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+    "textIndopak": "الرَّحْمٰنِ الرَّحِيْمِ",
+    "translation": "The Entirely Merciful, the Especially Merciful.",
+    "audioURL": null
+  },
+  {
+    "id": 4,
+    "surahNumber": 1,
+    "verseNumber": 4,
+    "verseKey": "1:4",
+    "textUthmani": "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+    "textIndopak": "مٰلِكِ يَوْمِ الدِّيْنِ",
+    "translation": "Sovereign of the Day of Recompense.",
+    "audioURL": null
+  },
+  {
+    "id": 5,
+    "surahNumber": 1,
+    "verseNumber": 5,
+    "verseKey": "1:5",
+    "textUthmani": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+    "textIndopak": "اِيَّاكَ نَعْبُدُ وَاِيَّاكَ نَسْتَعِيْنُ",
+    "translation": "It is You we worship and You we ask for help.",
+    "audioURL": null
+  },
+  {
+    "id": 6,
+    "surahNumber": 1,
+    "verseNumber": 6,
+    "verseKey": "1:6",
+    "textUthmani": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+    "textIndopak": "اِهْدِنَا الصِّرَاطَ الْمُسْتَقِيْمَ",
+    "translation": "Guide us to the straight path.",
+    "audioURL": null
+  },
+  {
+    "id": 7,
+    "surahNumber": 1,
+    "verseNumber": 7,
+    "verseKey": "1:7",
+    "textUthmani": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+    "textIndopak": "صِرَاطَ الَّذِيْنَ اَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوْبِ عَلَيْهِمْ وَلَا الضَّآلِّيْنَ",
+    "translation": "The path of those upon whom You have bestowed favor, not of those who have evoked anger or of those who are astray.",
+    "audioURL": null
+  }
+]
