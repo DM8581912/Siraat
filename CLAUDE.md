@@ -29,17 +29,18 @@ The dev machine is **Windows with no Xcode — nothing compiles or runs locally.
 - Accessibility is the floor: Dynamic Type (incl. Arabic via `ArabicText`), VoiceOver in-language,
   AA contrast, color+symbol status. Reverence over decoration; the anti-slop bans in PRODUCT.md hold.
 
-## Current state — Design Sprint (branch `feature/design-sprint`)
-Full handoff + resume prompt: `docs/design-sprint/ITERATION_PROMPT.md`. Scores + findings:
-`DESIGN_LOG.md`. BEFORE screenshots: `docs/design-sprint/before/`.
+## Current state
 
-- Phase 0 (PRODUCT.md, DESIGN.md, token extraction) and Phase 1 baseline: **done, CI-green.**
-- VQS baseline (target ≥80): **Dashboard 65 · Khutba 57 · Reader 53 · Recitation 50.**
-- **#1 finding: default iOS blue everywhere instead of teal `SiraatColor.accent`** — root `.tint`
-  fix is the biggest single lift. Also: clipped control rows (Recitation "Ayah", Khutba language
-  picker), reader toolbar control-soup, system-serif Arabic (Uthmani font not yet bundled).
-- Owner approved running **Phases 2→4** (refine + enhance) then proving at Phase 5. **Rule: every
-  visual change raises the screen's VQS or is reverted** — re-capture via CI to prove it.
+### Design Sprint (merged to main via PR #10)
+VQS improved across all screens (Dashboard 65->79, Reader 53->77, Khutba 57->73, Recitation
+50->70). Root tint fix, toolbar collapse, control row fixes, dashboard rhythm, chip enlivening.
+Full log in `DESIGN_LOG.md`, before/after screenshots in `docs/design-sprint/`.
+
+### Production Hardening (branch `hardening/production-grade`)
+Audit scored the app at **B- (68/100)**. See `AUDIT.md` for the full breakdown. Key P0s:
+no Qibla math test, no high-latitude city in the prayer validation suite, no per-prayer
+manual time offset. Privacy and engine correctness are strong; gaps are in test coverage,
+performance (cached launch, scroll profiling), and observability (no crash reporting).
 
 ## Map
 `App/` shell + DesignSystem · `Core/Services` (QuranDatabaseManager, audio, prayer, location,
@@ -47,8 +48,27 @@ translation) · `Core/Models` · `Core/PrayerEngine/Adhan.swift` (validated vs A
 `Features/{Dashboard,QuranReader,RecitationCorrection,LiveTranslation,More,Settings,Tasbih}` ·
 `SiraatTests/`. Prayer math + qibla + Quran bundle are test-covered; audio/notifications are not.
 
-## Done earlier (main, via PR #9)
-Design tokens, `ArabicText` Dynamic Type, recitation honesty (no false "wrong" verdicts),
-prayer-reminder drift fix, App Store blockers (privacy manifest, keys out of Info.plist),
-offline translation editions + misattribution fix. Staged next (not built): full background
-audio + lock screen, real acoustic tajweed model, khutba encrypted store, Swift 6 strict concurrency.
+## Standing rules (the project contract)
+
+- **Religious content is never generated, altered, or guessed.** Quran text from `FullQuran.json`
+  (verifiable source). Translations from attributed, licensed editions. Diacritics, verse boundaries,
+  and attributions are never modified. When a matter has scholarly difference (calculation method,
+  Asr madhab, moon sighting), the app offers the choice and does not impose one answer.
+- **Privacy stance on location:** foreground-only, `kCLLocationAccuracyHundredMeters`, never
+  transmitted off-device, never persisted beyond the current computation. Manual city fallback for
+  users who decline location.
+- **Copy rules:** no em dashes, no en dashes, no hedging, no filler. Banned words: sleek,
+  cutting-edge, solutions, elevate, world-class. Plain, confident, respectful language.
+- **File-size ceiling:** ~500 lines. If a file approaches this, split by responsibility.
+- **Visual language:** restrained and premium. Calm neutrals, one confident accent (teal),
+  generous space. No clip-art crescents, no cartoon mosque imagery. Where Islamic motifs appear
+  they are tasteful geometry rendered with care, not stickers. See `PRODUCT.md` anti-slop list.
+- **Commit conventions:** conventional messages (`fix:`, `feat:`, `refactor:`, `perf:`, `test:`,
+  `chore:`, `docs:`), Co-Authored-By trailer, one logical change per commit.
+
+## Done earlier (main)
+Design tokens + design sprint (PR #10), `ArabicText` Dynamic Type, recitation honesty (no false
+"wrong" verdicts), prayer-reminder drift fix, App Store blockers (privacy manifest, keys out of
+Info.plist), offline translation editions + misattribution fix. Staged next (not built): full
+background audio + lock screen, real acoustic tajweed model, khutba encrypted store, Swift 6
+strict concurrency.
