@@ -56,7 +56,9 @@ struct BundledAyah: Decodable, Hashable {
 extension BundledAyah {
     /// Maps into the app's runtime `QuranVerse`. Indo-Pak shares the Uthmani text (the
     /// bundle carries one Arabic script); a dedicated Indo-Pak edition is a later milestone.
-    func toQuranVerse(surahNumber: Int, includeEnglish: Bool, audioURL: URL?) -> QuranVerse {
+    /// `translationOverride` lets a bundled non-English edition supply the translation text
+    /// while still using the bundle's Arabic; pass nil to use the bundled English (or none).
+    func toQuranVerse(surahNumber: Int, includeEnglish: Bool, audioURL: URL?, translationOverride: String? = nil) -> QuranVerse {
         QuranVerse(
             id: number,
             surahNumber: surahNumber,
@@ -64,7 +66,7 @@ extension BundledAyah {
             verseKey: "\(surahNumber):\(numberInSurah)",
             textUthmani: textUthmani,
             textIndopak: textUthmani,
-            translation: includeEnglish ? textEnglish : "",
+            translation: translationOverride ?? (includeEnglish ? textEnglish : ""),
             audioURL: audioURL
         )
     }

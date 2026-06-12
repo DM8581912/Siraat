@@ -71,6 +71,10 @@
 		BF000000000000000000003E /* KhutbaLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000044 /* KhutbaLibraryView.swift */; };
 		BF000000000000000000003F /* KhutbaLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000045 /* KhutbaLibraryTests.swift */; };
 		BF0000000000000000000040 /* Adhan.caf in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000046 /* Adhan.caf */; };
+		BF0000000000000000000041 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000047 /* PrivacyInfo.xcprivacy */; };
+		BF0000000000000000000042 /* Translation-ur.json in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000048 /* Translation-ur.json */; };
+		BF0000000000000000000043 /* Translation-id.json in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000049 /* Translation-id.json */; };
+		BF0000000000000000000044 /* Translation-tr.json in Resources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000004A /* Translation-tr.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -152,6 +156,10 @@
 		FR0000000000000000000044 /* KhutbaLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/LiveTranslation/KhutbaLibraryView.swift; sourceTree = "<group>"; };
 		FR0000000000000000000045 /* KhutbaLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/KhutbaLibraryTests.swift; sourceTree = "<group>"; };
 		FR0000000000000000000046 /* Adhan.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Siraat/Resources/Adhan.caf; sourceTree = "<group>"; };
+		FR0000000000000000000047 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Siraat/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		FR0000000000000000000048 /* Translation-ur.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Siraat/Resources/Translations/Translation-ur.json"; sourceTree = "<group>"; };
+		FR0000000000000000000049 /* Translation-id.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Siraat/Resources/Translations/Translation-id.json"; sourceTree = "<group>"; };
+		FR000000000000000000004A /* Translation-tr.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "Siraat/Resources/Translations/Translation-tr.json"; sourceTree = "<group>"; };
 		PR0000000000000000000001 /* Siraat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siraat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		PR0000000000000000000002 /* SiraatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SiraatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -235,7 +243,11 @@
 				FR0000000000000000000040 /* DuasView.swift */,
 				FR0000000000000000000017 /* SampleQuran.json */,
 				FR0000000000000000000038 /* FullQuran.json */,
+				FR0000000000000000000048 /* Translation-ur.json */,
+				FR0000000000000000000049 /* Translation-id.json */,
+				FR000000000000000000004A /* Translation-tr.json */,
 				FR0000000000000000000046 /* Adhan.caf */,
+				FR0000000000000000000047 /* PrivacyInfo.xcprivacy */,
 				FR000000000000000000001B /* Info.plist */,
 			);
 			name = Siraat;
@@ -365,7 +377,11 @@
 			files = (
 				BF0000000000000000000017 /* SampleQuran.json in Resources */,
 				BF0000000000000000000032 /* FullQuran.json in Resources */,
+				BF0000000000000000000042 /* Translation-ur.json in Resources */,
+				BF0000000000000000000043 /* Translation-id.json in Resources */,
+				BF0000000000000000000044 /* Translation-tr.json in Resources */,
 				BF0000000000000000000040 /* Adhan.caf in Resources */,
+				BF0000000000000000000041 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

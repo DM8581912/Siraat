@@ -11,6 +11,10 @@ final class QuranReaderViewModel: ObservableObject {
     @Published private(set) var readingPosition: QuranReadingPosition?
     @Published private(set) var surahs: [BundledSurah] = []
     @Published private(set) var isLoading = false
+    /// Credit for the translation actually displayed, and whether it is an offline English
+    /// fallback. The reader shows these so text is never attributed to the wrong translator.
+    @Published private(set) var translationCredit = TranslationLanguage.english.quranTranslationCredit
+    @Published private(set) var isOfflineTranslationFallback = false
     @Published var errorMessage: String?
     /// verseKey the reader should scroll to (jump-to-ayah / start-of-juz).
     @Published var scrollTarget: String?
@@ -73,13 +77,15 @@ final class QuranReaderViewModel: ObservableObject {
                     selectedSurah = readingPosition.surahNumber
                     hasRestoredReadingPosition = true
                 }
-                let loaded = try await databaseManager.verses(
+                let page = try await databaseManager.versePage(
                     forSurah: selectedSurah,
                     language: settings.translationLanguage,
                     reciterID: settings.selectedReciterID
                 )
                 guard !Task.isCancelled else { return }
-                verses = loaded
+                verses = page.verses
+                translationCredit = page.translationCredit
+                isOfflineTranslationFallback = page.isOfflineEnglishFallback
                 audioPlayer?.load(verses)
             } catch {
                 guard !Task.isCancelled else { return }
