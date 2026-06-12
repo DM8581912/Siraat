@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Select Xcode 16
         uses: maxim-lobanov/setup-xcode@v1
@@ -58,7 +58,7 @@ jobs:
           ls -lh Siraat-unsigned.ipa
 
       - name: Upload .ipa artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Siraat-unsigned-ipa
           path: Siraat-unsigned.ipa
