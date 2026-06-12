@@ -305,11 +305,19 @@ struct RecitationWord: Identifiable, Codable, Equatable {
     let originalText: String
     var status: RecitationWordStatus
     var tip: CorrectionTip?
+    var tajweedViolations: [TajweedViolation]
 
-    init(id: UUID = UUID(), originalText: String, status: RecitationWordStatus = .pending, tip: CorrectionTip? = nil) {
+    init(
+        id: UUID = UUID(),
+        originalText: String,
+        status: RecitationWordStatus = .pending,
+        tip: CorrectionTip? = nil,
+        tajweedViolations: [TajweedViolation] = []
+    ) {
         self.id = id
         self.originalText = originalText
         self.status = status
         self.tip = tip
+        self.tajweedViolations = tajweedViolations
     }
 }

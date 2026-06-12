@@ -17,7 +17,7 @@ struct RecitationCorrectionView: View {
                             .foregroundStyle(.secondary)
 
                         Label(
-                            "A follow-along guide that highlights words as you recite — not a tajweed ruling. Real pronunciation feedback is coming.",
+                            "Advisory Tajweed feedback, processed on-device.",
                             systemImage: "info.circle"
                         )
                         .font(.caption2)
@@ -27,7 +27,7 @@ struct RecitationCorrectionView: View {
                             ForEach(viewModel.words) { word in
                                 WordChip(word: word)
                                     .onTapGesture {
-                                        selectedTip = word.tip
+                                        selectedTip = word.primaryFeedbackTip
                                     }
                             }
                         }
@@ -160,10 +160,17 @@ private struct WordChip: View {
                 : nil
         )
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(word.originalText), \(word.status.rawValue)")
+        .accessibilityLabel("\(word.originalText), \(accessibilityStatus)")
     }
 
     private var statusSymbol: String? {
+        if word.hasCriticalTajweedViolation {
+            return "exclamationmark"
+        }
+        if word.hasAdvisoryTajweedViolation {
+            return "questionmark"
+        }
+
         switch word.status {
         case .pending: nil
         case .correct: "checkmark"
@@ -173,6 +180,13 @@ private struct WordChip: View {
     }
 
     private var foregroundColor: Color {
+        if word.hasCriticalTajweedViolation {
+            return SiraatColor.destructive
+        }
+        if word.hasAdvisoryTajweedViolation {
+            return SiraatColor.warning
+        }
+
         switch word.status {
         case .pending: SiraatColor.textPrimary
         case .correct: SiraatColor.accent
@@ -182,11 +196,47 @@ private struct WordChip: View {
     }
 
     private var backgroundColor: Color {
+        if word.hasCriticalTajweedViolation {
+            return SiraatColor.destructive.opacity(0.18)
+        }
+        if word.hasAdvisoryTajweedViolation {
+            return SiraatColor.warning.opacity(0.18)
+        }
+
         switch word.status {
         case .pending: SiraatColor.secondaryBackground
         case .correct: SiraatColor.accent.opacity(0.18)
         case .uncertain: SiraatColor.warning.opacity(0.18)
         case .missed: SiraatColor.destructive.opacity(0.18)
         }
+    }
+
+    private var accessibilityStatus: String {
+        guard let violation = word.tajweedViolations.first else {
+            return word.status.rawValue
+        }
+
+        return "\(violation.rule.displayName), \(violation.severity.displayName), letter \(violation.affectedLetter)"
+    }
+}
+
+private extension RecitationWord {
+    var hasCriticalTajweedViolation: Bool {
+        tajweedViolations.contains { $0.severity == .critical }
+    }
+
+    var hasAdvisoryTajweedViolation: Bool {
+        tajweedViolations.contains { $0.severity == .advisory }
+    }
+
+    var primaryFeedbackTip: CorrectionTip? {
+        if let violation = tajweedViolations.first {
+            return CorrectionTip(
+                title: "\(violation.rule.displayName) feedback",
+                message: violation.userFacingMessage
+            )
+        }
+
+        return tip
     }
 }

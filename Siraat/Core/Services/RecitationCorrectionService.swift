@@ -18,6 +18,7 @@ final class RecitationCorrectionService: RecitationCorrectionServicing {
 
         return expectedWords.enumerated().map { index, word in
             var evaluated = word
+            evaluated.tajweedViolations = []
             let expected = ArabicTextNormalizer.tokens(from: word.originalText).first ?? ""
 
             guard index < spokenTokens.count else {
@@ -34,7 +35,7 @@ final class RecitationCorrectionService: RecitationCorrectionServicing {
                 evaluated.status = .uncertain
                 evaluated.tip = CorrectionTip(
                     title: "Keep going",
-                    message: "We heard something close to \(word.originalText). This is a follow-along guide, not a tajweed ruling — recite at your own pace."
+                    message: "We heard something close to \(word.originalText). Advisory Tajweed feedback is processed on-device — recite at your own pace."
                 )
             } else {
                 // Deliberately NOT a "wrong" verdict. On-device speech recognition mis-hears
