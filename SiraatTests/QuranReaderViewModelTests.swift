@@ -9,6 +9,7 @@ private actor MockQuranDatabase: QuranDatabaseManaging {
     func surahMetadata() -> [BundledSurah] { [] }
     func ayahs(inJuz juz: Int, language: TranslationLanguage, reciterID: Int) -> [QuranVerse] { [] }
     func ayah(surah: Int, ayah: Int) -> QuranVerse? { nil }
+    func verse(globalNumber: Int) -> QuranVerse? { nil }
     func cachedBookmarks() -> [Bookmark] { [] }
     func saveBookmarks(_ bookmarks: [Bookmark]) {}
     func readingPosition() -> QuranReadingPosition? { nil }

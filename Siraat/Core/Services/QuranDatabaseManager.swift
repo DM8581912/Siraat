@@ -5,6 +5,7 @@ protocol QuranDatabaseManaging {
     func surahMetadata() async -> [BundledSurah]
     func ayahs(inJuz juz: Int, language: TranslationLanguage, reciterID: Int) async -> [QuranVerse]
     func ayah(surah: Int, ayah: Int) async -> QuranVerse?
+    func verse(globalNumber: Int) async -> QuranVerse?
     func cachedBookmarks() async -> [Bookmark]
     func saveBookmarks(_ bookmarks: [Bookmark]) async
     func readingPosition() async -> QuranReadingPosition?
@@ -103,6 +104,16 @@ actor QuranDatabaseManager: QuranDatabaseManaging {
               let bundledAyah = bundledSurah.ayahs.first(where: { $0.numberInSurah == ayah })
         else { return nil }
         return bundledAyah.toQuranVerse(surahNumber: surah, includeEnglish: true, audioURL: nil)
+    }
+
+    func verse(globalNumber: Int) async -> QuranVerse? {
+        loadBundleIfNeeded()
+        for surah in orderedSurahs {
+            if let bundledAyah = surah.ayahs.first(where: { $0.number == globalNumber }) {
+                return bundledAyah.toQuranVerse(surahNumber: surah.number, includeEnglish: true, audioURL: nil)
+            }
+        }
+        return nil
     }
 
     private func loadBundleIfNeeded() {

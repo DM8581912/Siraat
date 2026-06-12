@@ -9,6 +9,7 @@ final class DashboardViewModel: ObservableObject {
     @Published private(set) var prayerSchedule: DailyPrayerSchedule?
     @Published private(set) var qiblaDirection: QiblaDirection?
     @Published private(set) var hijriDateText = HijriDate.formatted()
+    @Published private(set) var verseOfTheDay: QuranVerse?
     @Published private(set) var locationStatusText = "Location not set"
     @Published private(set) var reminderSettings: PrayerReminderSettings = .default
     @Published private(set) var reminderStatusText = "Prayer reminders are off"
@@ -66,6 +67,12 @@ final class DashboardViewModel: ObservableObject {
             reminderSettings = prayerNotificationService?.reminderSettings() ?? .default
             reminderStatusText = reminderSettings.isEnabled ? "Reminders enabled \(reminderSettings.minutesBefore) minutes before each prayer" : "Prayer reminders are off"
             hijriDateText = HijriDate.formatted(dayAdjustment: settings.hijriDayAdjustment)
+
+            // Verse of the day: deterministic per calendar day, spread across the whole
+            // Qur'an so consecutive days aren't adjacent ayat.
+            let day = Calendar.current.ordinality(of: .day, in: .era, for: Date()) ?? 1
+            let globalNumber = (abs(day &* 2_654_435_761) % 6236) + 1
+            verseOfTheDay = await databaseManager.verse(globalNumber: globalNumber)
 
             // Recompute prayer times with the freshly loaded calculation method/madhab
             // (e.g. after the user changes them in Settings) using the last fix.
