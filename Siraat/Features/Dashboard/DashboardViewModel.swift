@@ -15,6 +15,9 @@ final class DashboardViewModel: ObservableObject {
     @Published private(set) var reminderSettings: PrayerReminderSettings = .default
     @Published private(set) var reminderStatusText = "Prayer reminders are off"
     @Published var errorMessage: String?
+    /// Fatal load error that prevents the screen from rendering. Distinct from
+    /// errorMessage which is a user-dismissable alert for transient failures.
+    @Published private(set) var loadError: String?
 
     private var databaseManager: QuranDatabaseManaging?
     private var locationManager: LocationManager?
@@ -62,28 +65,34 @@ final class DashboardViewModel: ObservableObject {
 
     func load() {
         Task {
-            guard let databaseManager else { return }
-            bookmarks = await databaseManager.cachedBookmarks()
-            settings = await databaseManager.readerSettings()
-            readingPosition = await databaseManager.readingPosition()
-            reminderSettings = prayerNotificationService?.reminderSettings() ?? .default
-            reminderStatusText = reminderSettings.isEnabled ? "Reminders enabled \(reminderSettings.minutesBefore) minutes before each prayer" : "Prayer reminders are off"
-            hijriDateText = HijriDate.formatted(dayAdjustment: settings.hijriDayAdjustment)
+            do {
+                guard let databaseManager else { return }
+                bookmarks = await databaseManager.cachedBookmarks()
+                settings = await databaseManager.readerSettings()
+                readingPosition = await databaseManager.readingPosition()
+                reminderSettings = prayerNotificationService?.reminderSettings() ?? .default
+                reminderStatusText = reminderSettings.isEnabled ? "Reminders enabled \(reminderSettings.minutesBefore) minutes before each prayer" : "Prayer reminders are off"
+                hijriDateText = HijriDate.formatted(dayAdjustment: settings.hijriDayAdjustment)
 
-            // Verse of the day: deterministic per calendar day, spread across the whole
-            // Qur'an so consecutive days aren't adjacent ayat.
-            let day = Calendar.current.ordinality(of: .day, in: .era, for: Date()) ?? 1
-            // Use unsigned magnitude rather than abs(): the overflow-multiply can land on
-            // Int.min, and abs(Int.min) traps. .magnitude is total over every Int.
-            let globalNumber = Int((day &* 2_654_435_761).magnitude % 6236) + 1
-            verseOfTheDay = await databaseManager.verse(globalNumber: globalNumber)
+                // Verse of the day: deterministic per calendar day, spread across the whole
+                // Qur'an so consecutive days aren't adjacent ayat.
+                let day = Calendar.current.ordinality(of: .day, in: .era, for: Date()) ?? 1
+                // Use unsigned magnitude rather than abs(): the overflow-multiply can land on
+                // Int.min, and abs(Int.min) traps. .magnitude is total over every Int.
+                let globalNumber = Int((day &* 2_654_435_761).magnitude % 6236) + 1
+                verseOfTheDay = await databaseManager.verse(globalNumber: globalNumber)
 
-            // Show the last-known schedule immediately so cold launch isn't blank.
-            restoreCachedSchedule()
+                // Show the last-known schedule immediately so cold launch isn't blank.
+                restoreCachedSchedule()
 
-            // Recompute with fresh location + settings when available.
-            if let coordinate = locationManager?.coordinate {
-                updateUtilities(for: coordinate)
+                loadError = nil
+
+                // Recompute with fresh location + settings when available.
+                if let coordinate = locationManager?.coordinate {
+                    updateUtilities(for: coordinate)
+                }
+            } catch {
+                loadError = error.localizedDescription
             }
         }
     }

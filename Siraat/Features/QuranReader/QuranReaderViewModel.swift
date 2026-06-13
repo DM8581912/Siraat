@@ -16,6 +16,8 @@ final class QuranReaderViewModel: ObservableObject {
     @Published private(set) var translationCredit = TranslationLanguage.english.quranTranslationCredit
     @Published private(set) var isOfflineTranslationFallback = false
     @Published var errorMessage: String?
+    /// Fatal load error that prevents the screen from rendering.
+    @Published private(set) var loadError: String?
     /// verseKey the reader should scroll to (jump-to-ayah / start-of-juz).
     @Published var scrollTarget: String?
 
@@ -86,10 +88,11 @@ final class QuranReaderViewModel: ObservableObject {
                 verses = page.verses
                 translationCredit = page.translationCredit
                 isOfflineTranslationFallback = page.isOfflineEnglishFallback
+                loadError = nil
                 audioPlayer?.load(verses)
             } catch {
                 guard !Task.isCancelled else { return }
-                errorMessage = error.localizedDescription
+                loadError = error.localizedDescription
             }
         }
     }

@@ -13,6 +13,8 @@ final class RecitationCorrectionViewModel: ObservableObject {
     @Published var selectedVerseNumber = 1
     @Published var script: QuranScript = .uthmani
     @Published var errorMessage: String?
+    /// Fatal load error that prevents the screen from rendering.
+    @Published private(set) var loadError: String?
 
     // Owned, not shared: this feature has its own microphone engine.
     private let audioStreamManager = AudioStreamManager()
@@ -82,8 +84,9 @@ final class RecitationCorrectionViewModel: ObservableObject {
                 if let selectedVerse, let correctionService {
                     words = correctionService.prepareWords(for: selectedVerse, script: script)
                 }
+                loadError = nil
             } catch {
-                errorMessage = error.localizedDescription
+                loadError = error.localizedDescription
             }
         }
     }

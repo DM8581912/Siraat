@@ -14,21 +14,23 @@ struct QuranReaderView: View {
                 .padding(.horizontal)
                 .padding(.bottom, SiraatSpacing.xs)
 
-            Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading verses")
+            ErrorBoundaryView(error: viewModel.loadError, retryAction: { viewModel.load() }) {
+                Group {
+                    if viewModel.isLoading {
+                        ProgressView("Loading verses")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if viewModel.displayedVerses.isEmpty {
+                        ContentUnavailableView(
+                            viewModel.showsBookmarksOnly ? "No bookmarks here" : "No matching verses",
+                            systemImage: viewModel.showsBookmarksOnly ? "bookmark" : "magnifyingglass",
+                            description: Text("Adjust the search or filter to continue reading.")
+                        )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if viewModel.displayedVerses.isEmpty {
-                    ContentUnavailableView(
-                        viewModel.showsBookmarksOnly ? "No bookmarks here" : "No matching verses",
-                        systemImage: viewModel.showsBookmarksOnly ? "bookmark" : "magnifyingglass",
-                        description: Text("Adjust the search or filter to continue reading.")
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if viewModel.settings.readingMode == .continuous {
-                    continuousReader
-                } else {
-                    pageReader
+                    } else if viewModel.settings.readingMode == .continuous {
+                        continuousReader
+                    } else {
+                        pageReader
+                    }
                 }
             }
 

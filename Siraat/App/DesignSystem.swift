@@ -231,6 +231,30 @@ struct WaveformView: View {
     }
 }
 
+/// Reusable error boundary: shows a `ContentUnavailableView` with a retry button when
+/// an error is present, and the normal content otherwise.
+struct ErrorBoundaryView<Content: View>: View {
+    let error: String?
+    let retryAction: () -> Void
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        if let error {
+            ContentUnavailableView {
+                Label("Something went wrong", systemImage: "exclamationmark.triangle")
+            } description: {
+                Text(error)
+            } actions: {
+                Button("Try Again", action: retryAction)
+                    .buttonStyle(.borderedProminent)
+                    .tint(SiraatColor.accent)
+            }
+        } else {
+            content()
+        }
+    }
+}
+
 struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 

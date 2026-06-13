@@ -6,6 +6,7 @@ struct RecitationCorrectionView: View {
     @State private var selectedTip: CorrectionTip?
 
     var body: some View {
+        ErrorBoundaryView(error: viewModel.loadError, retryAction: { viewModel.loadVerse() }) {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -74,6 +75,7 @@ struct RecitationCorrectionView: View {
             .padding()
             .background(.regularMaterial)
         }
+        } // ErrorBoundaryView
         .navigationTitle("Recitation Correction")
         .alert(item: $selectedTip) { tip in
             Alert(title: Text(tip.title), message: Text(tip.message), dismissButton: .default(Text("OK")))

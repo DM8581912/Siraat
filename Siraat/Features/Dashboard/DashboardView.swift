@@ -7,51 +7,53 @@ struct DashboardView: View {
     @Binding var selectedTab: AppTab
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: SiraatSpacing.md) {
-                DashboardHeader(hijriDate: viewModel.hijriDateText)
+        ErrorBoundaryView(error: viewModel.loadError, retryAction: { viewModel.load() }) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: SiraatSpacing.md) {
+                    DashboardHeader(hijriDate: viewModel.hijriDateText)
 
-                if let schedule = viewModel.prayerSchedule, !schedule.times.isEmpty {
-                    NextPrayerHero(schedule: schedule)
+                    if let schedule = viewModel.prayerSchedule, !schedule.times.isEmpty {
+                        NextPrayerHero(schedule: schedule)
 
-                    PrayerTimesStrip(schedule: schedule)
-                        .padding(.top, SiraatSpacing.xxs)
+                        PrayerTimesStrip(schedule: schedule)
+                            .padding(.top, SiraatSpacing.xxs)
 
-                    if viewModel.prayerSchedule != nil {
-                        ReminderCard(
-                            statusText: viewModel.reminderStatusText,
-                            isEnabled: viewModel.reminderSettings.isEnabled
-                        ) {
-                            viewModel.schedulePrayerReminders()
+                        if viewModel.prayerSchedule != nil {
+                            ReminderCard(
+                                statusText: viewModel.reminderStatusText,
+                                isEnabled: viewModel.reminderSettings.isEnabled
+                            ) {
+                                viewModel.schedulePrayerReminders()
+                            }
+                        }
+                    } else {
+                        LocationPromptCard {
+                            viewModel.requestLocation()
+                        } onManualLocation: { coord in
+                            viewModel.setManualLocation(coord)
                         }
                     }
-                } else {
-                    LocationPromptCard {
-                        viewModel.requestLocation()
-                    } onManualLocation: { coord in
-                        viewModel.setManualLocation(coord)
-                    }
-                }
 
-                if let verse = viewModel.verseOfTheDay {
-                    SectionHeader("VERSE OF THE DAY")
+                    if let verse = viewModel.verseOfTheDay {
+                        SectionHeader("VERSE OF THE DAY")
+                            .padding(.top, SiraatSpacing.xs)
+                        VerseOfTheDayCard(verse: verse)
+                    }
+
+                    QiblaCard(direction: viewModel.qiblaDirection)
+
+                    SectionHeader("QUICK ACTIONS")
                         .padding(.top, SiraatSpacing.xs)
-                    VerseOfTheDayCard(verse: verse)
-                }
+                    QuickActionsCard(selectedTab: $selectedTab)
 
-                QiblaCard(direction: viewModel.qiblaDirection)
-
-                SectionHeader("QUICK ACTIONS")
-                    .padding(.top, SiraatSpacing.xs)
-                QuickActionsCard(selectedTab: $selectedTab)
-
-                if let readingPosition = viewModel.readingPosition {
-                    ContinueReadingCard(position: readingPosition) {
-                        selectedTab = .quran
+                    if let readingPosition = viewModel.readingPosition {
+                        ContinueReadingCard(position: readingPosition) {
+                            selectedTab = .quran
+                        }
                     }
                 }
+                .padding(SiraatSpacing.lg)
             }
-            .padding(SiraatSpacing.lg)
         }
         .background(SiraatColor.background.ignoresSafeArea())
         .navigationTitle("")
