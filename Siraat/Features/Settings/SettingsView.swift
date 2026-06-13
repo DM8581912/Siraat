@@ -86,7 +86,7 @@ struct SettingsView: View {
             }
 
             Section("Privacy") {
-                Label("Microphone access starts only after you tap Record or Listen.", systemImage: "mic")
+                Label("Microphone access starts only after you tap Record.", systemImage: "mic")
                 Label("Location is used only for prayer times and qibla direction.", systemImage: "location")
                 Label("Any translation API keys are stored in the device Keychain, never committed to source or bundled in the app.", systemImage: "lock.shield")
                 Text(viewModel.secretsStatus)

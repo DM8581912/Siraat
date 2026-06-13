@@ -64,9 +64,21 @@ struct RecitationCorrectionView: View {
                     Spacer()
 
                     Button {
+                        viewModel.playReferenceVerse()
+                    } label: {
+                        Label(
+                            viewModel.isPlayingReference ? "Stop" : "Play Verse",
+                            systemImage: viewModel.isPlayingReference ? "stop.fill" : "play.fill"
+                        )
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(SiraatColor.gold)
+                    .disabled(viewModel.selectedVerse == nil)
+
+                    Button {
                         viewModel.isListening ? viewModel.stopListening() : viewModel.startListening()
                     } label: {
-                        Label(viewModel.isListening ? "Stop" : "Listen", systemImage: viewModel.isListening ? "stop.fill" : "mic.fill")
+                        Label(viewModel.isListening ? "Stop" : "Record", systemImage: viewModel.isListening ? "stop.fill" : "mic.fill")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(viewModel.isListening ? SiraatColor.destructive : SiraatColor.accent)
@@ -89,7 +101,8 @@ struct RecitationCorrectionView: View {
             viewModel.configure(
                 databaseManager: services.quranDatabaseManager,
                 correctionService: services.recitationCorrectionService,
-                analysisProvider: services.recitationAnalysisProvider
+                analysisProvider: services.recitationAnalysisProvider,
+                audioPlayer: services.quranAudioPlayer
             )
             viewModel.loadVerse()
         }

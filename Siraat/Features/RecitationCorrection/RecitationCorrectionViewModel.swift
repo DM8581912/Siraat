@@ -9,6 +9,7 @@ final class RecitationCorrectionViewModel: ObservableObject {
     @Published private(set) var waveformLevel: Double = 0
     @Published private(set) var isListening = false
     @Published private(set) var analysisEngine: RecitationAnalysisEngine = .localMatcher
+    @Published private(set) var isPlayingReference = false
     @Published var selectedSurah = 1
     @Published var selectedVerseNumber = 1
     @Published var script: QuranScript = .uthmani
@@ -21,6 +22,7 @@ final class RecitationCorrectionViewModel: ObservableObject {
     private var databaseManager: QuranDatabaseManaging?
     private var correctionService: RecitationCorrectionServicing?
     private var analysisProvider: RecitationAnalysisProviding?
+    private var audioPlayer: QuranAudioPlayer?
     private var didConfigure = false
     private var analysisTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
@@ -42,13 +44,19 @@ final class RecitationCorrectionViewModel: ObservableObject {
     func configure(
         databaseManager: QuranDatabaseManaging,
         correctionService: RecitationCorrectionServicing,
-        analysisProvider: RecitationAnalysisProviding
+        analysisProvider: RecitationAnalysisProviding,
+        audioPlayer: QuranAudioPlayer
     ) {
         guard !didConfigure else { return }
         didConfigure = true
         self.databaseManager = databaseManager
         self.correctionService = correctionService
         self.analysisProvider = analysisProvider
+        self.audioPlayer = audioPlayer
+
+        // Track audio player state for the "Play Verse" button.
+        audioPlayer.$isPlaying
+            .assign(to: &$isPlayingReference)
 
         audioStreamManager.$latestSegment
             .compactMap { $0?.text }
@@ -103,6 +111,17 @@ final class RecitationCorrectionViewModel: ObservableObject {
 
     func stopListening() {
         audioStreamManager.stop()
+    }
+
+    /// Play or stop the reference recitation of the currently selected verse.
+    func playReferenceVerse() {
+        guard let audioPlayer else { return }
+        if isPlayingReference {
+            audioPlayer.pause()
+        } else if let verse = selectedVerse {
+            audioPlayer.load([verse])
+            audioPlayer.play()
+        }
     }
 
     func reset() {
