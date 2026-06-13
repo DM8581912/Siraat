@@ -224,7 +224,7 @@ private struct WordChip: View {
             return "questionmark"
         }
 
-        switch word.status {
+        return switch word.status {
         case .pending: nil
         case .correct: "checkmark"
         case .uncertain: "questionmark"
@@ -240,7 +240,7 @@ private struct WordChip: View {
             return SiraatColor.warning
         }
 
-        switch word.status {
+        return switch word.status {
         case .pending: SiraatColor.textPrimary
         case .correct: SiraatColor.accent
         case .uncertain: SiraatColor.warning
@@ -256,7 +256,7 @@ private struct WordChip: View {
             return SiraatColor.warning.opacity(0.18)
         }
 
-        switch word.status {
+        return switch word.status {
         case .pending: SiraatColor.secondaryBackground
         case .correct: SiraatColor.accent.opacity(0.18)
         case .uncertain: SiraatColor.warning.opacity(0.18)
