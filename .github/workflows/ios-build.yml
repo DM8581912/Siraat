@@ -10,6 +10,9 @@ on:
     branches: [main, "feat/**", "feature/**", "fix/**", "chore/**", "hardening/**", "claude/**"]
   workflow_dispatch: {}   # lets you run it by hand from the Actions tab (any branch)
 
+permissions:
+  contents: write   # allows publishing the .ipa as a Release asset
+
 jobs:
   build:
     runs-on: macos-15
@@ -129,4 +132,69 @@ jobs:
           name: Siraat-unsigned-ipa
           path: Siraat-unsigned.ipa
           if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish .ipa to a one-click Release
+        # Direct, no-login download link for the unsigned IPA (public repo). The tag
+        # moves to the latest build on this branch so the URL is stable:
+        #   https://github.com/DM8581912/Siraat/releases/download/tajweed-test/Siraat-unsigned.ipa
+        if: github.ref == 'refs/heads/claude/tajweed-recitation-engine-0n8vq6'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: tajweed-test
+          name: Tajweed test build (unsigned IPA)
+          prerelease: true
+          target_commitish: ${{ github.sha }}
+          files: Siraat-unsigned.ipa
+          body: |
+            Unsigned IPA for sideload testing of the on-device Tajweed engine.
+            Sideload with AltStore / SideStore / Sideloadly using your Apple ID.
+            Built from ${{ github.sha }}.
+
+  # Converts the Wav2Vec2 Arabic phonetic CTC model to Core ML and publishes the
+  # compiled .mlmodelc + phoneme vocab as artifacts. Kept as its own job (does not gate
+  # the IPA build) while we validate conversion on the runner and capture the model's
+  # exact I/O contract from the logs. Once proven, the IPA build bundles the model.
+  convert-model:
+    runs-on: macos-15
+    timeout-minutes: 40
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ML tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install "torch==2.4.*" "transformers==4.44.*" "coremltools==8.*" sentencepiece
+
+      - name: Convert model to Core ML
+        run: |
+          set -o pipefail
+          mkdir -p build
+          python Scripts/convert_wav2vec2_phonetics.py \
+            --model TBOGamer22/wav2vec2-quran-phonetics \
+            --out build/Wav2Vec2QuranPhonetics.mlpackage \
+            --vocab build/phoneme_vocab.json 2>&1 | tee build/convert.log
+
+      - name: Compile to .mlmodelc
+        run: |
+          xcrun coremlcompiler compile build/Wav2Vec2QuranPhonetics.mlpackage build/
+          ls -lhR build/Wav2Vec2QuranPhonetics.mlmodelc || true
+
+      - name: Upload model + vocab + conversion log
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: Tajweed-coreml-model
+          path: |
+            build/Wav2Vec2QuranPhonetics.mlmodelc
+            build/phoneme_vocab.json
+            build/convert.log
+          if-no-files-found: warn
           retention-days: 14

@@ -96,6 +96,21 @@ def main() -> int:
     )
     mlmodel.save(args.out)
     print(f"Saved {args.out}")
+
+    # Dump the exact Core ML I/O contract + vocab so the Swift inference layer can be
+    # written against the real model rather than guessed. CI surfaces this in the logs.
+    spec = mlmodel.get_spec()
+    print("=== COREML_IO_CONTRACT_BEGIN ===")
+    for feature in spec.description.input:
+        print(f"INPUT name={feature.name} type={feature.type.WhichOneof('Type')} {feature.type}")
+    for feature in spec.description.output:
+        print(f"OUTPUT name={feature.name} type={feature.type.WhichOneof('Type')} {feature.type}")
+    print(f"VOCAB_SIZE={len(vocab)}")
+    # Print vocab id->token sorted by id so the phoneme symbol map is unambiguous.
+    id_to_token = {idx: tok for tok, idx in vocab.items()}
+    print("VOCAB_ID_TO_TOKEN=" + json.dumps(id_to_token, ensure_ascii=False))
+    print("=== COREML_IO_CONTRACT_END ===")
+
     print(
         "Next: xcrun coremlcompiler compile "
         f"{args.out} Siraat/Resources/   # produces Wav2Vec2QuranPhonetics.mlmodelc"
