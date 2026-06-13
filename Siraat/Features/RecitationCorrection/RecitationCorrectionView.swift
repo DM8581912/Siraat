@@ -105,7 +105,7 @@ struct RecitationCorrectionView: View {
 
             if viewModel.isBlueprintExperimental {
                 Label(
-                    "Experimental: this ayah's Tajweed data is a placeholder and not yet verified.",
+                    "Experimental preview. Per-letter coloring uses placeholder data, and the on-device acoustic model is not active yet, so letters are not graded. Green here is a layout preview, not a verdict on your recitation.",
                     systemImage: "flask"
                 )
                 .font(.caption2)

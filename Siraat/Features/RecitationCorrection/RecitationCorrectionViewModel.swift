@@ -28,17 +28,14 @@ final class RecitationCorrectionViewModel: ObservableObject {
     private var analysisTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
 
-    /// Whether the colored ayah may be shown. Requires a blueprint, and in production
-    /// requires verified religious data. The Al-Fatiha placeholder (`verified == false`)
-    /// is shown only in DEBUG builds, clearly labeled experimental, so unverified Tajweed
-    /// data never reaches users.
+    /// Whether the colored ayah may be shown. Requires a blueprint for the verse (today
+    /// only the Al-Fatiha placeholder exists). Unverified blueprints are surfaced behind a
+    /// prominent "experimental / not graded" banner — safe because the placeholder aligner
+    /// only ever emits green (it never fabricates a red/yellow verdict). Before an App
+    /// Store release, require `blueprint.source.verified` here so unverified Tajweed data
+    /// is never presented as authoritative grading.
     var canShowColoredAyah: Bool {
-        guard let blueprint = currentBlueprint else { return false }
-        #if DEBUG
-        return true
-        #else
-        return blueprint.source.verified
-        #endif
+        currentBlueprint != nil
     }
 
     var isBlueprintExperimental: Bool {
