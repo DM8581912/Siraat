@@ -176,6 +176,7 @@ jobs:
       - name: Convert model to Core ML
         run: |
           set -o pipefail
+          mkdir -p build
           python Scripts/convert_wav2vec2_phonetics.py \
             --model TBOGamer22/wav2vec2-quran-phonetics \
             --out build/Wav2Vec2QuranPhonetics.mlpackage \
