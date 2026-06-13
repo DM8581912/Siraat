@@ -64,11 +64,11 @@ final class ForcedAlignerTests: XCTestCase {
         }
     }
 
-    func testMedian() {
+    func testMedian() throws {
         XCTAssertNil(CoreMLForcedAligner.median([]))
-        XCTAssertEqual(CoreMLForcedAligner.median([0.2]), 0.2)
-        XCTAssertEqual(CoreMLForcedAligner.median([0.1, 0.3]), 0.2, accuracy: 1e-9)
-        XCTAssertEqual(CoreMLForcedAligner.median([0.3, 0.1, 0.2]), 0.2, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(CoreMLForcedAligner.median([0.2])), 0.2, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(CoreMLForcedAligner.median([0.1, 0.3])), 0.2, accuracy: 1e-9)
+        XCTAssertEqual(try XCTUnwrap(CoreMLForcedAligner.median([0.3, 0.1, 0.2])), 0.2, accuracy: 1e-9)
     }
 
     func testPrepareWaveformPadsAndTruncatesToFixedLength() {
