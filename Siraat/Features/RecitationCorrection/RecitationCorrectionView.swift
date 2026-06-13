@@ -105,7 +105,7 @@ struct RecitationCorrectionView: View {
 
             if viewModel.isBlueprintExperimental {
                 Label(
-                    "Experimental preview. Per-letter coloring uses placeholder data, and the on-device acoustic model is not active yet, so letters are not graded. Green here is a layout preview, not a verdict on your recitation.",
+                    "Experimental. On this ayah, Madd (elongation) length is graded on-device from your recitation; consonants and Tashkeel are not graded yet. Position data is placeholder pending a verified corpus.",
                     systemImage: "flask"
                 )
                 .font(.caption2)
