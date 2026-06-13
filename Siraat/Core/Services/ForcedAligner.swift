@@ -47,9 +47,11 @@ struct PhonemeVocab {
     let blankID: Int
     let longVowelIDs: Set<Int>   // ā ī ū — the Madd carriers
     let shortVowelIDs: Set<Int>  // a e i o u — one harakah each
+    let nasalIDs: Set<Int>       // n m — the Ghunnah carriers
 
     private static let longVowelTokens: Set<String> = ["ā", "ī", "ū"]
     private static let shortVowelTokens: Set<String> = ["a", "e", "i", "o", "u"]
+    private static let nasalTokens: Set<String> = ["n", "m"]
 
     init(idToToken: [Int: String]) {
         self.idToToken = idToToken
@@ -57,6 +59,7 @@ struct PhonemeVocab {
         blankID = tokenToID["[PAD]"] ?? 37
         longVowelIDs = Set(Self.longVowelTokens.compactMap { tokenToID[$0] })
         shortVowelIDs = Set(Self.shortVowelTokens.compactMap { tokenToID[$0] })
+        nasalIDs = Set(Self.nasalTokens.compactMap { tokenToID[$0] })
     }
 
     static func load(bundle: Bundle = .main, resource: String = "phoneme_vocab") -> PhonemeVocab {
@@ -130,25 +133,31 @@ final class CoreMLForcedAligner: PhoneticForcedAligning {
         let longDurations = decoded.segments
             .filter { vocab.longVowelIDs.contains($0.token) }
             .map { Double($0.length) * frameSeconds }
+        let nasalDurations = decoded.segments
+            .filter { vocab.nasalIDs.contains($0.token) }
+            .map { Double($0.length) * frameSeconds }
 
-        // Match detected long vowels to the blueprint's Madd phonemes in reading order.
+        // Match detected long vowels to Madd positions and nasals to Ghunnah positions, both
+        // in reading order. Other consonants stay below the honesty floor (left green).
         var longIndex = 0
+        var nasalIndex = 0
         var cursor: TimeInterval = 0
         let phonemes: [AlignedPhoneme] = blueprint.phonemes.map { phoneme in
-            if phoneme.isMaddVowel, longIndex < longDurations.count {
-                let measured = longDurations[longIndex]
-                longIndex += 1
+            func graded(_ measured: TimeInterval) -> AlignedPhoneme {
                 let start = cursor
                 cursor += measured
-                return AlignedPhoneme(
-                    symbol: phoneme.symbol,
-                    baseLetter: phoneme.baseCharacter,
-                    start: start,
-                    end: start + measured,
-                    confidence: 0.9
-                )
+                return AlignedPhoneme(symbol: phoneme.symbol, baseLetter: phoneme.baseCharacter, start: start, end: start + measured, confidence: 0.9)
             }
-            // Consonants and unmatched Madd: below the honesty floor, so left green.
+
+            if phoneme.isMaddVowel, longIndex < longDurations.count {
+                let measured = longDurations[longIndex]; longIndex += 1
+                return graded(measured)
+            }
+            if phoneme.requiresGhunnah, nasalIndex < nasalDurations.count {
+                let measured = nasalDurations[nasalIndex]; nasalIndex += 1
+                return graded(measured)
+            }
+            // Other consonants (and unmatched Madd/Ghunnah): below the honesty floor.
             let start = cursor
             cursor += 0.05
             return AlignedPhoneme(
@@ -293,9 +302,10 @@ final class CoreMLForcedAligner: PhoneticForcedAligning {
         return sorted.count % 2 == 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
     }
 
-    /// Deterministic stand-in when no model is bundled: every canonical phoneme is treated
-    /// as recited at its expected duration, confidence below critical, harakat unit unknown
-    /// (evaluator falls back to blueprint durations). Always reads green.
+    /// Deterministic stand-in when no model is bundled: every canonical phoneme carries its
+    /// expected duration but a confidence below the honesty floor, so the evaluator grades
+    /// nothing and the ayah reads all green. (No acoustic measurement happened, so claiming
+    /// any verdict — good or bad — would be dishonest.)
     static func placeholderAlignment(for blueprint: AyahPhonemeMap) -> ForcedAlignment {
         var cursor: TimeInterval = 0
         let phonemes = blueprint.phonemes.map { phoneme -> AlignedPhoneme in
@@ -307,7 +317,7 @@ final class CoreMLForcedAligner: PhoneticForcedAligning {
                 baseLetter: phoneme.baseCharacter,
                 start: start,
                 end: end,
-                confidence: 0.8
+                confidence: 0.5
             )
         }
         return ForcedAlignment(phonemes: phonemes, harakatSeconds: nil)
