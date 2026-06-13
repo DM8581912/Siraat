@@ -9,6 +9,7 @@ final class AppServices: ObservableObject {
     let quranDatabaseManager: QuranDatabaseManaging
     let recitationCorrectionService: RecitationCorrectionServicing
     let recitationAnalysisProvider: RecitationAnalysisProviding
+    let phoneticBlueprintProvider: PhoneticBlueprintProviding
     let quranAudioPlayer: QuranAudioPlayer
     let locationManager: LocationManager
     let prayerTimesService: PrayerTimesServicing
@@ -23,6 +24,7 @@ final class AppServices: ObservableObject {
         quranDatabaseManager: QuranDatabaseManaging = QuranDatabaseManager(),
         recitationCorrectionService: RecitationCorrectionServicing = RecitationCorrectionService(),
         recitationAnalysisProvider: RecitationAnalysisProviding = HybridRecitationAnalysisProvider(),
+        phoneticBlueprintProvider: PhoneticBlueprintProviding = BundledPhoneticBlueprintLoader(),
         quranAudioPlayer: QuranAudioPlayer? = nil,
         locationManager: LocationManager? = nil,
         prayerTimesService: PrayerTimesServicing = PrayerTimesService(),
@@ -34,6 +36,7 @@ final class AppServices: ObservableObject {
         self.quranDatabaseManager = quranDatabaseManager
         self.recitationCorrectionService = recitationCorrectionService
         self.recitationAnalysisProvider = recitationAnalysisProvider
+        self.phoneticBlueprintProvider = phoneticBlueprintProvider
         // These are @MainActor types: their init() can't be a default-argument
         // expression (evaluated in a nonisolated context), so construct them here in
         // the main-actor-isolated init body instead.

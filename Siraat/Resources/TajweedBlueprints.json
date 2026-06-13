@@ -1,0 +1,1056 @@
+{
+  "schemaVersion": 1,
+  "note": "PLACEHOLDER tajweed phonetic blueprints. See TajweedBlueprints.README.md. Only ayahs with source.verified == true may drive colored feedback in production.",
+  "ayahs": [
+    {
+      "verseKey": "1:1",
+      "scriptUthmani": "﻿بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+      "source": {
+        "corpus": "PLACEHOLDER - unverified mechanical derivation, Al-Fatiha only",
+        "attribution": "Letters derived from Siraat FullQuran.json (KFGQPC Hafs Uthmani). Madd flags and durations are placeholder reference values, NOT a verified tajweed corpus.",
+        "verified": false
+      },
+      "phonemes": [
+        {
+          "symbol": "b",
+          "baseLetter": "ب",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "s",
+          "baseLetter": "س",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "h",
+          "baseLetter": "ه",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "H",
+          "baseLetter": "ح",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "H",
+          "baseLetter": "ح",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        }
+      ]
+    },
+    {
+      "verseKey": "1:2",
+      "scriptUthmani": "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ",
+      "source": {
+        "corpus": "PLACEHOLDER - unverified mechanical derivation, Al-Fatiha only",
+        "attribution": "Letters derived from Siraat FullQuran.json (KFGQPC Hafs Uthmani). Madd flags and durations are placeholder reference values, NOT a verified tajweed corpus.",
+        "verified": false
+      },
+      "phonemes": [
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "H",
+          "baseLetter": "ح",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "d",
+          "baseLetter": "د",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "h",
+          "baseLetter": "ه",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "b",
+          "baseLetter": "ب",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "E",
+          "baseLetter": "ع",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        }
+      ]
+    },
+    {
+      "verseKey": "1:3",
+      "scriptUthmani": "ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+      "source": {
+        "corpus": "PLACEHOLDER - unverified mechanical derivation, Al-Fatiha only",
+        "attribution": "Letters derived from Siraat FullQuran.json (KFGQPC Hafs Uthmani). Madd flags and durations are placeholder reference values, NOT a verified tajweed corpus.",
+        "verified": false
+      },
+      "phonemes": [
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "H",
+          "baseLetter": "ح",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "H",
+          "baseLetter": "ح",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        }
+      ]
+    },
+    {
+      "verseKey": "1:4",
+      "scriptUthmani": "مَٰلِكِ يَوْمِ ٱلدِّينِ",
+      "source": {
+        "corpus": "PLACEHOLDER - unverified mechanical derivation, Al-Fatiha only",
+        "attribution": "Letters derived from Siraat FullQuran.json (KFGQPC Hafs Uthmani). Madd flags and durations are placeholder reference values, NOT a verified tajweed corpus.",
+        "verified": false
+      },
+      "phonemes": [
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "k",
+          "baseLetter": "ك",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "w",
+          "baseLetter": "و",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "d",
+          "baseLetter": "د",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        }
+      ]
+    },
+    {
+      "verseKey": "1:5",
+      "scriptUthmani": "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+      "source": {
+        "corpus": "PLACEHOLDER - unverified mechanical derivation, Al-Fatiha only",
+        "attribution": "Letters derived from Siraat FullQuran.json (KFGQPC Hafs Uthmani). Madd flags and durations are placeholder reference values, NOT a verified tajweed corpus.",
+        "verified": false
+      },
+      "phonemes": [
+        {
+          "symbol": "A",
+          "baseLetter": "إ",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ا",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "k",
+          "baseLetter": "ك",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "E",
+          "baseLetter": "ع",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "b",
+          "baseLetter": "ب",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "d",
+          "baseLetter": "د",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "w",
+          "baseLetter": "و",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "إ",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ا",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "k",
+          "baseLetter": "ك",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "s",
+          "baseLetter": "س",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "t",
+          "baseLetter": "ت",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "E",
+          "baseLetter": "ع",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        }
+      ]
+    },
+    {
+      "verseKey": "1:6",
+      "scriptUthmani": "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+      "source": {
+        "corpus": "PLACEHOLDER - unverified mechanical derivation, Al-Fatiha only",
+        "attribution": "Letters derived from Siraat FullQuran.json (KFGQPC Hafs Uthmani). Madd flags and durations are placeholder reference values, NOT a verified tajweed corpus.",
+        "verified": false
+      },
+      "phonemes": [
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "h",
+          "baseLetter": "ه",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "d",
+          "baseLetter": "د",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ا",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "S",
+          "baseLetter": "ص",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "T",
+          "baseLetter": "ط",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "s",
+          "baseLetter": "س",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "t",
+          "baseLetter": "ت",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "q",
+          "baseLetter": "ق",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        }
+      ]
+    },
+    {
+      "verseKey": "1:7",
+      "scriptUthmani": "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّآلِّينَ",
+      "source": {
+        "corpus": "PLACEHOLDER - unverified mechanical derivation, Al-Fatiha only",
+        "attribution": "Letters derived from Siraat FullQuran.json (KFGQPC Hafs Uthmani). Madd flags and durations are placeholder reference values, NOT a verified tajweed corpus.",
+        "verified": false
+      },
+      "phonemes": [
+        {
+          "symbol": "S",
+          "baseLetter": "ص",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "T",
+          "baseLetter": "ط",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "*",
+          "baseLetter": "ذ",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "أ",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "E",
+          "baseLetter": "ع",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "t",
+          "baseLetter": "ت",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "E",
+          "baseLetter": "ع",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "h",
+          "baseLetter": "ه",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "g",
+          "baseLetter": "غ",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "r",
+          "baseLetter": "ر",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "g",
+          "baseLetter": "غ",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "D",
+          "baseLetter": "ض",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "w",
+          "baseLetter": "و",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "b",
+          "baseLetter": "ب",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "E",
+          "baseLetter": "ع",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "h",
+          "baseLetter": "ه",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "m",
+          "baseLetter": "م",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "w",
+          "baseLetter": "و",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ا",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ٱ",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "D",
+          "baseLetter": "ض",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "A",
+          "baseLetter": "ا",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "l",
+          "baseLetter": "ل",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        },
+        {
+          "symbol": "y",
+          "baseLetter": "ي",
+          "isMaddVowel": true,
+          "expectedMaddCount": 2,
+          "expectedDurationSeconds": 0.9
+        },
+        {
+          "symbol": "n",
+          "baseLetter": "ن",
+          "isMaddVowel": false,
+          "expectedMaddCount": 0,
+          "expectedDurationSeconds": 0.18
+        }
+      ]
+    }
+  ]
+}

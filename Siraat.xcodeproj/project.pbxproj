@@ -80,6 +80,21 @@
 		BF0000000000000000000047 /* CoreMLTajweedModelAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000004D /* CoreMLTajweedModelAdapter.swift */; };
 		BF0000000000000000000048 /* TajweedRulesEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000004E /* TajweedRulesEngine.swift */; };
 		BF0000000000000000000049 /* HybridRecitationAnalysisProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000004F /* HybridRecitationAnalysisProvider.swift */; };
+		BF0000000000000000000050 /* RecitationCharacterModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000050 /* RecitationCharacterModels.swift */; };
+		BF0000000000000000000051 /* PhoneticBlueprint.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000051 /* PhoneticBlueprint.swift */; };
+		BF0000000000000000000052 /* PhoneticBlueprintLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000052 /* PhoneticBlueprintLoader.swift */; };
+		BF0000000000000000000053 /* UthmaniCharacterMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000053 /* UthmaniCharacterMapper.swift */; };
+		BF0000000000000000000054 /* RecitationAudioBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000054 /* RecitationAudioBuffer.swift */; };
+		BF0000000000000000000055 /* ForcedAligner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000055 /* ForcedAligner.swift */; };
+		BF0000000000000000000056 /* CharacterTajweedEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000056 /* CharacterTajweedEvaluator.swift */; };
+		BF0000000000000000000057 /* TajweedAttributedStringBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000057 /* TajweedAttributedStringBuilder.swift */; };
+		BF0000000000000000000058 /* TajweedAyahText.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000058 /* TajweedAyahText.swift */; };
+		BF0000000000000000000059 /* TajweedBlueprints.json in Resources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000059 /* TajweedBlueprints.json */; };
+		BF000000000000000000005A /* PhoneticBlueprintLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005A /* PhoneticBlueprintLoaderTests.swift */; };
+		BF000000000000000000005B /* UthmaniCharacterMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005B /* UthmaniCharacterMapperTests.swift */; };
+		BF000000000000000000005C /* CharacterTajweedEvaluatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005C /* CharacterTajweedEvaluatorTests.swift */; };
+		BF000000000000000000005D /* TajweedAttributedStringBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005D /* TajweedAttributedStringBuilderTests.swift */; };
+		BF000000000000000000005E /* ForcedAlignerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005E /* ForcedAlignerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,6 +185,21 @@
 		FR000000000000000000004D /* CoreMLTajweedModelAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/CoreMLTajweedModelAdapter.swift; sourceTree = "<group>"; };
 		FR000000000000000000004E /* TajweedRulesEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/TajweedRulesEngine.swift; sourceTree = "<group>"; };
 		FR000000000000000000004F /* HybridRecitationAnalysisProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/HybridRecitationAnalysisProvider.swift; sourceTree = "<group>"; };
+		FR0000000000000000000050 /* RecitationCharacterModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Models/RecitationCharacterModels.swift; sourceTree = "<group>"; };
+		FR0000000000000000000051 /* PhoneticBlueprint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Models/PhoneticBlueprint.swift; sourceTree = "<group>"; };
+		FR0000000000000000000052 /* PhoneticBlueprintLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/PhoneticBlueprintLoader.swift; sourceTree = "<group>"; };
+		FR0000000000000000000053 /* UthmaniCharacterMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Utilities/UthmaniCharacterMapper.swift; sourceTree = "<group>"; };
+		FR0000000000000000000054 /* RecitationAudioBuffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/RecitationAudioBuffer.swift; sourceTree = "<group>"; };
+		FR0000000000000000000055 /* ForcedAligner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/ForcedAligner.swift; sourceTree = "<group>"; };
+		FR0000000000000000000056 /* CharacterTajweedEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/CharacterTajweedEvaluator.swift; sourceTree = "<group>"; };
+		FR0000000000000000000057 /* TajweedAttributedStringBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/RecitationCorrection/TajweedAttributedStringBuilder.swift; sourceTree = "<group>"; };
+		FR0000000000000000000058 /* TajweedAyahText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Features/RecitationCorrection/TajweedAyahText.swift; sourceTree = "<group>"; };
+		FR0000000000000000000059 /* TajweedBlueprints.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Siraat/Resources/TajweedBlueprints.json; sourceTree = "<group>"; };
+		FR000000000000000000005A /* PhoneticBlueprintLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/PhoneticBlueprintLoaderTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000005B /* UthmaniCharacterMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/UthmaniCharacterMapperTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000005C /* CharacterTajweedEvaluatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/CharacterTajweedEvaluatorTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000005D /* TajweedAttributedStringBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/TajweedAttributedStringBuilderTests.swift; sourceTree = "<group>"; };
+		FR000000000000000000005E /* ForcedAlignerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/ForcedAlignerTests.swift; sourceTree = "<group>"; };
 		PR0000000000000000000001 /* Siraat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siraat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		PR0000000000000000000002 /* SiraatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SiraatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -227,6 +257,15 @@
 				FR000000000000000000004F /* HybridRecitationAnalysisProvider.swift */,
 				FR000000000000000000004D /* CoreMLTajweedModelAdapter.swift */,
 				FR000000000000000000004E /* TajweedRulesEngine.swift */,
+				FR0000000000000000000055 /* ForcedAligner.swift */,
+				FR0000000000000000000052 /* PhoneticBlueprintLoader.swift */,
+				FR0000000000000000000054 /* RecitationAudioBuffer.swift */,
+				FR0000000000000000000056 /* CharacterTajweedEvaluator.swift */,
+				FR0000000000000000000050 /* RecitationCharacterModels.swift */,
+				FR0000000000000000000051 /* PhoneticBlueprint.swift */,
+				FR0000000000000000000053 /* UthmaniCharacterMapper.swift */,
+				FR0000000000000000000057 /* TajweedAttributedStringBuilder.swift */,
+				FR0000000000000000000058 /* TajweedAyahText.swift */,
 				FR0000000000000000000009 /* RecitationCorrectionService.swift */,
 				FR000000000000000000000A /* SecretsProvider.swift */,
 				FR000000000000000000000B /* TranslationService.swift */,
@@ -256,6 +295,7 @@
 				FR000000000000000000003F /* NamesOfAllahView.swift */,
 				FR0000000000000000000040 /* DuasView.swift */,
 				FR0000000000000000000017 /* SampleQuran.json */,
+				FR0000000000000000000059 /* TajweedBlueprints.json */,
 				FR0000000000000000000038 /* FullQuran.json */,
 				FR0000000000000000000048 /* Translation-ur.json */,
 				FR0000000000000000000049 /* Translation-id.json */,
@@ -286,6 +326,11 @@
 				FR0000000000000000000042 /* QuranicDuasTests.swift */,
 				FR0000000000000000000045 /* KhutbaLibraryTests.swift */,
 				FR000000000000000000004B /* QiblaMathTests.swift */,
+				FR000000000000000000005A /* PhoneticBlueprintLoaderTests.swift */,
+				FR000000000000000000005B /* UthmaniCharacterMapperTests.swift */,
+				FR000000000000000000005C /* CharacterTajweedEvaluatorTests.swift */,
+				FR000000000000000000005D /* TajweedAttributedStringBuilderTests.swift */,
+				FR000000000000000000005E /* ForcedAlignerTests.swift */,
 			);
 			name = SiraatTests;
 			sourceTree = "<group>";
@@ -397,6 +442,7 @@
 				BF0000000000000000000044 /* Translation-tr.json in Resources */,
 				BF0000000000000000000040 /* Adhan.caf in Resources */,
 				BF0000000000000000000041 /* PrivacyInfo.xcprivacy in Resources */,
+				BF0000000000000000000059 /* TajweedBlueprints.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -464,6 +510,15 @@
 				BF0000000000000000000038 /* MoreView.swift in Sources */,
 				BF0000000000000000000039 /* NamesOfAllahView.swift in Sources */,
 				BF000000000000000000003A /* DuasView.swift in Sources */,
+				BF0000000000000000000050 /* RecitationCharacterModels.swift in Sources */,
+				BF0000000000000000000051 /* PhoneticBlueprint.swift in Sources */,
+				BF0000000000000000000052 /* PhoneticBlueprintLoader.swift in Sources */,
+				BF0000000000000000000053 /* UthmaniCharacterMapper.swift in Sources */,
+				BF0000000000000000000054 /* RecitationAudioBuffer.swift in Sources */,
+				BF0000000000000000000055 /* ForcedAligner.swift in Sources */,
+				BF0000000000000000000056 /* CharacterTajweedEvaluator.swift in Sources */,
+				BF0000000000000000000057 /* TajweedAttributedStringBuilder.swift in Sources */,
+				BF0000000000000000000058 /* TajweedAyahText.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,6 +542,11 @@
 				BF000000000000000000003C /* QuranicDuasTests.swift in Sources */,
 				BF000000000000000000003F /* KhutbaLibraryTests.swift in Sources */,
 				BF0000000000000000000045 /* QiblaMathTests.swift in Sources */,
+				BF000000000000000000005A /* PhoneticBlueprintLoaderTests.swift in Sources */,
+				BF000000000000000000005B /* UthmaniCharacterMapperTests.swift in Sources */,
+				BF000000000000000000005C /* CharacterTajweedEvaluatorTests.swift in Sources */,
+				BF000000000000000000005D /* TajweedAttributedStringBuilderTests.swift in Sources */,
+				BF000000000000000000005E /* ForcedAlignerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

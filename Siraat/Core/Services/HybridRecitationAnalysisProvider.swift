@@ -4,15 +4,39 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
     private let localMatcher: RecitationCorrectionServicing
     private let acousticAnalyzer: TajweedAcousticAnalyzing
     private let rulesEngine: TajweedRulesEngine
+    private let forcedAligner: PhoneticForcedAligning
+    private let characterEvaluator: CharacterTajweedEvaluator
 
     init(
         localMatcher: RecitationCorrectionServicing = RecitationCorrectionService(),
         acousticAnalyzer: TajweedAcousticAnalyzing = CoreMLTajweedAcousticAnalyzer(),
-        rulesEngine: TajweedRulesEngine = TajweedRulesEngine()
+        rulesEngine: TajweedRulesEngine = TajweedRulesEngine(),
+        forcedAligner: PhoneticForcedAligning = CoreMLForcedAligner(),
+        characterEvaluator: CharacterTajweedEvaluator = CharacterTajweedEvaluator()
     ) {
         self.localMatcher = localMatcher
         self.acousticAnalyzer = acousticAnalyzer
         self.rulesEngine = rulesEngine
+        self.forcedAligner = forcedAligner
+        self.characterEvaluator = characterEvaluator
+    }
+
+    func analyzeCharacters(
+        uthmani: String,
+        blueprint: AyahPhonemeMap,
+        samples: [Float],
+        sampleRate: Double
+    ) async -> [RecitationCharacterResult] {
+        do {
+            let aligned = try await forcedAligner.align(
+                samples: samples,
+                sampleRate: sampleRate,
+                against: blueprint
+            )
+            return characterEvaluator.evaluate(uthmani: uthmani, blueprint: blueprint, aligned: aligned)
+        } catch {
+            return []
+        }
     }
 
     func analyze(transcript: String, expectedWords: [RecitationWord]) async -> RecitationAnalysisResult {

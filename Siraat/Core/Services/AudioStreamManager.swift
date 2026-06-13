@@ -30,6 +30,12 @@ final class AudioStreamManager: NSObject, ObservableObject {
     @Published private(set) var waveformLevel: Double = 0
     @Published var errorMessage: String?
 
+    /// Optional observer of raw PCM buffers from the mic tap, set before `start()`.
+    /// Used to feed the on-device Tajweed forced aligner. It is called on the audio
+    /// thread, so the closure must only copy samples and return quickly (see
+    /// `RecitationAudioBuffer`). When nil, capture behaves exactly as before.
+    var onPCMBuffer: ((AVAudioPCMBuffer) -> Void)?
+
     private let audioEngine = AVAudioEngine()
     private var recognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
@@ -108,6 +114,10 @@ final class AudioStreamManager: NSObject, ObservableObject {
         inputNode.removeTap(onBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1_024, format: recordingFormat) { [weak self] buffer, _ in
             request.append(buffer)
+            // Non-destructive observer for on-device forced alignment. Runs on the audio
+            // thread; the sink only copies samples. Order after append keeps the speech
+            // recognition flow byte-for-byte identical to before this hook existed.
+            self?.onPCMBuffer?(buffer)
             let level = Self.level(from: buffer)
             Task { @MainActor in
                 self?.waveformLevel = level
