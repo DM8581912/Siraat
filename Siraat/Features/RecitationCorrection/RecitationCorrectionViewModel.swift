@@ -9,6 +9,8 @@ final class RecitationCorrectionViewModel: ObservableObject {
     @Published private(set) var waveformLevel: Double = 0
     @Published private(set) var isListening = false
     @Published private(set) var analysisEngine: RecitationAnalysisEngine = .localMatcher
+    @Published private(set) var characterResults: [RecitationCharacterResult] = []
+    @Published var showColoredAyah = true
     @Published var selectedSurah = 1
     @Published var selectedVerseNumber = 1
     @Published var script: QuranScript = .uthmani
@@ -16,12 +18,33 @@ final class RecitationCorrectionViewModel: ObservableObject {
 
     // Owned, not shared: this feature has its own microphone engine.
     private let audioStreamManager = AudioStreamManager()
+    private let recitationAudioBuffer = RecitationAudioBuffer()
     private var databaseManager: QuranDatabaseManaging?
     private var correctionService: RecitationCorrectionServicing?
     private var analysisProvider: RecitationAnalysisProviding?
+    private var blueprintProvider: PhoneticBlueprintProviding?
+    private var currentBlueprint: AyahPhonemeMap?
     private var didConfigure = false
     private var analysisTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
+
+    /// Whether the colored ayah may be shown. Requires a blueprint, and in production
+    /// requires verified religious data. The Al-Fatiha placeholder (`verified == false`)
+    /// is shown only in DEBUG builds, clearly labeled experimental, so unverified Tajweed
+    /// data never reaches users.
+    var canShowColoredAyah: Bool {
+        guard let blueprint = currentBlueprint else { return false }
+        #if DEBUG
+        return true
+        #else
+        return blueprint.source.verified
+        #endif
+    }
+
+    var isBlueprintExperimental: Bool {
+        guard let blueprint = currentBlueprint else { return false }
+        return !blueprint.source.verified
+    }
 
     var selectedChapter: QuranChapter {
         QuranChapter.chapter(number: selectedSurah)
@@ -40,13 +63,21 @@ final class RecitationCorrectionViewModel: ObservableObject {
     func configure(
         databaseManager: QuranDatabaseManaging,
         correctionService: RecitationCorrectionServicing,
-        analysisProvider: RecitationAnalysisProviding
+        analysisProvider: RecitationAnalysisProviding,
+        blueprintProvider: PhoneticBlueprintProviding
     ) {
         guard !didConfigure else { return }
         didConfigure = true
         self.databaseManager = databaseManager
         self.correctionService = correctionService
         self.analysisProvider = analysisProvider
+        self.blueprintProvider = blueprintProvider
+
+        // Capture raw PCM for the on-device forced aligner. The closure only copies
+        // samples into a thread-safe buffer; audio never leaves the device.
+        audioStreamManager.onPCMBuffer = { [recitationAudioBuffer] buffer in
+            recitationAudioBuffer.append(buffer)
+        }
 
         audioStreamManager.$latestSegment
             .compactMap { $0?.text }
@@ -82,6 +113,8 @@ final class RecitationCorrectionViewModel: ObservableObject {
                 if let selectedVerse, let correctionService {
                     words = correctionService.prepareWords(for: selectedVerse, script: script)
                 }
+                currentBlueprint = selectedVerse.map { blueprintProvider?.blueprint(forVerseKey: $0.verseKey) } ?? nil
+                characterResults = []
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -89,6 +122,7 @@ final class RecitationCorrectionViewModel: ObservableObject {
     }
 
     func startListening() {
+        recitationAudioBuffer.reset()
         Task {
             do {
                 try await audioStreamManager.start(languageIdentifier: "ar-SA")
@@ -104,6 +138,8 @@ final class RecitationCorrectionViewModel: ObservableObject {
 
     func reset() {
         transcript = ""
+        characterResults = []
+        recitationAudioBuffer.reset()
         if let selectedVerse, let correctionService {
             words = correctionService.prepareWords(for: selectedVerse, script: script)
         }
@@ -112,13 +148,29 @@ final class RecitationCorrectionViewModel: ObservableObject {
     private func evaluate(_ transcript: String) {
         guard let analysisProvider else { return }
         let currentWords = words
+        let blueprint = currentBlueprint
+        let uthmani = selectedVerse?.textUthmani ?? ""
+        let allowCharacterColoring = canShowColoredAyah
+        let audio = recitationAudioBuffer.snapshot()
         analysisTask?.cancel()
         analysisTask = Task { [weak self] in
             let result = await analysisProvider.analyze(transcript: transcript, expectedWords: currentWords)
+
+            var characters: [RecitationCharacterResult] = []
+            if allowCharacterColoring, let blueprint, !uthmani.isEmpty {
+                characters = await analysisProvider.analyzeCharacters(
+                    uthmani: uthmani,
+                    blueprint: blueprint,
+                    samples: audio.samples,
+                    sampleRate: audio.sampleRate
+                )
+            }
+
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 self?.words = result.words
                 self?.analysisEngine = result.engine
+                self?.characterResults = characters
             }
         }
     }

@@ -35,6 +35,10 @@ struct RecitationCorrectionView: View {
                         .environment(\.layoutDirection, .rightToLeft)
                     }
 
+                    if viewModel.canShowColoredAyah {
+                        coloredAyahSection
+                    }
+
                     if !viewModel.transcript.isEmpty {
                         SectionBand(title: "Live Transcript") {
                             Text.arabic(viewModel.transcript)
@@ -87,9 +91,33 @@ struct RecitationCorrectionView: View {
             viewModel.configure(
                 databaseManager: services.quranDatabaseManager,
                 correctionService: services.recitationCorrectionService,
-                analysisProvider: services.recitationAnalysisProvider
+                analysisProvider: services.recitationAnalysisProvider,
+                blueprintProvider: services.phoneticBlueprintProvider
             )
             viewModel.loadVerse()
+        }
+    }
+
+    private var coloredAyahSection: some View {
+        SectionBand(title: "Tajweed (per-letter)") {
+            Toggle("Show colored ayah", isOn: $viewModel.showColoredAyah)
+                .font(.caption)
+
+            if viewModel.isBlueprintExperimental {
+                Label(
+                    "Experimental: this ayah's Tajweed data is a placeholder and not yet verified.",
+                    systemImage: "flask"
+                )
+                .font(.caption2)
+                .foregroundStyle(SiraatColor.warning)
+            }
+
+            if viewModel.showColoredAyah, let verse = viewModel.selectedVerse {
+                TajweedAyahText(uthmani: verse.textUthmani, results: viewModel.characterResults)
+                    .padding(.vertical, SiraatSpacing.xs)
+
+                TajweedLegend()
+            }
         }
     }
 
@@ -129,6 +157,31 @@ struct RecitationCorrectionView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
+        }
+    }
+}
+
+/// Color + symbol key for the per-letter Tajweed view. The symbol is a second,
+/// non-color signal so the feedback reads for color-blind users.
+private struct TajweedLegend: View {
+    var body: some View {
+        HStack(spacing: SiraatSpacing.md) {
+            item(color: SiraatColor.accent, symbol: "checkmark.circle", label: "Correct")
+            item(color: SiraatColor.warning, symbol: "timer", label: "Madd timing")
+            item(color: SiraatColor.destructive, symbol: "exclamationmark.circle", label: "Error")
+        }
+        .font(.caption2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Legend: green correct, orange Madd timing, red error")
+    }
+
+    private func item(color: Color, symbol: String, label: String) -> some View {
+        HStack(spacing: SiraatSpacing.xxs) {
+            Image(systemName: symbol)
+                .foregroundStyle(color)
+            Text(label)
+                .foregroundStyle(SiraatColor.textSecondary)
         }
     }
 }
