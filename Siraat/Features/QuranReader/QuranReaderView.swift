@@ -91,7 +91,7 @@ struct QuranReaderView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 14) {
                     ForEach(viewModel.displayedVerses) { verse in
-                        QuranVerseRow(
+                        EquatableView(content: QuranVerseRow(
                             verse: verse,
                             settings: viewModel.settings,
                             isBookmarked: viewModel.isBookmarked(verse),
@@ -102,7 +102,7 @@ struct QuranReaderView: View {
                                 services.quranAudioPlayer.play(verse: verse)
                             },
                             onVisible: { viewModel.markAsCurrent(verse) }
-                        )
+                        ))
                         .id(verse.verseKey)
                     }
                 }
@@ -271,7 +271,7 @@ private struct DisplaySettingsSheet: View {
     }
 }
 
-private struct QuranVerseRow: View {
+private struct QuranVerseRow: View, Equatable {
     let verse: QuranVerse
     let settings: ReaderSettings
     let isBookmarked: Bool
@@ -279,6 +279,14 @@ private struct QuranVerseRow: View {
     let onBookmark: () -> Void
     let onPlay: () -> Void
     let onVisible: () -> Void
+
+    // Closures can't be compared — diff only the data that drives the visual output.
+    static func == (lhs: QuranVerseRow, rhs: QuranVerseRow) -> Bool {
+        lhs.verse == rhs.verse
+            && lhs.settings == rhs.settings
+            && lhs.isBookmarked == rhs.isBookmarked
+            && lhs.isPlaying == rhs.isPlaying
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: SiraatSpacing.sm) {

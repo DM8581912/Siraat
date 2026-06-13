@@ -60,7 +60,7 @@ Rounded to **68** accounting for the strong foundation (correct engine, protocol
 
 | # | File | Line | Issue | Fix |
 |---|------|------|-------|-----|
-| P2-1 | `QuranAudioPlayer.swift` | - | **Audio caching strategy unclear.** Need to verify if AVPlayer caches downloaded segments or re-fetches. | Audit the audio URL pipeline. If not cached, add a download-to-local-file path per verse/surah. |
+| P2-1 | `QuranAudioPlayer.swift` | - | **Audio caching: HTTP-level only.** `AVPlayerItem(url:)` streams from everyayah.com; AVFoundation applies standard HTTP caching (URLCache, respects server Cache-Control). Same verse replays without re-fetch within a session. No persistent offline cache — full download-to-local is deferred to Phase 5. | Audited Phase 3. Acceptable for now; offline download is a separate feature. |
 | P2-2 | `DesignSystem.swift` | 101 | **Uthmani font not yet bundled.** Arabic renders in system serif fallback. The `SiraatFont` infra is ready but `Resources/Fonts/` is empty. | Bundle a licensed Uthmani font (Amiri Quran is SIL OFL). |
 | P2-3 | `DashboardView.swift` | 470 | **470 lines.** Below the 500-line hard rule but dense. Hero, prayer strip, and 6 card components all in one file. | Extract private structs into a `DashboardComponents.swift` companion file. |
 

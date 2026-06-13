@@ -78,8 +78,10 @@ final class DashboardViewModel: ObservableObject {
             let globalNumber = Int((day &* 2_654_435_761).magnitude % 6236) + 1
             verseOfTheDay = await databaseManager.verse(globalNumber: globalNumber)
 
-            // Recompute prayer times with the freshly loaded calculation method/madhab
-            // (e.g. after the user changes them in Settings) using the last fix.
+            // Show the last-known schedule immediately so cold launch isn't blank.
+            restoreCachedSchedule()
+
+            // Recompute with fresh location + settings when available.
             if let coordinate = locationManager?.coordinate {
                 updateUtilities(for: coordinate)
             }
@@ -99,6 +101,7 @@ final class DashboardViewModel: ObservableObject {
             load()
         case .background, .inactive:
             locationManager?.stopHeadingUpdates()
+            didAutoRescheduleReminders = false
         @unknown default:
             break
         }
@@ -124,6 +127,19 @@ final class DashboardViewModel: ObservableObject {
         }
     }
 
+    private func restoreCachedSchedule() {
+        guard prayerSchedule == nil,
+              let data = UserDefaults.standard.data(forKey: Self.cachedScheduleKey),
+              let cached = try? JSONDecoder().decode(DailyPrayerSchedule.self, from: data)
+        else { return }
+        prayerSchedule = cached
+    }
+
+    private func cacheSchedule(_ schedule: DailyPrayerSchedule) {
+        guard let data = try? JSONEncoder().encode(schedule) else { return }
+        UserDefaults.standard.set(data, forKey: Self.cachedScheduleKey)
+    }
+
     private func updateUtilities(for coordinate: LocationCoordinate) {
         locationStatusText = String(format: "%.3f, %.3f", coordinate.latitude, coordinate.longitude)
         prayerSchedule = prayerTimesService?.schedule(
@@ -135,6 +151,7 @@ final class DashboardViewModel: ObservableObject {
             highLatitudeRule: settings.highLatitudeRule,
             adjustments: settings.prayerAdjustments
         )
+        if let schedule = prayerSchedule { cacheSchedule(schedule) }
         qiblaDirection = qiblaService?.direction(from: coordinate, headingDegrees: locationManager?.headingDegrees)
         autoRescheduleRemindersIfNeeded(for: coordinate)
     }
@@ -153,6 +170,7 @@ final class DashboardViewModel: ObservableObject {
     }
 
     private let reminderScheduleDays = 7
+    private static let cachedScheduleKey = "cachedPrayerSchedule"
 
     private func upcomingSchedules(from coordinate: LocationCoordinate, days: Int) -> [DailyPrayerSchedule] {
         guard let prayerTimesService else { return [] }
