@@ -22,9 +22,10 @@ struct CharacterTajweedEvaluator {
     func evaluate(
         uthmani: String,
         blueprint: AyahPhonemeMap,
-        aligned: [AlignedPhoneme]
+        alignment: ForcedAlignment
     ) -> [RecitationCharacterResult] {
         let clusters = UthmaniCharacterMapper.clusters(in: uthmani)
+        let aligned = alignment.phonemes
 
         return clusters.enumerated().map { index, cluster in
             guard index < blueprint.phonemes.count else {
@@ -40,7 +41,12 @@ struct CharacterTajweedEvaluator {
 
             let phoneme = blueprint.phonemes[index]
             let observation = index < aligned.count ? aligned[index] : nil
-            let verdict = classify(cluster: cluster, phoneme: phoneme, observation: observation)
+            let verdict = classify(
+                cluster: cluster,
+                phoneme: phoneme,
+                observation: observation,
+                harakatSeconds: alignment.harakatSeconds
+            )
 
             return RecitationCharacterResult(
                 char: cluster.text,
@@ -55,7 +61,8 @@ struct CharacterTajweedEvaluator {
     private func classify(
         cluster: UthmaniCluster,
         phoneme: CanonicalPhoneme,
-        observation: AlignedPhoneme?
+        observation: AlignedPhoneme?,
+        harakatSeconds: Double?
     ) -> (color: RecitationCharacterColor, errorType: RecitationCharacterErrorType?) {
         // 1. The phoneme was not heard at all — a strict miss.
         guard let observation else {
@@ -73,13 +80,16 @@ struct CharacterTajweedEvaluator {
             return (.red, .tashkeelWrong)
         }
 
-        // 4. Madd timing: a long vowel held too briefly (or far too long).
+        // 4. Madd timing. Prefer the reciter's own measured harakah (tempo-invariant): a
+        // natural Madd should run at least ~2 harakāt, so flag below ~1 harakah. Fall back
+        // to the blueprint's reference duration when no harakah unit was measured.
         if phoneme.isMaddVowel && !heardDifferentLetter {
-            let expected = phoneme.expectedDurationSeconds
+            let expected = harakatSeconds.map { $0 * 2 } ?? phoneme.expectedDurationSeconds
+            let longBound = harakatSeconds.map { $0 * 6 } ?? maximumMaddDuration
             if expected > 0 && observation.duration < expected * maddShortRatio {
                 return (.yellow, .maddShort)
             }
-            if observation.duration > maximumMaddDuration {
+            if observation.duration > longBound {
                 return (.yellow, .maddLong)
             }
         }

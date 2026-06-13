@@ -28,12 +28,12 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
         sampleRate: Double
     ) async -> [RecitationCharacterResult] {
         do {
-            let aligned = try await forcedAligner.align(
+            let alignment = try await forcedAligner.align(
                 samples: samples,
                 sampleRate: sampleRate,
                 against: blueprint
             )
-            return characterEvaluator.evaluate(uthmani: uthmani, blueprint: blueprint, aligned: aligned)
+            return characterEvaluator.evaluate(uthmani: uthmani, blueprint: blueprint, alignment: alignment)
         } catch {
             return []
         }

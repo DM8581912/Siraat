@@ -21,57 +21,83 @@ final class CharacterTajweedEvaluatorTests: XCTestCase {
         AlignedPhoneme(symbol: String(base), baseLetter: base, start: start, end: end, confidence: confidence)
     }
 
+    private func alignment(_ phonemes: [AlignedPhoneme], harakat: Double? = nil) -> ForcedAlignment {
+        ForcedAlignment(phonemes: phonemes, harakatSeconds: harakat)
+    }
+
     func testCorrectRecitationIsAllGreen() {
-        let aligned = [
+        let a = alignment([
             phoneme("ب", start: 0, end: 0.18, confidence: 0.9),
             phoneme("ا", start: 0.18, end: 1.08, confidence: 0.9)
-        ]
-        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), aligned: aligned)
+        ])
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
         XCTAssertEqual(results.map(\.color), [.green, .green])
         XCTAssertEqual(results.compactMap(\.errorType), [])
     }
 
     func testShortMaddIsYellow() {
-        let aligned = [
+        let a = alignment([
             phoneme("ب", start: 0, end: 0.18, confidence: 0.9),
             phoneme("ا", start: 0.18, end: 0.48, confidence: 0.9) // 0.30s < 0.9*0.5
-        ]
-        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), aligned: aligned)
+        ])
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
         XCTAssertEqual(results[1].color, .yellow)
         XCTAssertEqual(results[1].errorType, .maddShort)
     }
 
+    func testTempoNormalizedShortMaddUsesMeasuredHarakah() {
+        // Fast reciter: 1 harakah = 0.15s, so a natural Madd should be >= ~0.3s.
+        // A 0.12s long vowel is below 1 harakah -> flagged, independent of the blueprint clock.
+        let a = alignment([
+            phoneme("ب", start: 0, end: 0.10, confidence: 0.9),
+            phoneme("ا", start: 0.10, end: 0.22, confidence: 0.9) // 0.12s
+        ], harakat: 0.15)
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
+        XCTAssertEqual(results[1].errorType, .maddShort)
+    }
+
+    func testTempoNormalizedAdequateMaddIsGreen() {
+        // Same fast tempo, but the Madd is held 0.40s (> 2 harakāt) -> correct.
+        let a = alignment([
+            phoneme("ب", start: 0, end: 0.10, confidence: 0.9),
+            phoneme("ا", start: 0.10, end: 0.50, confidence: 0.9) // 0.40s
+        ], harakat: 0.15)
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
+        XCTAssertEqual(results[1].color, .green)
+        XCTAssertNil(results[1].errorType)
+    }
+
     func testMissingPhonemeIsRedMissed() {
-        let aligned = [phoneme("ب", start: 0, end: 0.18, confidence: 0.9)]
-        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), aligned: aligned)
+        let a = alignment([phoneme("ب", start: 0, end: 0.18, confidence: 0.9)])
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
         XCTAssertEqual(results[1].color, .red)
         XCTAssertEqual(results[1].errorType, .missed)
     }
 
     func testWrongLetterAtHighConfidenceIsRed() {
-        let aligned = [
+        let a = alignment([
             phoneme("ت", start: 0, end: 0.18, confidence: 0.95), // heard ت instead of ب
             phoneme("ا", start: 0.18, end: 1.08, confidence: 0.9)
-        ]
-        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), aligned: aligned)
+        ])
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
         XCTAssertEqual(results[0].color, .red)
         XCTAssertEqual(results[0].errorType, .tashkeelWrong)
     }
 
     func testLowConfidenceWrongLetterStaysGreen() {
         // Honesty regression guard: we never flag what we cannot confidently hear.
-        let aligned = [
+        let a = alignment([
             phoneme("ت", start: 0, end: 0.18, confidence: 0.45),
             phoneme("ا", start: 0.18, end: 1.08, confidence: 0.45)
-        ]
-        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), aligned: aligned)
+        ])
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
         XCTAssertEqual(results.map(\.color), [.green, .green])
         XCTAssertEqual(results.compactMap(\.errorType), [])
     }
 
     func testResultRangesCoverEachCluster() {
-        let aligned = CoreMLForcedAligner.placeholderAlignment(for: blueprint())
-        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), aligned: aligned)
+        let a = CoreMLForcedAligner.placeholderAlignment(for: blueprint())
+        let results = CharacterTajweedEvaluator().evaluate(uthmani: uthmani, blueprint: blueprint(), alignment: a)
         XCTAssertEqual(results.count, 2)
         XCTAssertEqual(results[0].utf16Range.lowerBound, 0)
         XCTAssertEqual(results.last?.utf16Range.upperBound, (uthmani as NSString).length)

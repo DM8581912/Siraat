@@ -17,6 +17,10 @@ jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 40
+    # Wait for the model conversion so the IPA can bundle the .mlmodelc, but run regardless
+    # of its outcome (ship a placeholder IPA if conversion failed).
+    needs: convert-model
+    if: ${{ always() }}
 
     steps:
       - name: Checkout
@@ -112,6 +116,13 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             clean build
 
+      - name: Download converted Tajweed model
+        continue-on-error: true
+        uses: actions/download-artifact@v5
+        with:
+          name: Tajweed-coreml-model
+          path: model-dl
+
       - name: Package unsigned .ipa
         run: |
           APP_PATH="build/Build/Products/Release-iphoneos/Siraat.app"
@@ -122,6 +133,21 @@ jobs:
           fi
           mkdir -p Payload
           cp -R "$APP_PATH" Payload/
+
+          # Bundle the on-device Tajweed model + vocab into the app if conversion produced
+          # them. The app loads Wav2Vec2QuranPhonetics.mlmodelc / phoneme_vocab.json from
+          # the bundle root at runtime; absent them it runs the placeholder path.
+          if [ -d "model-dl/Wav2Vec2QuranPhonetics.mlmodelc" ]; then
+            cp -R "model-dl/Wav2Vec2QuranPhonetics.mlmodelc" "Payload/Siraat.app/"
+            echo "Bundled Wav2Vec2QuranPhonetics.mlmodelc"
+          else
+            echo "No model found — IPA will run the placeholder Tajweed path."
+          fi
+          if [ -f "model-dl/phoneme_vocab.json" ]; then
+            cp "model-dl/phoneme_vocab.json" "Payload/Siraat.app/"
+            echo "Bundled phoneme_vocab.json"
+          fi
+
           zip -r -y Siraat-unsigned.ipa Payload >/dev/null
           echo "Created Siraat-unsigned.ipa:"
           ls -lh Siraat-unsigned.ipa
