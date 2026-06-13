@@ -5,3 +5,8 @@ build/
 *.xcodeproj/xcuserdata/
 Config/Secrets.xcconfig
 .DS_Store
+
+# Large generated Tajweed blueprints (regenerate via Scripts/*.py; not bundled in the app,
+# only TajweedBlueprints.json is loaded). Kept out of git to avoid ~150MB of repo bloat.
+Siraat/Resources/TajweedBlueprints_Accurate.json
+Siraat/Resources/TajweedBlueprints_Full.json
