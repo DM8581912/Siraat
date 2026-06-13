@@ -58,6 +58,7 @@ struct DashboardView: View {
         .background(SiraatColor.background.ignoresSafeArea())
         .navigationTitle("")
         .toolbar(.hidden, for: .navigationBar)
+        .toast($viewModel.toastState)
         .alert("Location Error", isPresented: Binding(get: { viewModel.errorMessage != nil }, set: { _ in viewModel.errorMessage = nil })) {
             Button("OK", role: .cancel) {}
         } message: {

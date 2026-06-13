@@ -255,6 +255,85 @@ struct ErrorBoundaryView<Content: View>: View {
     }
 }
 
+/// A floating toast banner that slides in from the top and auto-dismisses.
+struct ToastBanner: View {
+    enum Style { case success, error, info }
+
+    let message: String
+    let style: Style
+
+    private var icon: String {
+        switch style {
+        case .success: "checkmark.circle.fill"
+        case .error: "exclamationmark.triangle.fill"
+        case .info: "info.circle.fill"
+        }
+    }
+
+    private var tint: Color {
+        switch style {
+        case .success: SiraatColor.accent
+        case .error: SiraatColor.destructive
+        case .info: SiraatColor.gold
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: SiraatSpacing.sm) {
+            Image(systemName: icon)
+                .foregroundStyle(tint)
+            Text(message)
+                .font(SiraatType.callout)
+                .foregroundStyle(SiraatColor.textPrimary)
+        }
+        .padding(.horizontal, SiraatSpacing.md)
+        .padding(.vertical, SiraatSpacing.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
+        .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+        .padding(.horizontal, SiraatSpacing.md)
+    }
+}
+
+/// View modifier that shows a toast banner at the top of the screen.
+struct ToastModifier: ViewModifier {
+    @Binding var toast: ToastState?
+
+    func body(content: Content) -> some View {
+        content.overlay(alignment: .top) {
+            if let toast {
+                ToastBanner(message: toast.message, style: toast.style)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                self.toast = nil
+                            }
+                        }
+                    }
+                    .padding(.top, SiraatSpacing.xs)
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.82), value: toast != nil)
+    }
+}
+
+struct ToastState: Equatable {
+    let message: String
+    let style: ToastBanner.Style
+
+    static func == (lhs: ToastState, rhs: ToastState) -> Bool {
+        lhs.message == rhs.message
+    }
+}
+
+extension View {
+    func toast(_ state: Binding<ToastState?>) -> some View {
+        modifier(ToastModifier(toast: state))
+    }
+}
+
 struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 

@@ -18,6 +18,8 @@ final class DashboardViewModel: ObservableObject {
     /// Fatal load error that prevents the screen from rendering. Distinct from
     /// errorMessage which is a user-dismissable alert for transient failures.
     @Published private(set) var loadError: String?
+    /// Non-blocking toast feedback for reminder scheduling results.
+    @Published var toastState: ToastState?
 
     private var databaseManager: QuranDatabaseManaging?
     private var locationManager: LocationManager?
@@ -124,7 +126,7 @@ final class DashboardViewModel: ObservableObject {
         Task {
             guard let prayerNotificationService else { return }
             guard let coordinate = locationManager?.coordinate else {
-                errorMessage = "Prayer times are needed before reminders can be scheduled."
+                toastState = ToastState(message: "Location needed before scheduling reminders.", style: .error)
                 return
             }
 
@@ -134,8 +136,11 @@ final class DashboardViewModel: ObservableObject {
                 reminderStatusText = reminderSettings.isEnabled
                     ? "Reminders set for the next \(reminderScheduleDays) days"
                     : "Prayer reminders are off"
+                toastState = reminderSettings.isEnabled
+                    ? ToastState(message: "Reminders set for the next \(reminderScheduleDays) days.", style: .success)
+                    : ToastState(message: "Prayer reminders turned off.", style: .info)
             } catch {
-                errorMessage = error.localizedDescription
+                toastState = ToastState(message: error.localizedDescription, style: .error)
             }
         }
     }
