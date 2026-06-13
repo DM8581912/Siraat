@@ -92,6 +92,10 @@ final class DashboardViewModel: ObservableObject {
         locationManager?.requestLocation()
     }
 
+    func setManualLocation(_ coordinate: LocationCoordinate) {
+        locationManager?.setManualCoordinate(coordinate)
+    }
+
     /// Stop the magnetometer + GPS when backgrounded, restart when foregrounded.
     /// Without this, startHeadingUpdates() runs the sensors indefinitely.
     func scenePhaseChanged(_ phase: ScenePhase) {

@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct SiraatApp: App {
     @StateObject private var services = AppServices()
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     init() {
         SiraatFont.registerBundledFonts()
@@ -24,6 +25,8 @@ struct SiraatApp: App {
     @ViewBuilder private var rootView: some View {
         if let screen = ProcessInfo.processInfo.environment["UITEST_SCREEN"] {
             UITestRoot(screen: screen)
+        } else if !hasCompletedOnboarding {
+            OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
         } else {
             MainTabView()
         }

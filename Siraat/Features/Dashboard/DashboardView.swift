@@ -28,6 +28,8 @@ struct DashboardView: View {
                 } else {
                     LocationPromptCard {
                         viewModel.requestLocation()
+                    } onManualLocation: { coord in
+                        viewModel.setManualLocation(coord)
                     }
                 }
 
@@ -295,6 +297,9 @@ private struct PrayerTimesStrip: View {
 
 private struct LocationPromptCard: View {
     let action: () -> Void
+    let onManualLocation: (LocationCoordinate) -> Void
+
+    @State private var showManualEntry = false
 
     var body: some View {
         Card {
@@ -314,6 +319,76 @@ private struct LocationPromptCard: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(SiraatColor.accent)
+
+                Button {
+                    showManualEntry = true
+                } label: {
+                    Label("Enter Location Manually", systemImage: "mappin.and.ellipse")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(SiraatColor.accent)
+            }
+        }
+        .sheet(isPresented: $showManualEntry) {
+            ManualLocationSheet(onSelect: onManualLocation)
+                .presentationDetents([.medium])
+        }
+    }
+}
+
+private struct ManualLocationSheet: View {
+    let onSelect: (LocationCoordinate) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var latitude = ""
+    @State private var longitude = ""
+
+    private let cities: [(String, Double, Double)] = [
+        ("Makkah", 21.4225, 39.8262),
+        ("New York", 40.7128, -74.0060),
+        ("London", 51.5074, -0.1278),
+        ("Istanbul", 41.0082, 28.9784),
+        ("Kuala Lumpur", 3.1390, 101.6869),
+        ("Cairo", 30.0444, 31.2357),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Quick Select") {
+                    ForEach(cities, id: \.0) { name, lat, lon in
+                        Button {
+                            onSelect(LocationCoordinate(latitude: lat, longitude: lon))
+                            dismiss()
+                        } label: {
+                            Text(name).foregroundStyle(SiraatColor.textPrimary)
+                        }
+                    }
+                }
+
+                Section("Custom Coordinates") {
+                    TextField("Latitude (e.g. 40.71)", text: $latitude)
+                        .keyboardType(.decimalPad)
+                    TextField("Longitude (e.g. -74.01)", text: $longitude)
+                        .keyboardType(.decimalPad)
+                    Button("Use These Coordinates") {
+                        guard let lat = Double(latitude), let lon = Double(longitude),
+                              (-90...90).contains(lat), (-180...180).contains(lon) else { return }
+                        onSelect(LocationCoordinate(latitude: lat, longitude: lon))
+                        dismiss()
+                    }
+                    .disabled({
+                        guard let lat = Double(latitude), let lon = Double(longitude) else { return true }
+                        return !(-90...90).contains(lat) || !(-180...180).contains(lon)
+                    }())
+                }
+            }
+            .navigationTitle("Manual Location")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                }
             }
         }
     }

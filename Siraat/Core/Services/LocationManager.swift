@@ -7,6 +7,11 @@ final class LocationManager: NSObject, ObservableObject {
     @Published private(set) var headingDegrees: Double?
     @Published private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var errorMessage: String?
+    /// True when the coordinate was set manually (city search / lat-lon entry) rather
+    /// than from the device GPS. Heading updates are unavailable in this mode.
+    @Published private(set) var isManualLocation = false
+
+    private static let manualCoordinateKey = "manualLocationCoordinate"
 
     private let manager = CLLocationManager()
 
@@ -16,6 +21,7 @@ final class LocationManager: NSObject, ObservableObject {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         manager.distanceFilter = 500
+        restoreManualCoordinate()
     }
 
     func requestLocation() {
@@ -26,10 +32,35 @@ final class LocationManager: NSObject, ObservableObject {
             manager.requestLocation()
             startHeadingUpdates()
         case .denied, .restricted:
-            errorMessage = "Location permission is needed for prayer times and qibla direction."
+            if coordinate == nil {
+                errorMessage = "Location permission is needed for prayer times and qibla direction."
+            }
         @unknown default:
             errorMessage = "Location authorization could not be determined."
         }
+    }
+
+    /// Set a manual location override. Persisted across launches. Clears when the user
+    /// grants device location permission and a GPS fix arrives.
+    func setManualCoordinate(_ coord: LocationCoordinate) {
+        coordinate = coord
+        isManualLocation = true
+        if let data = try? JSONEncoder().encode(coord) {
+            UserDefaults.standard.set(data, forKey: Self.manualCoordinateKey)
+        }
+    }
+
+    /// Remove the manual override so the next GPS fix takes over.
+    func clearManualCoordinate() {
+        isManualLocation = false
+        UserDefaults.standard.removeObject(forKey: Self.manualCoordinateKey)
+    }
+
+    private func restoreManualCoordinate() {
+        guard let data = UserDefaults.standard.data(forKey: Self.manualCoordinateKey),
+              let coord = try? JSONDecoder().decode(LocationCoordinate.self, from: data) else { return }
+        coordinate = coord
+        isManualLocation = true
     }
 
     func startHeadingUpdates() {
@@ -62,6 +93,7 @@ extension LocationManager: CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         Task { @MainActor in
+            if self.isManualLocation { self.clearManualCoordinate() }
             self.coordinate = LocationCoordinate(location.coordinate)
         }
     }
