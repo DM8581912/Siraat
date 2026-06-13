@@ -34,7 +34,7 @@ final class CoreMLTajweedAcousticAnalyzer: TajweedAcousticAnalyzing {
     func analyzeSpeech(transcript: String, expectedWords: [String]) async throws -> [Int: [TajweedPhonemeObservation]] {
         guard model != nil else { return [:] }
 
-        try await withThrowingTaskGroup(of: [Int: [TajweedPhonemeObservation]].self) { group in
+        return try await withThrowingTaskGroup(of: [Int: [TajweedPhonemeObservation]].self) { group in
             group.addTask {
                 // The compiled model's feature schema is not bundled yet. Keep the
                 // adapter live, local, and fast so the orchestration can be tested
