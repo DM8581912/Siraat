@@ -11,7 +11,8 @@ Pipeline
 --------
 1. Download a phonetic CTC model, e.g. `TBOGamer22/wav2vec2-quran-phonetics`.
 2. Trace it to TorchScript with a fixed-length raw-waveform input (16 kHz mono).
-3. Convert to a Core ML mlprogram with coremltools.
+3. Convert to a Core ML mlprogram with coremltools, then quantize weights to int8 (~halves
+   the bundle + runtime memory; pass `--no-quantize` to keep fp16).
 4. Compile to `.mlmodelc` and drop it in `Siraat/Resources/`.
 5. Export the phoneme vocabulary so `CanonicalPhoneme.symbol` values in
    `TajweedBlueprints.json` map to the model's output token ids.
@@ -47,6 +48,13 @@ def main() -> int:
     parser.add_argument("--model", required=True, help="HF model id or local path")
     parser.add_argument("--out", required=True, help="output .mlpackage path")
     parser.add_argument("--vocab", required=True, help="output phoneme vocab json path")
+    parser.add_argument(
+        "--no-quantize",
+        dest="quantize",
+        action="store_false",
+        help="skip int8 weight quantization (ship fp16 weights instead)",
+    )
+    parser.set_defaults(quantize=True)
     args = parser.parse_args()
 
     try:
@@ -94,6 +102,27 @@ def main() -> int:
     mlmodel.short_description = (
         "Wav2Vec2 Arabic phonetic CTC. Outputs per-frame logits for forced alignment."
     )
+
+    # Quantize weights to int8. The fp16 mlprogram is ~180 MB, which on a free-sideloaded
+    # build can push the app past the jetsam memory limit when the model loads + runs
+    # inference (this was crashing the Recitation "Listen" flow). Linear int8 weights roughly
+    # halve that to ~80-90 MB with negligible effect on phoneme logits, and the output token
+    # ids / vocab are unchanged so the Swift decode path is unaffected.
+    if args.quantize:
+        try:
+            import coremltools.optimize.coreml as cto
+
+            print("Quantizing weights to int8 (linear) ...")
+            op_config = cto.OpLinearQuantizerConfig(mode="linear_symmetric", weight_threshold=512)
+            opt_config = cto.OptimizationConfig(global_config=op_config)
+            mlmodel = cto.linear_quantize_weights(mlmodel, config=opt_config)
+            print("Quantized to int8.")
+        except Exception as exc:  # pragma: no cover - dev/CI tooling
+            print(
+                f"Quantization skipped ({exc}); shipping fp16 weights.",
+                file=sys.stderr,
+            )
+
     mlmodel.save(args.out)
     print(f"Saved {args.out}")
 
