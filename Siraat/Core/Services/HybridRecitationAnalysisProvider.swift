@@ -77,11 +77,13 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
 
     func analyze(transcript: String, expectedWords: [RecitationWord]) async -> RecitationAnalysisResult {
         let usingStreaming = useStreamingFollow()
+        let expectedText = expectedWords.map(\.originalText)
         var alignedWords: [RecitationWord]
+        var activeWordIndex: Int?
         if usingStreaming {
-            let expectedText = expectedWords.map(\.originalText)
             let follow = streamingAligner.align(expected: expectedText, transcript: transcript)
             alignedWords = mapFollowToWords(follow: follow, expectedWords: expectedWords)
+            activeWordIndex = follow.firstIndex { $0.state == .active }
             // Honest mistake detection runs on top of the same alignment trace, only when its
             // own flag is also on. Findings only escalate a slot from .uncertain to .missed
             // after the streaming confirmer has seen the same finding two ticks in a row.
@@ -100,12 +102,11 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
             alignedWords = localMatcher.evaluate(transcript: transcript, expectedWords: expectedWords)
         }
         let baseEngine: RecitationAnalysisEngine = usingStreaming ? .streamingAlign : .localMatcher
-        let expectedText = expectedWords.map(\.originalText)
 
         do {
             let observations = try await acousticAnalyzer.analyzeSpeech(transcript: transcript, expectedWords: expectedText)
             guard !observations.isEmpty else {
-                return RecitationAnalysisResult(words: alignedWords, engine: baseEngine)
+                return RecitationAnalysisResult(words: alignedWords, engine: baseEngine, activeWordIndex: activeWordIndex)
             }
 
             let violations = rulesEngine.violations(expectedWords: expectedText, observations: observations)
@@ -119,9 +120,9 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
                 }
             }
 
-            return RecitationAnalysisResult(words: alignedWords, engine: .coreML)
+            return RecitationAnalysisResult(words: alignedWords, engine: .coreML, activeWordIndex: activeWordIndex)
         } catch {
-            return RecitationAnalysisResult(words: alignedWords, engine: baseEngine)
+            return RecitationAnalysisResult(words: alignedWords, engine: baseEngine, activeWordIndex: activeWordIndex)
         }
     }
 

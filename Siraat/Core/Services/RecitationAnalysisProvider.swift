@@ -17,6 +17,16 @@ enum RecitationAnalysisEngine: String, Codable {
 struct RecitationAnalysisResult: Equatable {
     let words: [RecitationWord]
     let engine: RecitationAnalysisEngine
+    /// The position of the word the reciter is currently on (the streaming alignment head),
+    /// for the live karaoke highlight. `nil` when not tracking (index-matcher path) or when
+    /// the reciter has finished / not started.
+    let activeWordIndex: Int?
+
+    init(words: [RecitationWord], engine: RecitationAnalysisEngine, activeWordIndex: Int? = nil) {
+        self.words = words
+        self.engine = engine
+        self.activeWordIndex = activeWordIndex
+    }
 }
 
 protocol RecitationAnalysisProviding {
@@ -33,6 +43,10 @@ protocol RecitationAnalysisProviding {
         samples: [Float],
         sampleRate: Double
     ) async -> [RecitationCharacterResult]
+
+    /// Clears any per-session streaming state (e.g. the confirmed-mistake set) when the user
+    /// moves to a new verse or resets. No-op for stateless providers.
+    func resetSession()
 }
 
 extension RecitationAnalysisProviding {
@@ -44,4 +58,6 @@ extension RecitationAnalysisProviding {
     ) async -> [RecitationCharacterResult] {
         []
     }
+
+    func resetSession() {}
 }

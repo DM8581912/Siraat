@@ -102,6 +102,28 @@ final class RecitationAnalysisProviderTests: XCTestCase {
         }
     }
 
+    func testStreamingExposesActiveWordIndexAtTheHead() async {
+        // After two words, the karaoke head sits on the third (next pending) word.
+        let provider = HybridRecitationAnalysisProvider(useStreamingFollow: { true })
+        let verse = [
+            RecitationWord(originalText: "بِسْمِ"),
+            RecitationWord(originalText: "ٱللَّهِ"),
+            RecitationWord(originalText: "ٱلرَّحْمَٰنِ"),
+            RecitationWord(originalText: "ٱلرَّحِيمِ")
+        ]
+        let result = await provider.analyze(transcript: "بسم الله", expectedWords: verse)
+        XCTAssertEqual(result.activeWordIndex, 2)
+        XCTAssertEqual(result.words[0].status, .correct)
+        XCTAssertEqual(result.words[1].status, .correct)
+    }
+
+    func testNonStreamingHasNoActiveWordIndex() async {
+        let provider = HybridRecitationAnalysisProvider()
+        let words = [RecitationWord(originalText: "بِسْمِ"), RecitationWord(originalText: "ٱللَّهِ")]
+        let result = await provider.analyze(transcript: "بسم", expectedWords: words)
+        XCTAssertNil(result.activeWordIndex)
+    }
+
     func testMistakeDetectionDefaultsOff() async {
         // Both flags must be on; default off leaves the provider unchanged.
         let provider = HybridRecitationAnalysisProvider(useStreamingFollow: { true })

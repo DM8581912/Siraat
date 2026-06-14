@@ -10,7 +10,13 @@ final class RecitationCorrectionViewModel: ObservableObject {
     @Published private(set) var isListening = false
     @Published private(set) var analysisEngine: RecitationAnalysisEngine = .localMatcher
     @Published private(set) var characterResults: [RecitationCharacterResult] = []
+    /// Position of the word the reciter is currently on (the streaming alignment head), for the
+    /// live karaoke highlight. `nil` when not tracking.
+    @Published private(set) var activeWordIndex: Int?
     @Published var showColoredAyah = true
+    /// Memorization (hifz) test mode: the verse words are redacted and reveal one by one as the
+    /// reciter recites each correctly. On-device, like everything else here.
+    @Published var hifzMode = false
     @Published var selectedSurah = 1
     @Published var selectedVerseNumber = 1
     @Published var script: QuranScript = .uthmani
@@ -41,6 +47,24 @@ final class RecitationCorrectionViewModel: ObservableObject {
     var isBlueprintExperimental: Bool {
         guard let blueprint = currentBlueprint else { return false }
         return !blueprint.source.verified
+    }
+
+    /// Fraction of the verse confirmed correct so far (0...1), for the follow-along progress bar.
+    var followProgress: Double {
+        guard !words.isEmpty else { return 0 }
+        let confirmed = words.filter { $0.status == .correct }.count
+        return Double(confirmed) / Double(words.count)
+    }
+
+    var confirmedWordCount: Int {
+        words.filter { $0.status == .correct }.count
+    }
+
+    /// In hifz mode a word stays hidden until the reciter has confirmed it correct.
+    func isWordRevealed(at index: Int) -> Bool {
+        guard hifzMode else { return true }
+        guard words.indices.contains(index) else { return true }
+        return words[index].status == .correct
     }
 
     var selectedChapter: QuranChapter {
@@ -101,6 +125,10 @@ final class RecitationCorrectionViewModel: ObservableObject {
     }
 
     func loadVerse() {
+        // A new verse is a new session: clear any confirmed-mistake state so it can't leak
+        // across, and drop the karaoke head.
+        analysisProvider?.resetSession()
+        activeWordIndex = nil
         Task {
             guard let databaseManager else { return }
 
@@ -136,6 +164,8 @@ final class RecitationCorrectionViewModel: ObservableObject {
     func reset() {
         transcript = ""
         characterResults = []
+        activeWordIndex = nil
+        analysisProvider?.resetSession()
         recitationAudioBuffer.reset()
         if let selectedVerse, let correctionService {
             words = correctionService.prepareWords(for: selectedVerse, script: script)
@@ -167,6 +197,7 @@ final class RecitationCorrectionViewModel: ObservableObject {
             await MainActor.run {
                 self?.words = result.words
                 self?.analysisEngine = result.engine
+                self?.activeWordIndex = result.activeWordIndex
                 self?.characterResults = characters
             }
         }

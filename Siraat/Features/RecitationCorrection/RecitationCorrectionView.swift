@@ -12,30 +12,56 @@ struct RecitationCorrectionView: View {
                     correctionControls
 
                     SectionBand(title: viewModel.selectedVerse?.verseKey ?? "Selected Verse") {
-                        Text("Analysis: \(viewModel.analysisEngine.displayName)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        HStack {
+                            Text("Analysis: \(viewModel.analysisEngine.displayName)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Toggle("Memorize", isOn: $viewModel.hifzMode)
+                                .toggleStyle(.button)
+                                .font(.caption)
+                                .tint(SiraatColor.accent)
+                                .accessibilityLabel("Memorization mode")
+                        }
 
-                        Label(
-                            "Advisory Tajweed feedback, processed on-device.",
-                            systemImage: "info.circle"
-                        )
-                        .font(.caption2)
-                        .foregroundStyle(SiraatColor.textSecondary)
+                        if viewModel.analysisEngine == .streamingAlign {
+                            HStack(spacing: SiraatSpacing.sm) {
+                                ProgressView(value: viewModel.followProgress)
+                                    .tint(SiraatColor.accent)
+                                Text("\(viewModel.confirmedWordCount)/\(viewModel.words.count)")
+                                    .font(SiraatType.caption)
+                                    .monospacedDigit()
+                                    .foregroundStyle(SiraatColor.textSecondary)
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("\(viewModel.confirmedWordCount) of \(viewModel.words.count) words confirmed")
+                        } else {
+                            Label(
+                                "Advisory Tajweed feedback, processed on-device.",
+                                systemImage: "info.circle"
+                            )
+                            .font(.caption2)
+                            .foregroundStyle(SiraatColor.textSecondary)
+                        }
 
                         FlowLayout(spacing: 8) {
-                            ForEach(viewModel.words) { word in
-                                WordChip(word: word)
-                                    .onTapGesture {
-                                        selectedTip = word.primaryFeedbackTip
-                                    }
+                            ForEach(Array(viewModel.words.enumerated()), id: \.element.id) { index, word in
+                                WordChip(
+                                    word: word,
+                                    isActive: viewModel.activeWordIndex == index,
+                                    isRevealed: viewModel.isWordRevealed(at: index)
+                                )
+                                .onTapGesture {
+                                    selectedTip = word.primaryFeedbackTip
+                                }
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .trailing)
                         .environment(\.layoutDirection, .rightToLeft)
+                        .animation(.easeOut(duration: 0.18), value: viewModel.activeWordIndex)
                     }
 
-                    if viewModel.canShowColoredAyah {
+                    if viewModel.canShowColoredAyah && !viewModel.hifzMode {
                         coloredAyahSection
                     }
 
@@ -188,13 +214,32 @@ private struct TajweedLegend: View {
 
 private struct WordChip: View {
     let word: RecitationWord
+    /// The reciter is currently on this word (the streaming alignment head) — draws the
+    /// live karaoke ring and a restrained lift.
+    var isActive: Bool = false
+    /// In memorization mode an un-recited word is redacted until confirmed correct.
+    var isRevealed: Bool = true
 
     var body: some View {
+        chip
+            .redacted(reason: isRevealed ? [] : .placeholder)
+            .overlay(
+                RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous)
+                    .strokeBorder(SiraatColor.accent, lineWidth: isActive ? 2 : 0)
+            )
+            .scaleEffect(isActive ? 1.06 : 1.0)
+            .animation(.easeOut(duration: 0.18), value: isActive)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(accessibilityLabelText)
+    }
+
+    private var chip: some View {
         HStack(spacing: SiraatSpacing.xxs) {
             // A non-color status signal so color-blind users (who can't tell green
             // from orange/red) still get feedback. Hidden from VoiceOver because the
-            // status is already spoken in the accessibilityLabel below.
-            if let symbol = statusSymbol {
+            // status is already spoken in the accessibilityLabel below. Suppressed while
+            // the word is redacted in memorization mode.
+            if isRevealed, let symbol = statusSymbol {
                 Image(systemName: symbol)
                     .font(.system(size: 15, weight: .bold))
                     .accessibilityHidden(true)
@@ -207,13 +252,16 @@ private struct WordChip: View {
         .foregroundStyle(foregroundColor)
         .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
         .overlay(
-            word.status == .pending
+            word.status == .pending && !isActive
                 ? RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous)
                     .strokeBorder(SiraatColor.hairline, lineWidth: 1)
                 : nil
         )
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(word.originalText), \(accessibilityStatus)")
+    }
+
+    private var accessibilityLabelText: String {
+        guard isRevealed else { return "Hidden word, recite to reveal" }
+        return "\(word.originalText), \(accessibilityStatus)"
     }
 
     private var statusSymbol: String? {
