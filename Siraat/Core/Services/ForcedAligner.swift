@@ -92,21 +92,57 @@ struct PhonemeVocab {
 /// romanization, which is not guessed in a Qur'an app. So today the model delivers real,
 /// tempo-invariant **Madd-length** grading; consonant/Tashkeel grading is future work.
 ///
-/// With no model bundled it returns a deterministic placeholder (all green), so the app
-/// builds and runs without the 180 MB model. Audio never leaves the device.
+/// The acoustic path is opt-in (Settings, "On-device Tajweed", off by default) and the model
+/// is loaded lazily off the main actor on first use. When the feature is off, no model is
+/// bundled, or loading fails, it returns a deterministic placeholder (all green), so the app
+/// builds and runs without the ~180 MB model. Audio never leaves the device.
 final class CoreMLForcedAligner: PhoneticForcedAligning {
-    private let model: MLModel?
+    /// UserDefaults flag gating the heavy acoustic path. Default `false`: the ~180 MB
+    /// Wav2Vec2 model is never loaded and the aligner returns the honest placeholder. The
+    /// user opts in from Settings ("On-device Tajweed"). Off by default because loading the
+    /// model plus running inference can exceed a free-sideloaded build's memory budget and
+    /// get the app jetsammed mid-recitation. See `SettingsView`.
+    static let enabledDefaultsKey = "acousticTajweedEnabled"
+
+    private let modelURL: URL?
     private let vocab: PhonemeVocab
+    private let isEnabled: () -> Bool
     private let inputLength = 160_000        // 10 s @ 16 kHz, the model's fixed input
     private let sampleRateHz = 16_000.0
 
-    init(bundle: Bundle = .main) {
-        if let url = bundle.url(forResource: "Wav2Vec2QuranPhonetics", withExtension: "mlmodelc") {
-            model = try? MLModel(contentsOf: url)
-        } else {
-            model = nil
-        }
+    // The model is loaded lazily, off the main actor, on first use — never in `init`. `init`
+    // runs at app launch on the main actor (AppServices builds the provider eagerly), so
+    // loading 180 MB there froze launch and pinned that memory for the whole session. Guarded
+    // so concurrent aligns load it exactly once.
+    private let loadLock = NSLock()
+    private var loadedModel: MLModel?
+    private var didAttemptLoad = false
+
+    init(
+        bundle: Bundle = .main,
+        isEnabled: @escaping () -> Bool = { UserDefaults.standard.bool(forKey: CoreMLForcedAligner.enabledDefaultsKey) }
+    ) {
+        modelURL = bundle.url(forResource: "Wav2Vec2QuranPhonetics", withExtension: "mlmodelc")
         vocab = PhonemeVocab.load(bundle: bundle)
+        self.isEnabled = isEnabled
+    }
+
+    /// Loads the CoreML model once, lazily and off the main actor. Returns nil when no model
+    /// is bundled or loading fails; both degrade to the placeholder, never a crash. Called
+    /// only from `align` (a nonisolated async method, so it runs off the main actor).
+    private func model() -> MLModel? {
+        loadLock.lock()
+        defer { loadLock.unlock() }
+        if didAttemptLoad { return loadedModel }
+        didAttemptLoad = true
+        guard let modelURL else { return nil }
+        let configuration = MLModelConfiguration()
+        // Keep inference off the GPU: the Neural Engine / CPU path has a smaller, more
+        // predictable peak-memory footprint for this Wav2Vec2 graph on a sideloaded build,
+        // which is what was tipping the app over the jetsam limit.
+        configuration.computeUnits = .cpuAndNeuralEngine
+        loadedModel = try? MLModel(contentsOf: modelURL, configuration: configuration)
+        return loadedModel
     }
 
     func align(
@@ -114,7 +150,9 @@ final class CoreMLForcedAligner: PhoneticForcedAligning {
         sampleRate: Double,
         against blueprint: AyahPhonemeMap
     ) async throws -> ForcedAlignment {
-        guard let model, !samples.isEmpty else {
+        // Opt-in only, and never on empty audio. When off (the default) or unavailable the
+        // model is never even loaded, so the heavy path cannot jetsam the app.
+        guard isEnabled(), !samples.isEmpty, let model = model() else {
             return Self.placeholderAlignment(for: blueprint)
         }
 

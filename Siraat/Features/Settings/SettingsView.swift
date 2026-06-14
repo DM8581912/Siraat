@@ -4,6 +4,11 @@ struct SettingsView: View {
     @EnvironmentObject private var services: AppServices
     @StateObject private var viewModel = SettingsViewModel()
 
+    /// Opt-in for the experimental acoustic Tajweed path. Off by default: it loads a large
+    /// on-device model and runs inference, which uses noticeably more memory. Read by
+    /// `CoreMLForcedAligner` on each analysis.
+    @AppStorage(CoreMLForcedAligner.enabledDefaultsKey) private var acousticTajweedEnabled = false
+
     var body: some View {
         Form {
             Section("Reader") {
@@ -40,6 +45,13 @@ struct SettingsView: View {
                         Text(mode.displayName).tag(mode)
                     }
                 }
+            }
+
+            Section("Recitation") {
+                Toggle("On-device Tajweed (experimental)", isOn: $acousticTajweedEnabled)
+                Text("Grades Madd (elongation) length from your recitation using an on-device model. Off by default because it loads a large model and uses more memory. Turn it off if Listen becomes unstable. Audio never leaves your phone.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Prayer Times") {
