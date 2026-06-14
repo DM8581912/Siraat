@@ -95,6 +95,10 @@
 		BF000000000000000000005C /* CharacterTajweedEvaluatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005C /* CharacterTajweedEvaluatorTests.swift */; };
 		BF000000000000000000005D /* TajweedAttributedStringBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005D /* TajweedAttributedStringBuilderTests.swift */; };
 		BF000000000000000000005E /* ForcedAlignerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR000000000000000000005E /* ForcedAlignerTests.swift */; };
+		BF0000000000000000000060 /* RecitationEvalHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000060 /* RecitationEvalHarness.swift */; };
+		BF0000000000000000000061 /* RecitationEvalHarnessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000061 /* RecitationEvalHarnessTests.swift */; };
+		BF0000000000000000000062 /* StreamingRecitationAligner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000062 /* StreamingRecitationAligner.swift */; };
+		BF0000000000000000000063 /* StreamingRecitationAlignerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FR0000000000000000000063 /* StreamingRecitationAlignerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -200,6 +204,10 @@
 		FR000000000000000000005C /* CharacterTajweedEvaluatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/CharacterTajweedEvaluatorTests.swift; sourceTree = "<group>"; };
 		FR000000000000000000005D /* TajweedAttributedStringBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/TajweedAttributedStringBuilderTests.swift; sourceTree = "<group>"; };
 		FR000000000000000000005E /* ForcedAlignerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/ForcedAlignerTests.swift; sourceTree = "<group>"; };
+		FR0000000000000000000060 /* RecitationEvalHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/RecitationEvalHarness.swift; sourceTree = "<group>"; };
+		FR0000000000000000000061 /* RecitationEvalHarnessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/RecitationEvalHarnessTests.swift; sourceTree = "<group>"; };
+		FR0000000000000000000062 /* StreamingRecitationAligner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Siraat/Core/Services/StreamingRecitationAligner.swift; sourceTree = "<group>"; };
+		FR0000000000000000000063 /* StreamingRecitationAlignerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiraatTests/StreamingRecitationAlignerTests.swift; sourceTree = "<group>"; };
 		PR0000000000000000000001 /* Siraat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Siraat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		PR0000000000000000000002 /* SiraatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SiraatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -267,6 +275,7 @@
 				FR0000000000000000000057 /* TajweedAttributedStringBuilder.swift */,
 				FR0000000000000000000058 /* TajweedAyahText.swift */,
 				FR0000000000000000000009 /* RecitationCorrectionService.swift */,
+				FR0000000000000000000062 /* StreamingRecitationAligner.swift */,
 				FR000000000000000000000A /* SecretsProvider.swift */,
 				FR000000000000000000000B /* TranslationService.swift */,
 				FR000000000000000000000C /* ArabicTextNormalizer.swift */,
@@ -331,6 +340,9 @@
 				FR000000000000000000005C /* CharacterTajweedEvaluatorTests.swift */,
 				FR000000000000000000005D /* TajweedAttributedStringBuilderTests.swift */,
 				FR000000000000000000005E /* ForcedAlignerTests.swift */,
+				FR0000000000000000000060 /* RecitationEvalHarness.swift */,
+				FR0000000000000000000061 /* RecitationEvalHarnessTests.swift */,
+				FR0000000000000000000063 /* StreamingRecitationAlignerTests.swift */,
 			);
 			name = SiraatTests;
 			sourceTree = "<group>";
@@ -483,6 +495,7 @@
 				BF0000000000000000000047 /* CoreMLTajweedModelAdapter.swift in Sources */,
 				BF0000000000000000000048 /* TajweedRulesEngine.swift in Sources */,
 				BF0000000000000000000009 /* RecitationCorrectionService.swift in Sources */,
+				BF0000000000000000000062 /* StreamingRecitationAligner.swift in Sources */,
 				BF000000000000000000000A /* SecretsProvider.swift in Sources */,
 				BF000000000000000000000B /* TranslationService.swift in Sources */,
 				BF000000000000000000000C /* ArabicTextNormalizer.swift in Sources */,
@@ -547,6 +560,9 @@
 				BF000000000000000000005C /* CharacterTajweedEvaluatorTests.swift in Sources */,
 				BF000000000000000000005D /* TajweedAttributedStringBuilderTests.swift in Sources */,
 				BF000000000000000000005E /* ForcedAlignerTests.swift in Sources */,
+				BF0000000000000000000060 /* RecitationEvalHarness.swift in Sources */,
+				BF0000000000000000000061 /* RecitationEvalHarnessTests.swift in Sources */,
+				BF0000000000000000000063 /* StreamingRecitationAlignerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

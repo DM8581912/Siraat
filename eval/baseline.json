@@ -1,0 +1,28 @@
+{
+  "_comment": "Milestone 0 baseline scoreboard for the recitation + tajweed engines. Produced by the Swift harness (SiraatTests/RecitationEvalHarness.swift) over the in-CI synthetic fixtures. This is the 'before' every later milestone reports a delta against. The honesty numbers (hard_false_positive_rate, tajweed false_positive_rate) must never regress above 0. See eval/README.md.",
+  "schemaVersion": 1,
+  "engine": "index-matcher + character-tajweed-evaluator (pre-streaming)",
+  "follow_along": {
+    "follow_completeness": 0.61,
+    "hard_false_positive_rate": 0.0,
+    "mistake_precision": 1.0,
+    "mistake_recall": 0.0,
+    "per_fixture_completeness": {
+      "perfect": 1.0,
+      "istiadha_prefix": 0.0,
+      "repeat_word": 0.5,
+      "skip_word": 0.67,
+      "substitute_word": 1.0
+    },
+    "notes": "The index matcher is honest (never hard-flags a correct reciter) but blind: it confirms nothing once a leading isti'adha or a repeated word shifts token alignment, and it detects zero real mistakes (recall 0). Milestone 2 (streaming alignment) targets follow_completeness > 0.95 on these; Milestone 3 (mistake detection) targets recall off the floor at >= 0.95 precision."
+  },
+  "tajweed": {
+    "false_positive_rate": 0.0,
+    "per_rule": {
+      "madd_short": {"precision": 1.0, "recall": 1.0},
+      "ghunnah_missed": {"precision": 1.0, "recall": 1.0},
+      "tashkeel_wrong": {"precision": 1.0, "recall": 1.0}
+    },
+    "notes": "The character evaluator is precise and complete on the rules it covers (Madd length, Ghunnah duration, confident wrong letter). The gap is COVERAGE, not logic: qalqalah/idgham/ikhfa/iqlab are absent, the shipped blueprint is Al-Fatiha only and verified:false, and consonants stay ungraded until the model's romanization is confirmed. Production grading stays gated on source.verified == true (Qari sign-off)."
+  }
+}
