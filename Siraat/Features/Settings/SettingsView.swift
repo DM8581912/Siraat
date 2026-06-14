@@ -9,6 +9,10 @@ struct SettingsView: View {
     /// `CoreMLForcedAligner` on each analysis.
     @AppStorage(CoreMLForcedAligner.enabledDefaultsKey) private var acousticTajweedEnabled = false
 
+    /// Opt-in for the streaming forced-alignment follow-along. Off by default keeps the existing
+    /// word matcher; read by `HybridRecitationAnalysisProvider` on each analysis.
+    @AppStorage(HybridRecitationAnalysisProvider.streamingFollowDefaultsKey) private var streamingFollowEnabled = false
+
     var body: some View {
         Form {
             Section("Reader") {
@@ -48,6 +52,11 @@ struct SettingsView: View {
             }
 
             Section("Recitation") {
+                Toggle("Live follow-along (beta)", isOn: $streamingFollowEnabled)
+                Text("Tracks your recitation word by word and keeps up through isti'adha, basmala, pauses, and repeats. It never flags a correct reciter, and audio never leaves your phone.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
                 Toggle("On-device Tajweed (experimental)", isOn: $acousticTajweedEnabled)
                 Text("Grades Madd (elongation) length from your recitation using an on-device model. Off by default because it loads a large model and uses more memory. Turn it off if Listen becomes unstable. Audio never leaves your phone.")
                     .font(.footnote)

@@ -3,11 +3,13 @@ import Foundation
 enum RecitationAnalysisEngine: String, Codable {
     case localMatcher
     case coreML
+    case streamingAlign
 
     var displayName: String {
         switch self {
         case .localMatcher: "Word follow‑along (beta)"
         case .coreML: "On‑device Tajweed analysis"
+        case .streamingAlign: "Live follow‑along (beta)"
         }
     }
 }
