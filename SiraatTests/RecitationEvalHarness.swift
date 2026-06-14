@@ -174,6 +174,41 @@ enum RecitationFollowEval {
         metrics.hardFalsePositiveRate = hardFPDen == 0 ? 0 : Double(hardFPNum) / Double(hardFPDen)
         return metrics
     }
+
+    /// The same fixtures run through the streaming forced-alignment engine (Milestone 1). The
+    /// aligner has no hard-error state, so it cannot hard-flag a correct reciter; the win is
+    /// follow-completeness, which the index matcher loses on isti'adha / repeats / skips.
+    static func runStreaming(
+        aligner: StreamingRecitationAligner = StreamingRecitationAligner(),
+        fixtures: [WordFollowFixture] = RecitationFollowEval.fixtures
+    ) -> WordFollowMetrics {
+        var metrics = WordFollowMetrics()
+        var completenessNum = 0, completenessDen = 0
+
+        for fixture in fixtures {
+            let words = aligner.align(expected: fixture.expected, transcript: fixture.transcript)
+            var fixtureNum = 0, fixtureDen = 0
+            for index in fixture.expected.indices {
+                let state = index < words.count ? words[index].state : .pending
+                let predictedCorrect = state == .correct
+                let actualMistake = fixture.skipped.contains(index) || fixture.substituted.contains(index)
+                if fixture.idealCorrect[index] {
+                    completenessDen += 1; fixtureDen += 1
+                    if predictedCorrect { completenessNum += 1; fixtureNum += 1 }
+                }
+                // No hard verdict here, so the mistake detector predicts nothing (recall stays
+                // a Milestone 3 concern); honesty is structural.
+                metrics.mistake.record(predicted: false, actual: actualMistake)
+            }
+            metrics.perFixtureCompleteness.append(
+                (fixture.name, fixtureDen == 0 ? 1 : Double(fixtureNum) / Double(fixtureDen))
+            )
+        }
+
+        metrics.followCompleteness = completenessDen == 0 ? 1 : Double(completenessNum) / Double(completenessDen)
+        metrics.hardFalsePositiveRate = 0
+        return metrics
+    }
 }
 
 // MARK: - Tajweed (character-level) evaluation
