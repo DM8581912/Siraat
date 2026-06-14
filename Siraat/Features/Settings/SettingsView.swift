@@ -13,6 +13,11 @@ struct SettingsView: View {
     /// word matcher; read by `HybridRecitationAnalysisProvider` on each analysis.
     @AppStorage(HybridRecitationAnalysisProvider.streamingFollowDefaultsKey) private var streamingFollowEnabled = false
 
+    /// Opt-in for the honest mistake detector. Requires `streamingFollowEnabled` to also be on
+    /// (the detector consumes the streaming aligner's trace). Off by default — this is the
+    /// only path that produces a hard "missed / wrong" verdict on a word.
+    @AppStorage(HybridRecitationAnalysisProvider.mistakeDetectionDefaultsKey) private var mistakeDetectionEnabled = false
+
     var body: some View {
         Form {
             Section("Reader") {
@@ -54,6 +59,12 @@ struct SettingsView: View {
             Section("Recitation") {
                 Toggle("Live follow-along (beta)", isOn: $streamingFollowEnabled)
                 Text("Tracks your recitation word by word and keeps up through isti'adha, basmala, pauses, and repeats. It never flags a correct reciter, and audio never leaves your phone.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+
+                Toggle("Flag skipped or wrong words", isOn: $mistakeDetectionEnabled)
+                    .disabled(!streamingFollowEnabled)
+                Text("With Live follow-along on, also flag words you skipped or said incorrectly. Honest by design: it only flags after seeing the same evidence twice, and never on a stutter or a recognizer slip.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 

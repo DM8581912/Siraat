@@ -209,6 +209,55 @@ enum RecitationFollowEval {
         metrics.hardFalsePositiveRate = 0
         return metrics
     }
+
+    /// Streaming follow + honest mistake detection (Milestone 3). Measures: same follow-
+    /// completeness as the streaming pass, plus skip/substitute mistake precision/recall and
+    /// the hard false-positive rate (must stay 0 on correct recitations, including the
+    /// isti'adha and repeat cases).
+    static func runStreamingWithMistakes(
+        aligner: StreamingRecitationAligner = StreamingRecitationAligner(),
+        detector: RecitationMistakeDetector = RecitationMistakeDetector(),
+        fixtures: [WordFollowFixture] = RecitationFollowEval.fixtures
+    ) -> WordFollowMetrics {
+        var metrics = WordFollowMetrics()
+        var completenessNum = 0, completenessDen = 0
+        var hardFPNum = 0, hardFPDen = 0
+
+        for fixture in fixtures {
+            let follow = aligner.align(expected: fixture.expected, transcript: fixture.transcript)
+            let spoken = ArabicTextNormalizer.tokens(from: fixture.transcript)
+            let findings = detector.detect(expected: fixture.expected, spokenTokens: spoken, follow: follow)
+            // Index findings by their expected word slot, so we can ask "was index N flagged?"
+            let mistakeBySlot: [Int: MistakeFinding] = Dictionary(
+                uniqueKeysWithValues: findings.compactMap { f in
+                    f.expectedWordIndex.map { ($0, f) }
+                }
+            )
+
+            var fixtureNum = 0, fixtureDen = 0
+            for index in fixture.expected.indices {
+                let state = index < follow.count ? follow[index].state : .pending
+                let predictedCorrect = state == .correct
+                let predictedHardError = mistakeBySlot[index] != nil
+                let actualMistake = fixture.skipped.contains(index) || fixture.substituted.contains(index)
+
+                if fixture.idealCorrect[index] {
+                    completenessDen += 1; fixtureDen += 1
+                    if predictedCorrect { completenessNum += 1; fixtureNum += 1 }
+                    hardFPDen += 1
+                    if predictedHardError { hardFPNum += 1 }
+                }
+                metrics.mistake.record(predicted: predictedHardError, actual: actualMistake)
+            }
+            metrics.perFixtureCompleteness.append(
+                (fixture.name, fixtureDen == 0 ? 1 : Double(fixtureNum) / Double(fixtureDen))
+            )
+        }
+
+        metrics.followCompleteness = completenessDen == 0 ? 1 : Double(completenessNum) / Double(completenessDen)
+        metrics.hardFalsePositiveRate = hardFPDen == 0 ? 0 : Double(hardFPNum) / Double(hardFPDen)
+        return metrics
+    }
 }
 
 // MARK: - Tajweed (character-level) evaluation

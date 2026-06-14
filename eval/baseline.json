@@ -1,20 +1,34 @@
 {
-  "_comment": "Milestone 0 baseline scoreboard for the recitation + tajweed engines. Produced by the Swift harness (SiraatTests/RecitationEvalHarness.swift) over the in-CI synthetic fixtures. This is the 'before' every later milestone reports a delta against. The honesty numbers (hard_false_positive_rate, tajweed false_positive_rate) must never regress above 0. See eval/README.md.",
-  "schemaVersion": 1,
-  "engine": "index-matcher + character-tajweed-evaluator (pre-streaming)",
+  "_comment": "Recitation + tajweed scoreboard, produced by the Swift harness (SiraatTests/RecitationEvalHarness.swift) over the in-CI synthetic fixtures. The honesty numbers (hard_false_positive_rate, tajweed false_positive_rate) must never regress above 0. See eval/README.md.",
+  "schemaVersion": 2,
+  "engine": "streaming-aligner + honest-mistake-detector + character-tajweed-evaluator",
   "follow_along": {
-    "follow_completeness": 0.61,
+    "_comment_baseline": "The pre-streaming baseline (Milestone 0): the index matcher was honest but blind — 0% completeness on a leading isti'adha and 0 mistake recall. Kept here for posterity.",
+    "baseline_m0": {
+      "follow_completeness": 0.61,
+      "hard_false_positive_rate": 0.0,
+      "mistake_precision": 1.0,
+      "mistake_recall": 0.0,
+      "per_fixture_completeness": {
+        "perfect": 1.0,
+        "istiadha_prefix": 0.0,
+        "repeat_word": 0.5,
+        "skip_word": 0.67,
+        "substitute_word": 1.0
+      }
+    },
+    "follow_completeness": 1.0,
     "hard_false_positive_rate": 0.0,
     "mistake_precision": 1.0,
-    "mistake_recall": 0.0,
+    "mistake_recall": 1.0,
     "per_fixture_completeness": {
       "perfect": 1.0,
-      "istiadha_prefix": 0.0,
-      "repeat_word": 0.5,
-      "skip_word": 0.67,
+      "istiadha_prefix": 1.0,
+      "repeat_word": 1.0,
+      "skip_word": 1.0,
       "substitute_word": 1.0
     },
-    "notes": "The index matcher is honest (never hard-flags a correct reciter) but blind: it confirms nothing once a leading isti'adha or a repeated word shifts token alignment, and it detects zero real mistakes (recall 0). Milestone 2 (streaming alignment) targets follow_completeness > 0.95 on these; Milestone 3 (mistake detection) targets recall off the floor at >= 0.95 precision."
+    "notes": "M1/M2 (streaming forced-alignment) lifted follow-completeness from 0.61 to 1.00 on these fixtures with hard-FP staying 0. M3 (honest mistake detection) lifts mistake recall from 0.00 to 1.00 at precision 1.00 — every seeded skip and substitution caught, zero false accusations on correct/isti'adha/repeat fixtures. Three honesty gates in the detector: only flag past the alignment head, never flag known optionals or stutter-repeats, and (live) only fire after the streaming confirmer sees the same finding twice."
   },
   "tajweed": {
     "false_positive_rate": 0.0,
