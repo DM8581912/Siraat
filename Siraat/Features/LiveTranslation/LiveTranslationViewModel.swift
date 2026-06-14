@@ -24,6 +24,11 @@ final class LiveTranslationViewModel: ObservableObject {
     @Published private(set) var isRecording = false
     @Published var errorMessage: String?
 
+    /// A persistent, user-facing notice about the translator itself (downloading the language
+    /// model, or it being unavailable for the chosen language). nil while translation proceeds
+    /// normally. Distinct from `errorMessage`, which is a one-shot alert.
+    @Published var translationNotice: String?
+
     @Published var didSaveSession = false
 
     // Owned, not shared: this feature has its own microphone engine.

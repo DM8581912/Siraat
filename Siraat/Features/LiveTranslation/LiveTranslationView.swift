@@ -4,10 +4,6 @@ import Translation
 struct LiveTranslationView: View {
     @StateObject private var viewModel = LiveTranslationViewModel()
 
-    private var translationUnavailableOnThisOS: Bool {
-        if #available(iOS 18, *) { return false } else { return true }
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             transcriptList
@@ -15,7 +11,7 @@ struct LiveTranslationView: View {
             controlBar
         }
         .navigationTitle("Live Translation")
-        .background(translationEngine)
+        .background(TranslationDriverView(viewModel: viewModel))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
@@ -45,12 +41,9 @@ struct LiveTranslationView: View {
         Group {
             if viewModel.segments.isEmpty && viewModel.partialTranscript.isEmpty {
                 VStack {
-                    if translationUnavailableOnThisOS {
-                        InfoBanner(
-                            icon: "info.circle",
-                            text: "On-device live translation needs iOS 18. Showing the live Arabic transcript."
-                        )
-                        .padding(.horizontal, SiraatSpacing.md)
+                    if let notice = viewModel.translationNotice {
+                        InfoBanner(icon: "globe", text: notice)
+                            .padding(.horizontal, SiraatSpacing.md)
                     }
                     Spacer()
                     EmptyTranslationState()
@@ -60,15 +53,12 @@ struct LiveTranslationView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: SiraatSpacing.md) {
-                            if translationUnavailableOnThisOS {
-                                InfoBanner(
-                                    icon: "info.circle",
-                                    text: "On-device live translation needs iOS 18. Showing the live Arabic transcript."
-                                )
+                            if let notice = viewModel.translationNotice {
+                                InfoBanner(icon: "globe", text: notice)
                             }
 
                             ForEach(viewModel.segments) { segment in
-                                LiveSegmentView(segment: segment, showsTranslation: !translationUnavailableOnThisOS)
+                                LiveSegmentView(segment: segment)
                                     .id(segment.id)
                             }
 
@@ -107,7 +97,6 @@ struct LiveTranslationView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .disabled(translationUnavailableOnThisOS)
                 } icon: {
                     Image(systemName: "globe")
                         .foregroundStyle(SiraatColor.textSecondary)
@@ -147,19 +136,15 @@ struct LiveTranslationView: View {
         .padding()
         .background(.regularMaterial)
     }
-
-    /// On iOS 18 this hosts the on-device translation driver; on iOS 17 it is empty.
-    @ViewBuilder
-    private var translationEngine: some View {
-        if #available(iOS 18, *) {
-            TranslationDriverView(viewModel: viewModel)
-        }
-    }
 }
 
-// MARK: - On-device translation driver (iOS 18+)
+// MARK: - On-device translation driver
 
-@available(iOS 18, *)
+/// Hosts Apple's on-device Translation framework. A zero-size background view drives a
+/// `translationTask`: it ensures the Arabic to target-language pack is downloaded (surfacing a
+/// "downloading" notice), then translates every captured segment. Re-runs are forced with
+/// `Configuration.invalidate()` because assigning an equal configuration does not re-fire the
+/// task, which is why only the first sentence (or none) was translating before.
 private struct TranslationDriverView: View {
     @ObservedObject var viewModel: LiveTranslationViewModel
     @State private var configuration: TranslationSession.Configuration?
@@ -168,33 +153,67 @@ private struct TranslationDriverView: View {
         Color.clear
             .frame(width: 0, height: 0)
             .translationTask(configuration) { session in
-                await translate(using: session)
+                await run(session)
             }
             .onChange(of: viewModel.segments) {
                 triggerIfNeeded()
             }
             .onChange(of: viewModel.targetLanguage) {
                 viewModel.retranslateAll()
-                triggerIfNeeded(force: true)
+                rebuildConfiguration()
             }
-            .onAppear { triggerIfNeeded() }
+            .onAppear { rebuildConfiguration() }
     }
 
-    private func triggerIfNeeded(force: Bool = false) {
-        guard force || viewModel.hasUntranslated else { return }
-        let newConfig = TranslationSession.Configuration(
+    /// Builds (or replaces) the configuration for the current target language. A new value
+    /// re-fires `translationTask`; used on first appearance and when the language changes.
+    private func rebuildConfiguration() {
+        configuration = TranslationSession.Configuration(
             source: Locale.Language(identifier: "ar"),
             target: Locale.Language(identifier: viewModel.targetLanguage.rawValue)
         )
+    }
+
+    /// Re-runs the translation task for newly captured (or reset) segments.
+    private func triggerIfNeeded() {
+        guard viewModel.hasUntranslated else { return }
         if configuration == nil {
-            configuration = newConfig
+            rebuildConfiguration()
         } else {
-            // Re-run the task for newly captured (or reset) segments.
-            configuration = newConfig
+            configuration?.invalidate()
         }
     }
 
-    private func translate(using session: TranslationSession) async {
+    private func run(_ session: TranslationSession) async {
+        let target = Locale.Language(identifier: viewModel.targetLanguage.rawValue)
+        let source = Locale.Language(identifier: "ar")
+
+        switch await LanguageAvailability().status(from: source, to: target) {
+        case .installed:
+            break
+        case .supported:
+            // Pack is supported but not on the device yet: prepareTranslation downloads it,
+            // showing the system consent sheet. Tell the user why translations are pending.
+            viewModel.translationNotice = "Downloading the \(viewModel.targetLanguage.displayName) language model. This happens once."
+        case .unsupported:
+            viewModel.translationNotice = "On-device translation to \(viewModel.targetLanguage.displayName) is not available on this device."
+            return
+        @unknown default:
+            break
+        }
+
+        do {
+            try await session.prepareTranslation()
+        } catch {
+            viewModel.translationNotice = "The translation language model could not be prepared. Check your connection and storage, then try again."
+            return
+        }
+
+        viewModel.translationNotice = nil
+        await translatePending(using: session)
+    }
+
+    private func translatePending(using session: TranslationSession) async {
         let pending = viewModel.segments.filter { $0.translatedText == nil }
         guard !pending.isEmpty else { return }
 
@@ -208,7 +227,7 @@ private struct TranslationDriverView: View {
                 viewModel.setTranslation(response.targetText, for: segment.id)
             }
         } catch {
-            viewModel.errorMessage = "Translation is downloading its language model or is unavailable. Try again in a moment."
+            viewModel.errorMessage = "Translation failed for the latest sentence. It will retry as you keep recording."
         }
     }
 }
@@ -217,22 +236,19 @@ private struct TranslationDriverView: View {
 
 private struct LiveSegmentView: View {
     let segment: LiveSegment
-    let showsTranslation: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if showsTranslation {
-                if let translated = segment.translatedText {
-                    Text(translated)
-                        .font(.system(.title3, design: .serif, weight: .semibold))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    HStack(spacing: 6) {
-                        ProgressView().controlSize(.small)
-                        Text("Translating…")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
+            if let translated = segment.translatedText {
+                Text(translated)
+                    .font(.system(.title3, design: .serif, weight: .semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.small)
+                    Text("Translating…")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
             }
 
