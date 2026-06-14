@@ -164,7 +164,7 @@ jobs:
         # Direct, no-login download link for the unsigned IPA (public repo). The tag
         # moves to the latest build on this branch so the URL is stable:
         #   https://github.com/DM8581912/Siraat/releases/download/tajweed-test/Siraat-unsigned.ipa
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/claude/beautiful-galileo-psrnwl' }}
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/claude/') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: tajweed-test
