@@ -5,9 +5,18 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
     /// index matcher. Read on each analysis so the Settings toggle takes effect immediately.
     static let streamingFollowDefaultsKey = "streamingFollowAlongEnabled"
 
+    /// Opt-in flag for honest, precision-first mistake detection. Requires streaming follow to
+    /// also be on (the detector consumes the aligner's per-word trace). Default off — this is
+    /// the only path that can produce a hard verdict for a word, and a session is reset
+    /// between verses so a confirmed verdict doesn't leak across.
+    static let mistakeDetectionDefaultsKey = "mistakeDetectionEnabled"
+
     private let localMatcher: RecitationCorrectionServicing
     private let streamingAligner: StreamingRecitationAligner
     private let useStreamingFollow: () -> Bool
+    private let mistakeDetector: RecitationMistakeDetector
+    private let mistakeConfirmer: StreamingMistakeConfirmer
+    private let useMistakeDetection: () -> Bool
     private let acousticAnalyzer: TajweedAcousticAnalyzing
     private let rulesEngine: TajweedRulesEngine
     private let forcedAligner: PhoneticForcedAligning
@@ -19,6 +28,11 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
         useStreamingFollow: @escaping () -> Bool = {
             UserDefaults.standard.bool(forKey: HybridRecitationAnalysisProvider.streamingFollowDefaultsKey)
         },
+        mistakeDetector: RecitationMistakeDetector = RecitationMistakeDetector(),
+        mistakeConfirmer: StreamingMistakeConfirmer = StreamingMistakeConfirmer(),
+        useMistakeDetection: @escaping () -> Bool = {
+            UserDefaults.standard.bool(forKey: HybridRecitationAnalysisProvider.mistakeDetectionDefaultsKey)
+        },
         acousticAnalyzer: TajweedAcousticAnalyzing = CoreMLTajweedAcousticAnalyzer(),
         rulesEngine: TajweedRulesEngine = TajweedRulesEngine(),
         forcedAligner: PhoneticForcedAligning = CoreMLForcedAligner(),
@@ -27,10 +41,20 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
         self.localMatcher = localMatcher
         self.streamingAligner = streamingAligner
         self.useStreamingFollow = useStreamingFollow
+        self.mistakeDetector = mistakeDetector
+        self.mistakeConfirmer = mistakeConfirmer
+        self.useMistakeDetection = useMistakeDetection
         self.acousticAnalyzer = acousticAnalyzer
         self.rulesEngine = rulesEngine
         self.forcedAligner = forcedAligner
         self.characterEvaluator = characterEvaluator
+    }
+
+    /// Clears the streaming mistake confirmer between verses / sessions so a confirmed verdict
+    /// from a previous ayah doesn't leak into the next. Call when the user picks a new verse
+    /// or taps Reset.
+    func resetSession() {
+        mistakeConfirmer.reset()
     }
 
     func analyzeCharacters(
@@ -53,9 +77,28 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
 
     func analyze(transcript: String, expectedWords: [RecitationWord]) async -> RecitationAnalysisResult {
         let usingStreaming = useStreamingFollow()
-        var alignedWords = usingStreaming
-            ? streamingFollow(transcript: transcript, expectedWords: expectedWords)
-            : localMatcher.evaluate(transcript: transcript, expectedWords: expectedWords)
+        var alignedWords: [RecitationWord]
+        if usingStreaming {
+            let expectedText = expectedWords.map(\.originalText)
+            let follow = streamingAligner.align(expected: expectedText, transcript: transcript)
+            alignedWords = mapFollowToWords(follow: follow, expectedWords: expectedWords)
+            // Honest mistake detection runs on top of the same alignment trace, only when its
+            // own flag is also on. Findings only escalate a slot from .uncertain to .missed
+            // after the streaming confirmer has seen the same finding two ticks in a row.
+            if useMistakeDetection() {
+                let spoken = ArabicTextNormalizer.tokens(from: transcript)
+                let raw = mistakeDetector.detect(expected: expectedText, spokenTokens: spoken, follow: follow)
+                let confirmed = mistakeConfirmer.ingest(raw)
+                for finding in confirmed {
+                    guard let idx = finding.expectedWordIndex,
+                          alignedWords.indices.contains(idx)
+                    else { continue }
+                    alignedWords[idx].status = .missed
+                }
+            }
+        } else {
+            alignedWords = localMatcher.evaluate(transcript: transcript, expectedWords: expectedWords)
+        }
         let baseEngine: RecitationAnalysisEngine = usingStreaming ? .streamingAlign : .localMatcher
         let expectedText = expectedWords.map(\.originalText)
 
@@ -84,10 +127,9 @@ final class HybridRecitationAnalysisProvider: RecitationAnalysisProviding {
 
     /// Map the streaming aligner's per-word follow states onto the word-status model. Honest by
     /// construction: nothing here is a hard error — an unmatched word stays `uncertain`, never
-    /// `.missed`. Hard mistake verdicts are a separate, higher-precision stage.
-    private func streamingFollow(transcript: String, expectedWords: [RecitationWord]) -> [RecitationWord] {
-        let follow = streamingAligner.align(expected: expectedWords.map(\.originalText), transcript: transcript)
-        return expectedWords.enumerated().map { index, word in
+    /// `.missed`. Hard mistake verdicts are layered on top by the mistake detector.
+    private func mapFollowToWords(follow: [FollowWord], expectedWords: [RecitationWord]) -> [RecitationWord] {
+        expectedWords.enumerated().map { index, word in
             var updated = word
             updated.tajweedViolations = []
             updated.tip = nil

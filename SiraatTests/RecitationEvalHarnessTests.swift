@@ -13,6 +13,37 @@ final class RecitationEvalHarnessTests: XCTestCase {
         print(RecitationScoreboard.render(word: word, tajweed: tajweed))
     }
 
+    func testPrintsMilestoneDeltaScoreboard() {
+        let baseline = RecitationFollowEval.run()
+        let streaming = RecitationFollowEval.runStreaming()
+        let withMistakes = RecitationFollowEval.runStreamingWithMistakes()
+        print("================ FOLLOW-ALONG MILESTONE DELTAS ================")
+        print(String(format: "  follow-completeness  M0=%.2f  M1/M2=%.2f  M3=%.2f",
+                     baseline.followCompleteness, streaming.followCompleteness, withMistakes.followCompleteness))
+        print(String(format: "  hard FP rate (honesty must stay 0%%)  M0=%.0f%%  M1/M2=%.0f%%  M3=%.0f%%",
+                     baseline.hardFalsePositiveRate * 100, streaming.hardFalsePositiveRate * 100, withMistakes.hardFalsePositiveRate * 100))
+        print(String(format: "  mistake precision/recall  M0=%.2f/%.2f  M3=%.2f/%.2f",
+                     baseline.mistake.precision, baseline.mistake.recall,
+                     withMistakes.mistake.precision, withMistakes.mistake.recall))
+        print("===============================================================")
+    }
+
+    // MARK: M3 — honest mistake detection must lift recall without breaking honesty
+
+    func testMistakeDetectionLiftsRecallAtFullPrecisionAndZeroFalsePositives() {
+        let m3 = RecitationFollowEval.runStreamingWithMistakes()
+        // Honesty: not a single correct word may be hard-flagged across any fixture.
+        XCTAssertEqual(m3.hardFalsePositiveRate, 0, "M3 hard-flagged a correct reciter — honesty regression.")
+        XCTAssertEqual(m3.mistake.falsePositives, 0, "M3 raised a false mistake — honesty regression.")
+        // Precision target: 1.0 on the fixtures (zero false positives by construction).
+        XCTAssertEqual(m3.mistake.precision, 1.0, accuracy: 0.0001)
+        // Recall target: every seeded mistake (skip + substitution) caught.
+        XCTAssertEqual(m3.mistake.recall, 1.0, accuracy: 0.0001,
+                       "Missed a seeded mistake — recall regression.")
+        // Follow-completeness must not collapse just because mistakes are now being surfaced.
+        XCTAssertGreaterThanOrEqual(m3.followCompleteness, 0.95)
+    }
+
     // MARK: Honesty invariants (hard — must always hold)
 
     func testFollowAlongNeverHardFlagsACorrectReciter() {
