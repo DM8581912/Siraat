@@ -30,8 +30,10 @@ tajweed_engine/
 │   ├── audio_processing.py   # 16 kHz mono normalization, VAD, mel/MFCC, LPC formants
 │   ├── alignment_engine.py   # Wav2Vec2/CTC acoustic model + Viterbi forced alignment
 │   ├── gop_scorer.py         # Goodness of Pronunciation (Makharij) scoring
-│   ├── tajweed_rules.py      # Madd / Ghunnah / Qalqalah acoustic DSP heuristics
-│   └── server.py             # FastAPI WebSocket streaming front end
+│   ├── tajweed_rules.py      # Madd / Ghunnah / Qalqalah acoustic DSP heuristics + Hafs map
+│   ├── blueprint.py          # Strict per-ayah blueprint schema (mirrors the Swift schema)
+│   ├── madd_engine.py        # Stateful, pace-relative TajweedMaddEngine
+│   └── server.py             # FastAPI WebSocket server (queue + background worker)
 ├── tests/test_engine.py
 ├── requirements.txt
 └── README.md
@@ -92,11 +94,32 @@ Acoustic heuristics on each phoneme's aligned waveform segment:
 
 Thresholds live in `TajweedConfig` and should be calibrated per acoustic model.
 
+### `blueprint.py`
+The strict per-ayah blueprint schema — the verified *answer key*. It mirrors the
+on-device Swift schema (`PhoneticBlueprint.swift`): `PhoneticBlueprintFile →
+AyahPhonemeMap → CanonicalPhoneme` plus a `BlueprintProvenance{corpus,
+attribution, verified}` record. `load_blueprint_file` validates the schema and,
+by default, refuses to treat unverified provenance as authoritative. The engine
+relies on this for every Tajweed ruling; it never guesses one.
+
+### `madd_engine.py`
+`TajweedMaddEngine` — the stateful, pace-relative entry point. It abandons fixed
+millisecond constants: it calibrates the harakah unit from the first stable
+natural (2-count) madd it hears, then judges every later madd relative to that
+pace. Until calibrated, a non-natural madd returns `pending_calibration` rather
+than being judged against a guessed constant. Madd *types* always come from the
+blueprint (explicit `maddType` → exact `expectedMaddCount` → default 2-count);
+the engine never invents a category.
+
 ### `server.py`
 FastAPI WebSocket endpoint `/v1/stream-tajweed`. The first JSON message sets the
-target ayah words; subsequent binary frames stream PCM16 (<100 ms chunks). A
-stateful `TajweedSession` buffers audio, detects word boundaries with VAD, and
-emits a feedback packet per completed word:
+target ayah words; subsequent binary frames stream PCM16 (<100 ms chunks). The
+receive loop only enqueues chunks onto a per-connection `asyncio.Queue`; a
+background worker drains it and runs the CPU-bound DSP off the event loop, so
+ingest stays responsive. A stateful `TajweedSession` buffers audio, detects word
+boundaries with VAD, and emits a feedback packet per completed word. The server
+is **deployment-neutral** — it runs embedded/on-device (localhost), self-hosted,
+or in the cloud; it does not hardcode any remote endpoint. Packet shape:
 
 ```json
 {

@@ -36,6 +36,7 @@ class RuleStatus(str, Enum):
     PASSED = "passed"
     FAILED = "failed"
     NOT_APPLICABLE = "n/a"
+    PENDING_CALIBRATION = "pending_calibration"
 
 
 # ---------------------------------------------------------------------------
@@ -247,25 +248,23 @@ class QalqalahResult:
 # ---------------------------------------------------------------------------
 # Madd
 # ---------------------------------------------------------------------------
-def evaluate_madd(audio_segment: FloatArray, madd_type: MaddType,
-                  config: TajweedConfig = TajweedConfig(), *,
-                  harakah_seconds: Optional[float] = None,
-                  phoneme_duration: Optional[float] = None) -> MaddResult:
-    """Check a prolonged vowel against the permissible lengths of its madd type.
+def evaluate_madd_spec(audio_segment: FloatArray, spec: MaddSpec, label: str,
+                       config: TajweedConfig = TajweedConfig(), *,
+                       harakah_seconds: Optional[float] = None,
+                       phoneme_duration: Optional[float] = None) -> MaddResult:
+    """Check a prolonged vowel against an arbitrary :class:`MaddSpec`.
 
     Two things must both hold:
 
     * **Continuity** -- the vowel is one smooth, steady sound (``is_pitch_stable``).
     * **Length** -- its duration, measured in harakat against the (ideally
-      calibrated) ``harakah_seconds`` unit, matches one of the lengths permitted
-      for ``madd_type``. A natural madd must be exactly 2; a Lazim exactly 6; a
-      Munfasil any of 2/4/5 -- so "longer than 2" is only an error for the madd
-      types where it actually is one.
+      calibrated) ``harakah_seconds`` unit, matches one of the lengths the spec
+      permits. So "longer than 2" is only an error for the madd types where it
+      actually is one (a Munfasil legitimately allows 2/4/5).
 
     Pass ``harakah_seconds`` from :func:`calibrate_harakah` for pace-relative
-    judging; otherwise the fixed ``config.harakah_seconds`` fallback is used.
+    judging; the fixed ``config.harakah_seconds`` is only a last-resort fallback.
     """
-    spec = madd_spec(madd_type)
     harakah = harakah_seconds if harakah_seconds is not None else config.harakah_seconds
     duration = (phoneme_duration if phoneme_duration is not None
                 else audio_segment.size / config.sample_rate)
@@ -277,7 +276,7 @@ def evaluate_madd(audio_segment: FloatArray, madd_type: MaddType,
     tol = config.madd_count_tolerance
 
     def result(status: RuleStatus, error: Optional[str] = None) -> MaddResult:
-        return MaddResult(status, madd_type.value, round(duration, 4),
+        return MaddResult(status, label, round(duration, 4),
                           round(measured_counts, 2), nearest, allowed,
                           round(harakah, 4), stable, error)
 
@@ -288,15 +287,25 @@ def evaluate_madd(audio_segment: FloatArray, madd_type: MaddType,
         return result(RuleStatus.PASSED)
     if measured_counts < min(allowed) - tol:
         return result(RuleStatus.FAILED,
-                      f"{madd_type.value} too short: {measured_counts:.1f} of "
+                      f"{label} too short: {measured_counts:.1f} of "
                       f"required {min(allowed)} harakat")
     if measured_counts > max(allowed) + tol:
         return result(RuleStatus.FAILED,
-                      f"{madd_type.value} over-prolonged: {measured_counts:.1f} "
+                      f"{label} over-prolonged: {measured_counts:.1f} "
                       f"harakat (max {max(allowed)})")
     return result(RuleStatus.FAILED,
-                  f"{madd_type.value} length {measured_counts:.1f} falls between "
+                  f"{label} length {measured_counts:.1f} falls between "
                   f"valid counts {allowed}; hold a consistent {nearest}")
+
+
+def evaluate_madd(audio_segment: FloatArray, madd_type: MaddType,
+                  config: TajweedConfig = TajweedConfig(), *,
+                  harakah_seconds: Optional[float] = None,
+                  phoneme_duration: Optional[float] = None) -> MaddResult:
+    """Check a prolonged vowel against the permissible lengths of its madd type."""
+    return evaluate_madd_spec(audio_segment, madd_spec(madd_type), madd_type.value,
+                              config, harakah_seconds=harakah_seconds,
+                              phoneme_duration=phoneme_duration)
 
 
 # ---------------------------------------------------------------------------

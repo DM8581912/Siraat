@@ -49,15 +49,13 @@ from .audio_processing import (
     pcm16_to_float,
 )
 from .gop_scorer import GOPConfig, GOPScorer, GOPStatus
+from .madd_engine import TajweedMaddEngine
 from .tajweed_rules import (
     MaddType,
     RuleStatus,
     TajweedConfig,
-    calibrate_harakah,
     evaluate_ghunnah,
-    evaluate_madd,
     evaluate_qalqalah,
-    is_pitch_stable,
 )
 
 
@@ -126,9 +124,9 @@ class TajweedPipeline:
         self.aligner = ForcedAligner(self.model, audio_config)
         self.scorer = GOPScorer(gop_config)
         self.tajweed_config = tajweed_config
-        # The reciter's harakah unit, calibrated from the first stable natural
-        # madd in the session so longer madds are judged relative to their pace.
-        self.harakah_seconds: Optional[float] = None
+        # Stateful Madd engine: calibrates the reciter's harakah from the first
+        # stable natural madd, then judges every madd relative to that pace.
+        self.madd_engine = TajweedMaddEngine(tajweed_config)
 
     def process_word(self, signal: FloatArray, word: WordTarget) -> dict:
         """Align, GOP-score and Tajweed-check one word; return a feedback packet."""
@@ -168,15 +166,8 @@ class TajweedPipeline:
         gi = phoneme.grapheme_index
 
         if gi in word.madd_targets and phoneme.symbol in LONG_VOWELS:
-            madd_type = word.madd_targets[gi]
-            # Calibrate the pace unit from the first stable natural madd, then
-            # judge every madd (including this one) relative to that unit.
-            if (madd_type is MaddType.TABEE and self.harakah_seconds is None
-                    and is_pitch_stable(seg, self.tajweed_config)):
-                self.harakah_seconds = calibrate_harakah(seg, self.tajweed_config)
-            r = evaluate_madd(seg, madd_type, self.tajweed_config,
-                              harakah_seconds=self.harakah_seconds,
-                              phoneme_duration=phoneme.duration)
+            r = self.madd_engine.evaluate(seg, madd_type=word.madd_targets[gi],
+                                          phoneme_duration=phoneme.duration)
             return {"rule": "madd", "madd_type": r.madd_type,
                     "status": r.status.value,
                     "measured_counts": r.measured_counts,
@@ -304,7 +295,15 @@ class TajweedSession:
 # FastAPI app (optional import)
 # ---------------------------------------------------------------------------
 def create_app():  # pragma: no cover - exercised only when fastapi is installed
-    """Build the FastAPI app exposing the streaming WebSocket endpoint."""
+    """Build the FastAPI app exposing the streaming WebSocket endpoint.
+
+    The receive loop only enqueues chunks; a per-connection background worker
+    drains the queue and runs the (CPU-bound) DSP off the event loop in a thread
+    executor. This keeps ingest responsive for tight <100 ms frames and isolates
+    each user's state in their own session + queue.
+    """
+    import asyncio
+
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
     app = FastAPI(title="Siraat Tajweed Engine", version="0.1.0")
@@ -313,29 +312,50 @@ def create_app():  # pragma: no cover - exercised only when fastapi is installed
     async def healthz() -> dict:
         return {"status": "ok"}
 
+    async def _worker(ws: WebSocket, session: TajweedSession,
+                      queue: "asyncio.Queue[Optional[bytes]]") -> None:
+        """Drain audio chunks, process them off-loop, and stream packets back."""
+        loop = asyncio.get_running_loop()
+        while True:
+            chunk = await queue.get()
+            try:
+                if chunk is None:  # end-of-stream sentinel
+                    packets = await loop.run_in_executor(None, session.flush)
+                    for packet in packets:
+                        await ws.send_json(packet)
+                    await ws.send_json({"event": "complete"})
+                    return
+                packets = await loop.run_in_executor(None, session.feed_pcm, chunk)
+                for packet in packets:
+                    await ws.send_json(packet)
+            finally:
+                queue.task_done()
+
     @app.websocket("/v1/stream-tajweed")
     async def stream_tajweed(ws: WebSocket) -> None:
         await ws.accept()
-        session: Optional[TajweedSession] = None
+        queue: "asyncio.Queue[Optional[bytes]]" = asyncio.Queue(maxsize=128)
+        worker: Optional[asyncio.Task] = None
         try:
             # First message configures the session with the target ayah words.
             config_msg = await ws.receive_json()
             words = config_msg.get("words", [])
-            target = AyahTarget.from_words(words)
-            session = TajweedSession(target)
+            session = TajweedSession(AyahTarget.from_words(words))
+            worker = asyncio.create_task(_worker(ws, session, queue))
             await ws.send_json({"event": "ready", "word_count": len(words)})
 
             while True:
                 message = await ws.receive()
-                if "bytes" in message and message["bytes"] is not None:
-                    for packet in session.feed_pcm(message["bytes"]):
-                        await ws.send_json(packet)
-                elif "text" in message and message["text"] == "__end__":
-                    for packet in session.flush():
-                        await ws.send_json(packet)
-                    await ws.send_json({"event": "complete"})
+                if message.get("bytes") is not None:
+                    await queue.put(message["bytes"])
+                elif message.get("text") == "__end__":
+                    await queue.put(None)
+                    await worker
                     break
         except WebSocketDisconnect:
-            return
+            pass
+        finally:
+            if worker is not None and not worker.done():
+                worker.cancel()
 
     return app
