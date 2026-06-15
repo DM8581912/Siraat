@@ -35,11 +35,11 @@ struct QuranReaderView: View {
             VStack(spacing: 2) {
                 if viewModel.isOfflineTranslationFallback {
                     Label("Offline — showing English. Reconnect for \(viewModel.settings.translationLanguage.displayName).", systemImage: "wifi.slash")
-                        .font(.caption2.weight(.medium))
+                        .font(SiraatType.micro.weight(.medium))
                         .foregroundStyle(SiraatColor.warning)
                 }
                 Text("Translation: \(viewModel.translationCredit)  ·  Arabic: Uthmani (King Fahd Complex)")
-                    .font(.caption2)
+                    .font(SiraatType.micro)
                     .foregroundStyle(.secondary)
             }
             .multilineTextAlignment(.center)
@@ -89,7 +89,7 @@ struct QuranReaderView: View {
     private var continuousReader: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
+                LazyVStack(alignment: .leading, spacing: SiraatSpacing.md) {
                     ForEach(viewModel.displayedVerses) { verse in
                         EquatableView(content: QuranVerseRow(
                             verse: verse,
@@ -375,7 +375,7 @@ private struct QuranPlaybackBar: View {
                 }
             } label: {
                 Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.title3)
+                    .font(SiraatType.heading)
             }
             .buttonStyle(.borderedProminent)
             .tint(SiraatColor.accent)

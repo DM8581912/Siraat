@@ -237,6 +237,62 @@ struct WaveformView: View {
     }
 }
 
+/// Semantic feedback status shared by every status surface (recitation chips, the
+/// tajweed legend, future verdicts). Each status pairs a color with an SF Symbol so
+/// the signal is never color-only — it reads for color-blind users and VoiceOver.
+enum SiraatStatus {
+    case neutral   // not yet evaluated / pending
+    case success   // correct
+    case caution   // advisory / uncertain (the "yellow" band)
+    case error     // strict mistake
+
+    var color: Color {
+        switch self {
+        case .neutral: SiraatColor.textPrimary
+        case .success: SiraatColor.accent
+        case .caution: SiraatColor.warning
+        case .error: SiraatColor.destructive
+        }
+    }
+
+    /// Soft tint for chip/banner fills. Neutral sits on the standard surface so a
+    /// pending item is not tinted.
+    var fill: Color {
+        switch self {
+        case .neutral: SiraatColor.secondaryBackground
+        case .success, .caution, .error: color.opacity(0.18)
+        }
+    }
+
+    /// The second, non-color signal. `nil` for neutral (no glyph on a pending item).
+    var symbol: String? {
+        switch self {
+        case .neutral: nil
+        case .success: "checkmark"
+        case .caution: "questionmark"
+        case .error: "exclamationmark"
+        }
+    }
+}
+
+/// The shared "listening" chrome for Practice Recitation and Live Translation: a
+/// live waveform above a row of controls, on a translucent material bar with token
+/// padding. Callers supply their own controls (the primary mic toggle plus any
+/// screen-specific actions), so the two recording surfaces stay visually identical.
+struct RecordingControlBar<Controls: View>: View {
+    let level: Double
+    @ViewBuilder var controls: Controls
+
+    var body: some View {
+        VStack(spacing: SiraatSpacing.sm) {
+            WaveformView(level: level)
+            controls
+        }
+        .padding(SiraatSpacing.md)
+        .background(.regularMaterial)
+    }
+}
+
 struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 

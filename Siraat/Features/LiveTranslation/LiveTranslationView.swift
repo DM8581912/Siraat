@@ -86,9 +86,7 @@ struct LiveTranslationView: View {
     }
 
     private var controlBar: some View {
-        VStack(spacing: SiraatSpacing.sm) {
-            WaveformView(level: viewModel.waveformLevel)
-
+        RecordingControlBar(level: viewModel.waveformLevel) {
             HStack {
                 Label {
                     Picker("Target language", selection: $viewModel.targetLanguage) {
@@ -133,8 +131,6 @@ struct LiveTranslationView: View {
                 }
             }
         }
-        .padding()
-        .background(.regularMaterial)
     }
 }
 
@@ -238,28 +234,28 @@ private struct LiveSegmentView: View {
     let segment: LiveSegment
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: SiraatSpacing.xs) {
             if let translated = segment.translatedText {
                 Text(translated)
                     .font(.system(.title3, design: .serif, weight: .semibold))
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                HStack(spacing: 6) {
+                HStack(spacing: SiraatSpacing.xs) {
                     ProgressView().controlSize(.small)
                     Text("Translating…")
-                        .font(.subheadline)
+                        .font(SiraatType.callout)
                         .foregroundStyle(.secondary)
                 }
             }
 
             Text.arabic(segment.sourceText)
-                .font(.body)
+                .font(SiraatType.body)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .multilineTextAlignment(.trailing)
                 .environment(\.layoutDirection, .rightToLeft)
         }
-        .padding()
+        .padding(SiraatSpacing.md)
         .background(SiraatColor.secondaryBackground)
         .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.card, style: .continuous))
     }
@@ -271,9 +267,9 @@ private struct InfoBanner: View {
 
     var body: some View {
         Label(text, systemImage: icon)
-            .font(.footnote)
+            .font(SiraatType.caption)
             .foregroundStyle(.secondary)
-            .padding(10)
+            .padding(SiraatSpacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(SiraatColor.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
@@ -282,13 +278,13 @@ private struct InfoBanner: View {
 
 private struct EmptyTranslationState: View {
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: SiraatSpacing.sm) {
             Image(systemName: "waveform.and.mic")
                 .font(.system(size: 44))
                 .foregroundStyle(SiraatColor.accent)
                 .accessibilityHidden(true)
             Text("Ready for Arabic audio")
-                .font(.title3.bold())
+                .font(SiraatType.heading.bold())
             Text("Start recording when the khutba begins.")
                 .foregroundStyle(.secondary)
         }

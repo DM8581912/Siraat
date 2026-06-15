@@ -298,15 +298,15 @@ private struct LocationPromptCard: View {
 
     var body: some View {
         Card {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: SiraatSpacing.sm) {
                 Image(systemName: "location.magnifyingglass")
                     .font(.system(size: 36))
                     .foregroundStyle(SiraatColor.accent)
                 Text("Prayer times need your location")
-                    .font(.headline)
+                    .font(SiraatType.heading)
                     .foregroundStyle(SiraatColor.textPrimary)
                 Text("Calculated on device using your chosen method. Nothing is uploaded.")
-                    .font(.subheadline)
+                    .font(SiraatType.callout)
                     .foregroundStyle(SiraatColor.textSecondary)
                 Button(action: action) {
                     Label("Use Current Location", systemImage: "location.fill")
@@ -326,16 +326,16 @@ private struct ReminderCard: View {
 
     var body: some View {
         Card {
-            HStack(spacing: 14) {
+            HStack(spacing: SiraatSpacing.sm) {
                 Image(systemName: isEnabled ? "bell.fill" : "bell")
-                    .font(.title3)
+                    .font(SiraatType.heading)
                     .foregroundStyle(SiraatColor.gold)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: SiraatSpacing.xxs) {
                     Text("Prayer Reminders")
-                        .font(.subheadline.weight(.semibold))
+                        .font(SiraatType.callout.weight(.semibold))
                         .foregroundStyle(SiraatColor.textPrimary)
                     Text(statusText)
-                        .font(.caption)
+                        .font(SiraatType.caption)
                         .foregroundStyle(SiraatColor.textSecondary)
                 }
                 Spacer()
@@ -352,7 +352,7 @@ private struct QiblaCard: View {
 
     var body: some View {
         Card {
-            HStack(spacing: 20) {
+            HStack(spacing: SiraatSpacing.lg) {
                 ZStack {
                     Circle()
                         .strokeBorder(SiraatColor.hairline, lineWidth: 10)
@@ -362,21 +362,21 @@ private struct QiblaCard: View {
                         .foregroundStyle(SiraatColor.accent)
                         .rotationEffect(.degrees(direction?.compassOffsetDegrees ?? direction?.bearingDegrees ?? 0))
                         .animation(.spring(response: 0.35, dampingFraction: 0.82), value: direction?.compassOffsetDegrees)
-                    Text("N").font(.caption2.bold()).foregroundStyle(SiraatColor.textSecondary).offset(y: -38)
+                    Text("N").font(SiraatType.micro.bold()).foregroundStyle(SiraatColor.textSecondary).offset(y: -38)
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Qibla compass")
                 .accessibilityValue(direction?.displayBearing ?? "Location needed")
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: SiraatSpacing.xxs) {
                     Text("Qibla")
-                        .font(.caption.weight(.semibold))
+                        .font(SiraatType.caption.weight(.semibold))
                         .foregroundStyle(SiraatColor.textSecondary)
                     Text(direction?.displayBearing ?? "—")
                         .font(.system(.largeTitle, design: .rounded).weight(.bold))
                         .foregroundStyle(SiraatColor.textPrimary)
                     Text(direction?.compassOffsetDegrees == nil ? "Bearing from north" : "Turn until the arrow points up")
-                        .font(.footnote)
+                        .font(SiraatType.caption)
                         .foregroundStyle(SiraatColor.textSecondary)
                 }
                 Spacer()
@@ -390,12 +390,12 @@ private struct VerseOfTheDayCard: View {
 
     var body: some View {
         Card {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: SiraatSpacing.sm) {
                 Label("Verse of the Day", systemImage: "sun.haze")
-                    .font(.caption.weight(.semibold))
+                    .font(SiraatType.caption.weight(.semibold))
                     .foregroundStyle(SiraatColor.gold)
 
-                ArabicText(verse.textUthmani, size: 24, scripture: true)
+                ArabicText(verse.textUthmani, size: SiraatType.Arabic.verseOfDay, scripture: true)
                     .lineSpacing(8)
                     .foregroundStyle(SiraatColor.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -404,12 +404,12 @@ private struct VerseOfTheDayCard: View {
 
                 if !verse.translation.isEmpty {
                     Text(verse.translation)
-                        .font(.subheadline)
+                        .font(SiraatType.callout)
                         .foregroundStyle(SiraatColor.textSecondary)
                 }
 
                 Text("Qur'an \(verse.verseKey) · Saheeh International")
-                    .font(.caption2)
+                    .font(SiraatType.micro)
                     .foregroundStyle(SiraatColor.textSecondary)
             }
         }
@@ -421,7 +421,7 @@ private struct QuickActionsCard: View {
 
     var body: some View {
         Card {
-            VStack(spacing: 10) {
+            VStack(spacing: SiraatSpacing.sm) {
                 Button {
                     selectedTab = .liveTranslation
                 } label: {
@@ -451,16 +451,16 @@ private struct ContinueReadingCard: View {
     var body: some View {
         Button(action: action) {
             Card {
-                HStack(spacing: 14) {
+                HStack(spacing: SiraatSpacing.sm) {
                     Image(systemName: "book.fill")
-                        .font(.title3)
+                        .font(SiraatType.heading)
                         .foregroundStyle(SiraatColor.accent)
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: SiraatSpacing.xxs) {
                         Text("Continue reading")
-                            .font(.caption)
+                            .font(SiraatType.caption)
                             .foregroundStyle(SiraatColor.textSecondary)
                         Text("\(QuranChapter.chapter(number: position.surahNumber).transliteratedName), Ayah \(position.verseNumber)")
-                            .font(.headline)
+                            .font(SiraatType.heading)
                             .foregroundStyle(SiraatColor.textPrimary)
                     }
                     Spacer()

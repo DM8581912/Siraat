@@ -33,21 +33,21 @@ private struct MoreRow<Destination: View>: View {
         NavigationLink {
             destination()
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: SiraatSpacing.sm) {
                 Image(systemName: icon)
-                    .font(.title3)
+                    .font(SiraatType.heading)
                     .foregroundStyle(tint)
                     .frame(width: 34)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: SiraatSpacing.xxs) {
                     Text(title)
-                        .font(.headline)
+                        .font(SiraatType.heading)
                         .foregroundStyle(SiraatColor.textPrimary)
                     Text(subtitle)
-                        .font(.caption)
+                        .font(SiraatType.caption)
                         .foregroundStyle(SiraatColor.textSecondary)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, SiraatSpacing.xxs)
         }
     }
 }

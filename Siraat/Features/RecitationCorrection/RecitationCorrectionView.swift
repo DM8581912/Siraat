@@ -78,9 +78,7 @@ struct RecitationCorrectionView: View {
                 .padding(SiraatSpacing.md)
             }
 
-            VStack(spacing: SiraatSpacing.sm) {
-                WaveformView(level: viewModel.waveformLevel)
-
+            RecordingControlBar(level: viewModel.waveformLevel) {
                 HStack {
                     Button {
                         viewModel.reset()
@@ -101,8 +99,6 @@ struct RecitationCorrectionView: View {
                     .tint(viewModel.isListening ? SiraatColor.destructive : SiraatColor.accent)
                 }
             }
-            .padding(SiraatSpacing.md)
-            .background(.regularMaterial)
         }
         .navigationTitle("Practice Recitation")
         .alert(item: $selectedTip) { tip in
@@ -259,53 +255,23 @@ private struct WordChip: View {
         return "\(word.originalText), \(accessibilityStatus)"
     }
 
-    private var statusSymbol: String? {
-        if word.hasCriticalTajweedViolation {
-            return "exclamationmark"
-        }
-        if word.hasAdvisoryTajweedViolation {
-            return "questionmark"
-        }
-
+    /// One semantic status for the chip, derived from the alignment status and any
+    /// Tajweed violation (a violation outranks the plain status). Color, fill and the
+    /// color-blind-safe symbol all flow from this single source (`SiraatStatus`).
+    private var resolvedStatus: SiraatStatus {
+        if word.hasCriticalTajweedViolation { return .error }
+        if word.hasAdvisoryTajweedViolation { return .caution }
         return switch word.status {
-        case .pending: nil
-        case .correct: "checkmark"
-        case .uncertain: "questionmark"
-        case .missed: "exclamationmark"
+        case .pending: .neutral
+        case .correct: .success
+        case .uncertain: .caution
+        case .missed: .error
         }
     }
 
-    private var foregroundColor: Color {
-        if word.hasCriticalTajweedViolation {
-            return SiraatColor.destructive
-        }
-        if word.hasAdvisoryTajweedViolation {
-            return SiraatColor.warning
-        }
-
-        return switch word.status {
-        case .pending: SiraatColor.textPrimary
-        case .correct: SiraatColor.accent
-        case .uncertain: SiraatColor.warning
-        case .missed: SiraatColor.destructive
-        }
-    }
-
-    private var backgroundColor: Color {
-        if word.hasCriticalTajweedViolation {
-            return SiraatColor.destructive.opacity(0.18)
-        }
-        if word.hasAdvisoryTajweedViolation {
-            return SiraatColor.warning.opacity(0.18)
-        }
-
-        return switch word.status {
-        case .pending: SiraatColor.secondaryBackground
-        case .correct: SiraatColor.accent.opacity(0.18)
-        case .uncertain: SiraatColor.warning.opacity(0.18)
-        case .missed: SiraatColor.destructive.opacity(0.18)
-        }
-    }
+    private var statusSymbol: String? { resolvedStatus.symbol }
+    private var foregroundColor: Color { resolvedStatus.color }
+    private var backgroundColor: Color { resolvedStatus.fill }
 
     private var accessibilityStatus: String {
         guard let violation = word.tajweedViolations.first else {
