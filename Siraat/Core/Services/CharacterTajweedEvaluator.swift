@@ -13,6 +13,8 @@ struct CharacterTajweedEvaluator {
     var criticalConfidence = 0.85
     /// A Madd shorter than `expected * maddShortRatio` is flagged as cut short.
     var maddShortRatio = 0.5
+    /// Tolerance, in harakāt, around a Madd's required count before flagging.
+    var maddCountTolerance = 0.5
     /// A Ghunnah nasal shorter than this (and below ~2 harakāt when measured) is flagged.
     var ghunnahDurationThreshold: TimeInterval = 0.45
     var maximumMaddDuration: TimeInterval = 1.50
@@ -78,17 +80,32 @@ struct CharacterTajweedEvaluator {
             return (.red, .tashkeelWrong)
         }
 
-        // 4. Madd timing. Prefer the reciter's own measured harakah (tempo-invariant): a
-        //    natural Madd should run at least ~2 harakāt, so flag below ~1 harakah. Fall
-        //    back to the blueprint's reference duration when no harakah unit was measured.
+        // 4. Madd timing, judged against the blueprint's required count for THIS position
+        //    (natural = 2, Muttasil = 4, Lāzim = 6, ...) in the reciter's own harakah unit,
+        //    so it is tempo-invariant (Tahqīq/Tadweer/Hadr). Reciting a 6-count Lāzim at 2
+        //    is now correctly flagged short, where a fixed 2-count check would pass it. The
+        //    long bound stays generous (honesty: never flag a correct reciter for natural
+        //    variation). Falls back to the blueprint's reference clock when no harakah was
+        //    measured. Defaults to a 2-count check when the blueprint omits a count.
         if phoneme.isMaddVowel && !heardDifferentLetter {
-            let expected = harakatSeconds.map { $0 * 2 } ?? phoneme.expectedDurationSeconds
-            let longBound = harakatSeconds.map { $0 * 6 } ?? maximumMaddDuration
-            if expected > 0 && observation.duration < expected * maddShortRatio {
-                return (.yellow, .maddShort)
-            }
-            if observation.duration > longBound {
-                return (.yellow, .maddLong)
+            let targetCount = phoneme.expectedMaddCount > 0 ? Double(phoneme.expectedMaddCount) : 2
+            if let harakah = harakatSeconds, harakah > 0 {
+                let expected = harakah * targetCount
+                let tolerance = harakah * maddCountTolerance
+                if observation.duration < expected - tolerance {
+                    return (.yellow, .maddShort)
+                }
+                if observation.duration > harakah * (targetCount + 2) {
+                    return (.yellow, .maddLong)
+                }
+            } else {
+                let expected = phoneme.expectedDurationSeconds
+                if expected > 0 && observation.duration < expected * maddShortRatio {
+                    return (.yellow, .maddShort)
+                }
+                if observation.duration > maximumMaddDuration {
+                    return (.yellow, .maddLong)
+                }
             }
         }
 
