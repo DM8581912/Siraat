@@ -1,0 +1,22 @@
+# Core DSP (required) -------------------------------------------------------
+# The deterministic feature extraction, alignment, GOP and Tajweed rule layers
+# depend only on NumPy, so the engine and its test-suite run with no ML runtime.
+numpy>=1.26,<3.0
+
+# Streaming server (optional, needed for app/server.py over WebSocket) -------
+fastapi>=0.110
+uvicorn[standard]>=0.29
+websockets>=12.0
+
+# Acoustic model (optional, needed for real Wav2Vec2 inference) --------------
+# Without these the engine uses MockAcousticModel / the energy-based VAD.
+torch>=2.2
+torchaudio>=2.2
+transformers>=4.40
+
+# DSP niceties (optional; pure-NumPy fallbacks exist) ------------------------
+scipy>=1.11
+librosa>=0.10
+
+# Tests ---------------------------------------------------------------------
+pytest>=8.0

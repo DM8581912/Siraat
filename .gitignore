@@ -10,3 +10,11 @@ Config/Secrets.xcconfig
 # only TajweedBlueprints.json is loaded). Kept out of git to avoid ~150MB of repo bloat.
 Siraat/Resources/TajweedBlueprints_Accurate.json
 Siraat/Resources/TajweedBlueprints_Full.json
+
+# Python (tajweed_engine reference backend)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
