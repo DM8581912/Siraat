@@ -79,6 +79,12 @@ enum SiraatType {
     static let caption = Font.caption                                           // metadata
     static let micro = Font.caption2                                            // credits, fine print
 
+    /// Oversized focal figures for heroes (next-prayer name, tasbih counter). These
+    /// are intentionally fixed-size display type; named here so screens never hardcode
+    /// `.system(size:)` for them.
+    static let heroTitle = Font.system(size: 40, weight: .bold, design: .serif)
+    static let heroNumeral = Font.system(size: 72, weight: .bold, design: .rounded)
+
     /// Default Arabic display sizes (points at default Dynamic Type), centralized so the
     /// Arabic ramp is consistent. `ArabicText` scales these with the user's text-size setting.
     enum Arabic {

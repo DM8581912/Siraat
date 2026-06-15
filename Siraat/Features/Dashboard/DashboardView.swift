@@ -146,21 +146,21 @@ private struct NextPrayerHero: View {
         let previous = schedule.times.last { $0.date <= now }
         let progress = fractionElapsed(now: now, previous: previous, next: upcoming)
 
-        return VStack(alignment: .leading, spacing: 18) {
+        return VStack(alignment: .leading, spacing: SiraatSpacing.lg) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: SiraatSpacing.xs) {
                     Text("NEXT PRAYER")
-                        .font(.caption.weight(.semibold))
+                        .font(SiraatType.caption.weight(.semibold))
                         .tracking(1.5)
                         .foregroundStyle(.white.opacity(0.7))
                     Text(upcoming?.name.displayName ?? "—")
-                        .font(.system(size: 40, weight: .bold, design: .serif))
+                        .font(SiraatType.heroTitle)
                         .foregroundStyle(.white)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                     if let upcoming {
                         Text(timeFormatter.string(from: upcoming.date))
-                            .font(.title3.weight(.medium))
+                            .font(SiraatType.heading.weight(.medium))
                             .foregroundStyle(.white.opacity(0.85))
                     }
                 }
@@ -173,7 +173,7 @@ private struct NextPrayerHero: View {
                                 .foregroundStyle(.white)
                                 .monospacedDigit()
                             Text("left")
-                                .font(.caption2)
+                                .font(SiraatType.micro)
                                 .foregroundStyle(.white.opacity(0.7))
                         }
                     }

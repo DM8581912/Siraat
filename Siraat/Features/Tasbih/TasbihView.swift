@@ -26,18 +26,18 @@ struct TasbihView: View {
     private var progress: Double { target > 0 ? Double(count) / Double(target) : 0 }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: SiraatSpacing.xl) {
             dhikrPicker
 
-            VStack(spacing: 6) {
-                ArabicText(dhikr.arabic, size: 34, weight: .semibold)
+            VStack(spacing: SiraatSpacing.xs) {
+                ArabicText(dhikr.arabic, size: SiraatType.Arabic.dhikr, weight: .semibold)
                     .foregroundStyle(SiraatColor.textPrimary)
                     .multilineTextAlignment(.center)
                 Text(dhikr.transliteration)
-                    .font(.headline)
+                    .font(SiraatType.heading)
                     .foregroundStyle(SiraatColor.accent)
                 Text(dhikr.meaning)
-                    .font(.subheadline)
+                    .font(SiraatType.callout)
                     .foregroundStyle(SiraatColor.textSecondary)
             }
 
@@ -46,15 +46,15 @@ struct TasbihView: View {
             counterButton
 
             Text("Round \(rounds) · Target \(target)")
-                .font(.subheadline)
+                .font(SiraatType.callout)
                 .foregroundStyle(SiraatColor.textSecondary)
 
-            HStack(spacing: 12) {
+            HStack(spacing: SiraatSpacing.sm) {
                 ForEach([33, 99, 100], id: \.self) { value in
                     Button("\(value)") { target = value }
-                        .font(.subheadline.weight(.semibold))
+                        .font(SiraatType.callout.weight(.semibold))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, SiraatSpacing.sm)
                         .background(target == value ? SiraatColor.accent.opacity(0.15) : SiraatColor.secondaryBackground)
                         .foregroundStyle(target == value ? SiraatColor.accent : SiraatColor.textSecondary)
                         .clipShape(RoundedRectangle(cornerRadius: SiraatRadius.inner, style: .continuous))
@@ -64,9 +64,9 @@ struct TasbihView: View {
                     reset()
                 } label: {
                     Label("Reset", systemImage: "arrow.counterclockwise")
-                        .font(.subheadline.weight(.semibold))
+                        .font(SiraatType.callout.weight(.semibold))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, SiraatSpacing.sm)
                 }
                 .foregroundStyle(SiraatColor.destructive)
                 .background(SiraatColor.secondaryBackground)
@@ -76,7 +76,7 @@ struct TasbihView: View {
 
             Spacer()
         }
-        .padding(20)
+        .padding(SiraatSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(SiraatColor.background.ignoresSafeArea())
         .navigationTitle("Tasbih")
@@ -91,9 +91,9 @@ struct TasbihView: View {
         } label: {
             HStack {
                 Text("Dhikr: \(dhikr.transliteration)")
-                Image(systemName: "chevron.up.chevron.down").font(.caption)
+                Image(systemName: "chevron.up.chevron.down").font(SiraatType.caption)
             }
-            .font(.subheadline.weight(.medium))
+            .font(SiraatType.callout.weight(.medium))
             .foregroundStyle(SiraatColor.textSecondary)
         }
     }
@@ -110,14 +110,14 @@ struct TasbihView: View {
                     .stroke(SiraatColor.accent, style: StrokeStyle(lineWidth: 14, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.easeOut(duration: 0.2), value: progress)
-                VStack(spacing: 2) {
+                VStack(spacing: SiraatSpacing.xxs) {
                     Text("\(count)")
-                        .font(.system(size: 72, weight: .bold, design: .rounded))
+                        .font(SiraatType.heroNumeral)
                         .foregroundStyle(SiraatColor.textPrimary)
                         .monospacedDigit()
                         .contentTransition(.numericText(value: Double(count)))
                     Text("of \(target)")
-                        .font(.subheadline)
+                        .font(SiraatType.callout)
                         .foregroundStyle(SiraatColor.textSecondary)
                 }
             }
