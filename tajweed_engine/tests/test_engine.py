@@ -1,0 +1,235 @@
+"""Unit tests for the Tajweed engine.
+
+These run with NumPy + pytest only -- no ML runtime, no FastAPI -- exercising
+the deterministic DSP, the CTC forced aligner against the mock acoustic model,
+the GOP scorer and the three acoustic Tajweed rules end to end.
+
+Test audio is synthetic (tones, bursts, silence). No Quranic recitation or text
+is embedded; the few Arabic strings used are ordinary vocabulary words chosen
+only to exercise the grapheme->phoneme mapping.
+"""
+
+from __future__ import annotations
+
+import math
+
+import numpy as np
+import pytest
+
+from app import audio_processing as ap
+from app import tajweed_rules as tj
+from app.alignment_engine import (
+    ForcedAligner,
+    MockAcousticModel,
+    forced_align,
+    text_to_phonemes,
+)
+from app.audio_processing import AudioConfig
+from app.gop_scorer import GOPScorer
+from app.server import AyahTarget, TajweedPipeline, TajweedSession, WordTarget
+from app.tajweed_rules import RuleStatus, TajweedConfig
+
+CFG = AudioConfig()
+SR = CFG.sample_rate
+
+
+def tone(freq: float, seconds: float, amp: float = 0.3,
+         sr: int = SR) -> np.ndarray:
+    t = np.arange(int(seconds * sr)) / sr
+    return (amp * np.sin(2 * math.pi * freq * t)).astype(np.float32)
+
+
+def silence(seconds: float, sr: int = SR) -> np.ndarray:
+    return np.zeros(int(seconds * sr), dtype=np.float32)
+
+
+# ---------------------------------------------------------------------------
+# audio_processing
+# ---------------------------------------------------------------------------
+def test_pcm16_roundtrip():
+    sig = tone(220, 0.05)
+    restored = ap.pcm16_to_float(ap.float_to_pcm16(sig))
+    assert restored.shape == sig.shape
+    assert np.max(np.abs(restored - sig)) < 1e-3
+
+
+def test_pcm16_handles_odd_byte():
+    # A dangling byte (split sample at a chunk boundary) must not crash.
+    assert ap.pcm16_to_float(b"\x00\x01\x02").shape[0] == 1
+
+
+def test_resample_changes_length():
+    sig = tone(440, 0.1, sr=8000)
+    out = ap.resample(sig, 8000, 16000)
+    assert abs(out.size - sig.size * 2) <= 2
+
+
+def test_normalize_rms_hits_target():
+    sig = tone(300, 0.2, amp=0.01)
+    out = ap.normalize_rms(sig, target_dbfs=-20.0)
+    rms_db = 20 * math.log10(float(np.sqrt(np.mean(out ** 2))) + 1e-12)
+    assert abs(rms_db - (-20.0)) < 1.0
+
+
+def test_mel_and_mfcc_shapes():
+    sig = tone(300, 0.5)
+    mel = ap.mel_spectrogram(sig, CFG)
+    mfcc = ap.mfcc(sig, CFG)
+    assert mel.shape[1] == CFG.n_mels
+    assert mfcc.shape[1] == CFG.n_mfcc
+    assert mel.shape[0] == mfcc.shape[0]
+
+
+def test_vad_separates_speech_and_silence():
+    vad = ap.SileroVAD(CFG)
+    sig = np.concatenate([silence(0.3), tone(200, 0.5), silence(0.3)])
+    segs = vad.segments(sig, threshold=0.5)
+    assert len(segs) == 1
+    assert segs[0].duration_seconds > 0.3
+    # The voiced region should start after the leading silence.
+    assert segs[0].start_seconds >= 0.2
+
+
+def test_formants_shape_and_range():
+    sig = tone(500, 0.2)
+    formants = ap.track_formants(sig, 3, CFG)
+    assert formants.shape[1] == 3
+    finite = formants[np.isfinite(formants)]
+    assert np.all((finite > 0) & (finite < SR / 2))
+
+
+# ---------------------------------------------------------------------------
+# alignment_engine
+# ---------------------------------------------------------------------------
+def test_text_to_phonemes_maps_known_graphemes():
+    phs = text_to_phonemes("باب")
+    assert [p.symbol for p in phs] == ["b", "aa", "b"]
+
+
+def test_forced_align_monotonic_spans():
+    model = MockAcousticModel(CFG)
+    phonemes = text_to_phonemes("كتاب")
+    model.set_target([p.token_id for p in phonemes])
+    sig = tone(150, 1.0)
+    emission = model.emissions(sig)
+    spans = forced_align(emission, [p.token_id for p in phonemes], CFG)
+    assert len(spans) == len(phonemes)
+    last_end = -1
+    for _tok, start, end, _score in spans:
+        assert 0 <= start <= end < emission.shape[0]
+        assert start >= last_end  # non-overlapping, in order
+        last_end = end
+
+
+def test_forced_align_rejects_too_short_audio():
+    with pytest.raises(ValueError):
+        forced_align(np.zeros((2, 40), dtype=np.float32), list(range(5)), CFG)
+
+
+# ---------------------------------------------------------------------------
+# gop_scorer
+# ---------------------------------------------------------------------------
+def test_gop_scores_target_biased_emissions_well():
+    model = MockAcousticModel(CFG, peak=8.0)
+    aligner = ForcedAligner(model, CFG)
+    phonemes = text_to_phonemes("كتاب")
+    sig = tone(150, 1.0)
+    aligned, emission = aligner.align(sig, phonemes)
+    scores = GOPScorer().score(emission, aligned)
+    assert len(scores) == len(phonemes)
+    summary = GOPScorer.summary(scores)
+    # The mock biases the target tokens, so the utterance should score near 0.
+    assert summary["mean_gop"] > -3.0
+
+
+# ---------------------------------------------------------------------------
+# tajweed_rules: Madd
+# ---------------------------------------------------------------------------
+def test_madd_passes_for_stable_two_count_vowel():
+    cfg = TajweedConfig()
+    seconds = cfg.counts_to_seconds(2)
+    vowel = tone(150, seconds, amp=0.4)
+    res = tj.evaluate_madd(vowel, target_counts=2, config=cfg)
+    assert res.status is RuleStatus.PASSED
+    assert res.pitch_stable
+    assert abs(res.measured_counts - 2) < 0.6
+
+
+def test_madd_fails_when_too_short():
+    cfg = TajweedConfig()
+    vowel = tone(150, cfg.counts_to_seconds(2) * 0.4, amp=0.4)
+    res = tj.evaluate_madd(vowel, target_counts=2, config=cfg)
+    assert res.status is RuleStatus.FAILED
+    assert "short" in (res.error or "")
+
+
+# ---------------------------------------------------------------------------
+# tajweed_rules: Ghunnah
+# ---------------------------------------------------------------------------
+def test_ghunnah_passes_for_sustained_nasal_band_energy():
+    cfg = TajweedConfig()
+    nasal = tone(300, cfg.counts_to_seconds(2) + 0.1, amp=0.4)  # within nasal band
+    res = tj.evaluate_ghunnah(nasal, cfg)
+    assert res.status is RuleStatus.PASSED
+    assert res.nasal_counts >= cfg.ghunnah_min_counts - 0.2
+
+
+def test_ghunnah_fails_for_oral_band_energy():
+    cfg = TajweedConfig()
+    oral = tone(2000, cfg.counts_to_seconds(2) + 0.1, amp=0.4)  # oral band
+    res = tj.evaluate_ghunnah(oral, cfg)
+    assert res.status is RuleStatus.FAILED
+
+
+# ---------------------------------------------------------------------------
+# tajweed_rules: Qalqalah
+# ---------------------------------------------------------------------------
+def test_qalqalah_detects_release_burst():
+    cfg = TajweedConfig()
+    quiet = tone(120, 0.01, amp=0.002)
+    burst = (np.random.default_rng(1).normal(0, 0.5, int(SR * 0.03))).astype(np.float32)
+    seg = np.concatenate([quiet, burst]).astype(np.float32)
+    res = tj.evaluate_qalqalah(seg, closure_time=0.0, config=cfg)
+    assert res.status is RuleStatus.PASSED
+    assert res.peak_denergy > cfg.qalqalah_denergy_threshold
+
+
+def test_qalqalah_fails_without_burst():
+    cfg = TajweedConfig()
+    # A steady high-frequency tone: its period is far shorter than the 5 ms
+    # energy window, so the envelope is flat -- no release transient.
+    flat = tone(3000, 0.08, amp=0.3)
+    res = tj.evaluate_qalqalah(flat, closure_time=0.0, config=cfg)
+    assert res.status is RuleStatus.FAILED
+
+
+# ---------------------------------------------------------------------------
+# server pipeline + session
+# ---------------------------------------------------------------------------
+def test_pipeline_emits_packet_for_word():
+    pipeline = TajweedPipeline(audio_config=CFG)
+    word = WordTarget.from_text("قمر")
+    packet = pipeline.process_word(tone(150, 0.4), word)
+    assert packet["word"] == "قمر"
+    assert len(packet["phoneme_telemetry"]) == 3
+    assert {"phoneme", "gop_score", "status"} <= set(packet["phoneme_telemetry"][0])
+
+
+def test_session_segments_two_words():
+    target = AyahTarget.from_words(["باب", "قمر"])
+    session = TajweedSession(target, audio_config=CFG)
+    stream = np.concatenate([tone(180, 0.4), silence(0.4), tone(160, 0.4)])
+    packets = session.feed(stream)
+    packets += session.flush()
+    assert len(packets) == 2
+    assert [p["word"] for p in packets] == ["باب", "قمر"]
+    assert session.finished
+
+
+def test_session_feed_pcm_path():
+    target = AyahTarget.from_words(["باب"])
+    session = TajweedSession(target, audio_config=CFG)
+    pcm = ap.float_to_pcm16(np.concatenate([tone(180, 0.4), silence(0.4)]))
+    packets = session.feed_pcm(pcm) + session.flush()
+    assert len(packets) >= 1
+    assert packets[0]["word"] == "باب"
