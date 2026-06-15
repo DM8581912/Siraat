@@ -8,18 +8,18 @@ struct RecitationCorrectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: SiraatSpacing.lg) {
                     correctionControls
 
                     SectionBand(title: viewModel.selectedVerse?.verseKey ?? "Selected Verse") {
                         HStack {
                             Text("Analysis: \(viewModel.analysisEngine.displayName)")
-                                .font(.caption)
+                                .font(SiraatType.caption)
                                 .foregroundStyle(.secondary)
                             Spacer()
                             Toggle("Memorize", isOn: $viewModel.hifzMode)
                                 .toggleStyle(.button)
-                                .font(.caption)
+                                .font(SiraatType.caption)
                                 .tint(SiraatColor.accent)
                                 .accessibilityLabel("Memorization mode")
                         }
@@ -40,7 +40,7 @@ struct RecitationCorrectionView: View {
                                 "Advisory Tajweed feedback, processed on-device.",
                                 systemImage: "info.circle"
                             )
-                            .font(.caption2)
+                            .font(SiraatType.micro)
                             .foregroundStyle(SiraatColor.textSecondary)
                         }
 
@@ -75,10 +75,10 @@ struct RecitationCorrectionView: View {
                         }
                     }
                 }
-                .padding()
+                .padding(SiraatSpacing.md)
             }
 
-            VStack(spacing: 12) {
+            VStack(spacing: SiraatSpacing.sm) {
                 WaveformView(level: viewModel.waveformLevel)
 
                 HStack {
@@ -101,10 +101,10 @@ struct RecitationCorrectionView: View {
                     .tint(viewModel.isListening ? SiraatColor.destructive : SiraatColor.accent)
                 }
             }
-            .padding()
+            .padding(SiraatSpacing.md)
             .background(.regularMaterial)
         }
-        .navigationTitle("Recitation Correction")
+        .navigationTitle("Practice Recitation")
         .alert(item: $selectedTip) { tip in
             Alert(title: Text(tip.title), message: Text(tip.message), dismissButton: .default(Text("OK")))
         }
@@ -127,14 +127,14 @@ struct RecitationCorrectionView: View {
     private var coloredAyahSection: some View {
         SectionBand(title: "Tajweed (per-letter)") {
             Toggle("Show colored ayah", isOn: $viewModel.showColoredAyah)
-                .font(.caption)
+                .font(SiraatType.caption)
 
             if viewModel.isBlueprintExperimental {
                 Label(
                     "Experimental. On this ayah, Madd (elongation) length is graded on-device from your recitation; consonants and Tashkeel are not graded yet. Position data is placeholder pending a verified corpus.",
                     systemImage: "flask"
                 )
-                .font(.caption2)
+                .font(SiraatType.micro)
                 .foregroundStyle(SiraatColor.warning)
             }
 
@@ -175,14 +175,9 @@ struct RecitationCorrectionView: View {
                     }
                 }
             }
-
-            Button {
-                viewModel.loadVerse()
-            } label: {
-                Label("Load Verse", systemImage: "arrow.down.circle")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
+            // No explicit "load" button: changing the surah, ayah, or script
+            // already loads the verse, so a separate button only added a control
+            // that appeared to do nothing.
         }
     }
 }
