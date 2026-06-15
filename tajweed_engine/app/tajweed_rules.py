@@ -38,14 +38,66 @@ class RuleStatus(str, Enum):
     NOT_APPLICABLE = "n/a"
 
 
+# ---------------------------------------------------------------------------
+# Madd taxonomy (the canonical categories of prolongation)
+# ---------------------------------------------------------------------------
+# Each madd type has its own *permissible* length(s) in harakat. Some are a
+# fixed obligation (a single correct length); others leave the reciter a choice
+# that must then be applied consistently throughout the recitation. These follow
+# the well-known Hafs 'an 'Asim conventions. The engine only *measures* length;
+# it never decides which madd type a position is -- that comes from the verified
+# blueprint supplied by the caller.
+class MaddType(str, Enum):
+    TABEE = "tabee"                  # natural madd: exactly 2
+    BADAL = "badal"                  # madd al-badal: 2
+    SILAH_SUGHRA = "silah_sughra"    # minor silah: 2
+    MUNFASIL = "munfasil"            # separated (jaa'iz): 2, 4 or 5
+    MUTTASIL = "muttasil"            # connected (waajib): 4 or 5
+    LAZIM = "lazim"                  # necessary: exactly 6
+    ARID = "arid"                    # due to temporary sukun: 2, 4 or 6
+    LEEN = "leen"                    # leen letter at a stop: 2, 4 or 6
+
+
+@dataclass(frozen=True)
+class MaddSpec:
+    """Permissible lengths for a madd type, in harakat (counts)."""
+
+    allowed_counts: tuple[int, ...]
+    obligatory: bool   # True => one fixed correct length; False => reciter choice
+    note: str
+
+
+_MADD_SPEC: dict[MaddType, MaddSpec] = {
+    MaddType.TABEE: MaddSpec((2,), True, "Natural madd: hold exactly 2 harakat"),
+    MaddType.BADAL: MaddSpec((2,), True, "Madd al-Badal: 2 harakat"),
+    MaddType.SILAH_SUGHRA: MaddSpec((2,), True, "Silah sughra: 2 harakat"),
+    MaddType.MUNFASIL: MaddSpec((2, 4, 5), False,
+                                "Munfasil: 2, 4 or 5 (apply one length consistently)"),
+    MaddType.MUTTASIL: MaddSpec((4, 5), False,
+                                "Muttasil: 4 or 5 (obligatory, never less than 4)"),
+    MaddType.LAZIM: MaddSpec((6,), True, "Madd Lazim: hold exactly 6 harakat"),
+    MaddType.ARID: MaddSpec((2, 4, 6), False, "Arid lis-sukun: 2, 4 or 6"),
+    MaddType.LEEN: MaddSpec((2, 4, 6), False, "Leen: 2, 4 or 6"),
+}
+
+
+def madd_spec(madd_type: MaddType) -> MaddSpec:
+    return _MADD_SPEC[madd_type]
+
+
 @dataclass(frozen=True)
 class TajweedConfig:
     """Tunable constants for the acoustic Tajweed heuristics."""
 
     sample_rate: int = 16_000
-    # One harakah (count). Tarteel/Tadweer/Tahqeeq vary; ~0.25-0.30 s is typical.
+    # The duration of one harakah (count). This is a *fallback default* only:
+    # madd length in tajweed is relative to the reciter's own pace (Tahqiq is
+    # slow, Hadr is fast), so prefer calibrating the unit from a measured natural
+    # madd via `calibrate_harakah` before judging the longer madd types.
     harakah_seconds: float = 0.275
-    madd_count_tolerance: float = 0.30   # +/- fraction of one count allowed
+    harakah_min_seconds: float = 0.12   # sane absolute floor for the unit
+    harakah_max_seconds: float = 0.50   # sane absolute ceiling for the unit
+    madd_count_tolerance: float = 0.5    # +/- harakat allowed around a valid count
     # Pitch tracking (AMDF).
     pitch_frame_ms: float = 40.0
     pitch_hop_ms: float = 10.0
@@ -112,6 +164,39 @@ def pitch_track(signal: FloatArray, config: TajweedConfig) -> tuple[np.ndarray, 
     return f0s, voi
 
 
+def is_pitch_stable(audio_segment: FloatArray,
+                    config: TajweedConfig = TajweedConfig()) -> bool:
+    """Whether a vowel is held as one continuous, steady sound.
+
+    A madd must be a single uninterrupted vowel at a steady pitch; a wavering,
+    broken or re-articulated vowel is incorrect regardless of its raw length.
+    """
+    f0s, voi = pitch_track(audio_segment, config)
+    voiced_mask = voi >= 0.30
+    voiced_ratio = float(np.mean(voiced_mask)) if voi.size else 0.0
+    voiced_f0 = f0s[voiced_mask]
+    if voiced_f0.size >= 2 and float(np.mean(voiced_f0)) > 0:
+        cv = float(np.std(voiced_f0) / (np.mean(voiced_f0) + 1e-9))
+    else:
+        cv = 1.0
+    return voiced_ratio >= config.pitch_voiced_threshold and cv <= config.pitch_cv_max
+
+
+def calibrate_harakah(natural_madd_segment: FloatArray,
+                      config: TajweedConfig = TajweedConfig()) -> float:
+    """Derive the reciter's harakah (one-count) duration from a natural madd.
+
+    Madd lengths are *relative*: the obligatory 2/4/6-count holds are multiples
+    of the reciter's own single count. Anchoring the unit to a measured natural
+    (2-count) madd is far more accurate than a fixed constant, because it adapts
+    to Tahqiq/Tadweer/Hadr pace. The result is clamped to a sane absolute range
+    to reject a mis-segmented anchor.
+    """
+    duration = natural_madd_segment.size / config.sample_rate
+    harakah = duration / 2.0
+    return float(np.clip(harakah, config.harakah_min_seconds, config.harakah_max_seconds))
+
+
 # ---------------------------------------------------------------------------
 # Band energy -- supports the Ghunnah check
 # ---------------------------------------------------------------------------
@@ -132,9 +217,12 @@ def band_energy(signal: FloatArray, sample_rate: int,
 @dataclass
 class MaddResult:
     status: RuleStatus
+    madd_type: str
     measured_seconds: float
     measured_counts: float
-    target_counts: int
+    nearest_count: int
+    allowed_counts: tuple[int, ...]
+    harakah_seconds: float
     pitch_stable: bool
     error: Optional[str] = None
 
@@ -159,47 +247,56 @@ class QalqalahResult:
 # ---------------------------------------------------------------------------
 # Madd
 # ---------------------------------------------------------------------------
-def evaluate_madd(audio_segment: FloatArray, target_counts: int,
-                  config: TajweedConfig = TajweedConfig(),
+def evaluate_madd(audio_segment: FloatArray, madd_type: MaddType,
+                  config: TajweedConfig = TajweedConfig(), *,
+                  harakah_seconds: Optional[float] = None,
                   phoneme_duration: Optional[float] = None) -> MaddResult:
-    """Check whether a prolonged vowel meets its required ``target_counts``.
+    """Check a prolonged vowel against the permissible lengths of its madd type.
 
-    The vowel must be both long *enough* and *stable* (continuous voicing with
-    low pitch variance) -- a wavering or clipped vowel fails even if its raw
-    duration is sufficient.
+    Two things must both hold:
+
+    * **Continuity** -- the vowel is one smooth, steady sound (``is_pitch_stable``).
+    * **Length** -- its duration, measured in harakat against the (ideally
+      calibrated) ``harakah_seconds`` unit, matches one of the lengths permitted
+      for ``madd_type``. A natural madd must be exactly 2; a Lazim exactly 6; a
+      Munfasil any of 2/4/5 -- so "longer than 2" is only an error for the madd
+      types where it actually is one.
+
+    Pass ``harakah_seconds`` from :func:`calibrate_harakah` for pace-relative
+    judging; otherwise the fixed ``config.harakah_seconds`` fallback is used.
     """
+    spec = madd_spec(madd_type)
+    harakah = harakah_seconds if harakah_seconds is not None else config.harakah_seconds
     duration = (phoneme_duration if phoneme_duration is not None
                 else audio_segment.size / config.sample_rate)
-    f0s, voi = pitch_track(audio_segment, config)
-    voiced_mask = voi >= 0.30
-    voiced_ratio = float(np.mean(voiced_mask)) if voi.size else 0.0
-    voiced_f0 = f0s[voiced_mask]
-    if voiced_f0.size >= 2 and np.mean(voiced_f0) > 0:
-        cv = float(np.std(voiced_f0) / (np.mean(voiced_f0) + 1e-9))
-    else:
-        cv = 1.0
-    pitch_stable = (voiced_ratio >= config.pitch_voiced_threshold
-                    and cv <= config.pitch_cv_max)
+    stable = is_pitch_stable(audio_segment, config)
 
-    measured_counts = duration / config.harakah_seconds
-    target_seconds = config.counts_to_seconds(target_counts)
-    tol = config.counts_to_seconds(config.madd_count_tolerance)
+    measured_counts = duration / harakah if harakah > 0 else 0.0
+    allowed = spec.allowed_counts
+    nearest = min(allowed, key=lambda c: abs(measured_counts - c))
+    tol = config.madd_count_tolerance
 
-    if not pitch_stable:
-        return MaddResult(RuleStatus.FAILED, round(duration, 4),
-                          round(measured_counts, 2), target_counts, False,
-                          "Madd vowel is not continuous/stable")
-    if duration < target_seconds - tol:
-        return MaddResult(RuleStatus.FAILED, round(duration, 4),
-                          round(measured_counts, 2), target_counts, True,
-                          f"Madd too short: {measured_counts:.1f} of "
-                          f"{target_counts} counts")
-    if duration > target_seconds + tol * 2:
-        return MaddResult(RuleStatus.FAILED, round(duration, 4),
-                          round(measured_counts, 2), target_counts, True,
-                          f"Madd over-prolonged: {measured_counts:.1f} counts")
-    return MaddResult(RuleStatus.PASSED, round(duration, 4),
-                      round(measured_counts, 2), target_counts, True)
+    def result(status: RuleStatus, error: Optional[str] = None) -> MaddResult:
+        return MaddResult(status, madd_type.value, round(duration, 4),
+                          round(measured_counts, 2), nearest, allowed,
+                          round(harakah, 4), stable, error)
+
+    if not stable:
+        return result(RuleStatus.FAILED,
+                      "Madd is not one continuous, steady vowel")
+    if abs(measured_counts - nearest) <= tol:
+        return result(RuleStatus.PASSED)
+    if measured_counts < min(allowed) - tol:
+        return result(RuleStatus.FAILED,
+                      f"{madd_type.value} too short: {measured_counts:.1f} of "
+                      f"required {min(allowed)} harakat")
+    if measured_counts > max(allowed) + tol:
+        return result(RuleStatus.FAILED,
+                      f"{madd_type.value} over-prolonged: {measured_counts:.1f} "
+                      f"harakat (max {max(allowed)})")
+    return result(RuleStatus.FAILED,
+                  f"{madd_type.value} length {measured_counts:.1f} falls between "
+                  f"valid counts {allowed}; hold a consistent {nearest}")
 
 
 # ---------------------------------------------------------------------------

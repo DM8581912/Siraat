@@ -50,11 +50,14 @@ from .audio_processing import (
 )
 from .gop_scorer import GOPConfig, GOPScorer, GOPStatus
 from .tajweed_rules import (
+    MaddType,
     RuleStatus,
     TajweedConfig,
+    calibrate_harakah,
     evaluate_ghunnah,
     evaluate_madd,
     evaluate_qalqalah,
+    is_pitch_stable,
 )
 
 
@@ -65,30 +68,33 @@ from .tajweed_rules import (
 class WordTarget:
     """One word of the canonical ayah, with its Tajweed expectations.
 
-    ``madd_targets`` maps a phoneme's grapheme index to its required count
-    (2/4/6). ``ghunnah_indices`` and ``qalqalah_indices`` flag grapheme indices
-    that must exhibit those acoustic properties. These annotations come from a
-    verified per-ayah blueprint; defaults are inferred only as a convenience.
+    ``madd_targets`` maps a phoneme's grapheme index to its :class:`MaddType`
+    (the engine derives the permissible 2/4/6-count lengths from the type).
+    ``ghunnah_indices`` and ``qalqalah_indices`` flag grapheme indices that must
+    exhibit those acoustic properties. These annotations come from a verified
+    per-ayah blueprint; defaults are inferred only as a convenience.
     """
 
     text: str
     phonemes: list[Phoneme]
-    madd_targets: dict[int, int] = field(default_factory=dict)
+    madd_targets: dict[int, MaddType] = field(default_factory=dict)
     ghunnah_indices: set[int] = field(default_factory=set)
     qalqalah_indices: set[int] = field(default_factory=set)
 
     @classmethod
-    def from_text(cls, text: str, madd_targets: Optional[dict[int, int]] = None,
+    def from_text(cls, text: str,
+                  madd_targets: Optional[dict[int, MaddType]] = None,
                   ghunnah_indices: Optional[Iterable[int]] = None,
                   qalqalah_indices: Optional[Iterable[int]] = None) -> "WordTarget":
         phonemes = text_to_phonemes(text)
         madd = dict(madd_targets or {})
         gh = set(ghunnah_indices or [])
         qa = set(qalqalah_indices or [])
-        # Convenience defaults: long vowels carry a 2-count madd unless overridden.
+        # Convenience default: a bare long vowel is a natural (2-count) madd
+        # unless the blueprint overrides it with a specific madd type.
         for p in phonemes:
             if p.symbol in LONG_VOWELS and p.grapheme_index not in madd:
-                madd[p.grapheme_index] = 2
+                madd[p.grapheme_index] = MaddType.TABEE
             if p.symbol in GHUNNAH_PHONEMES:
                 gh.add(p.grapheme_index)
         return cls(text, phonemes, madd, gh, qa)
@@ -120,6 +126,9 @@ class TajweedPipeline:
         self.aligner = ForcedAligner(self.model, audio_config)
         self.scorer = GOPScorer(gop_config)
         self.tajweed_config = tajweed_config
+        # The reciter's harakah unit, calibrated from the first stable natural
+        # madd in the session so longer madds are judged relative to their pace.
+        self.harakah_seconds: Optional[float] = None
 
     def process_word(self, signal: FloatArray, word: WordTarget) -> dict:
         """Align, GOP-score and Tajweed-check one word; return a feedback packet."""
@@ -159,11 +168,21 @@ class TajweedPipeline:
         gi = phoneme.grapheme_index
 
         if gi in word.madd_targets and phoneme.symbol in LONG_VOWELS:
-            r = evaluate_madd(seg, word.madd_targets[gi], self.tajweed_config,
+            madd_type = word.madd_targets[gi]
+            # Calibrate the pace unit from the first stable natural madd, then
+            # judge every madd (including this one) relative to that unit.
+            if (madd_type is MaddType.TABEE and self.harakah_seconds is None
+                    and is_pitch_stable(seg, self.tajweed_config)):
+                self.harakah_seconds = calibrate_harakah(seg, self.tajweed_config)
+            r = evaluate_madd(seg, madd_type, self.tajweed_config,
+                              harakah_seconds=self.harakah_seconds,
                               phoneme_duration=phoneme.duration)
-            return {"rule": "madd", "status": r.status.value,
+            return {"rule": "madd", "madd_type": r.madd_type,
+                    "status": r.status.value,
                     "measured_counts": r.measured_counts,
-                    "target_counts": r.target_counts, "error": r.error}
+                    "nearest_count": r.nearest_count,
+                    "allowed_counts": list(r.allowed_counts),
+                    "harakah_seconds": r.harakah_seconds, "error": r.error}
 
         if gi in word.ghunnah_indices or phoneme.symbol in GHUNNAH_PHONEMES:
             r = evaluate_ghunnah(seg, self.tajweed_config)

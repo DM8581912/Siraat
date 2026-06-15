@@ -27,7 +27,12 @@ from app.alignment_engine import (
 from app.audio_processing import AudioConfig
 from app.gop_scorer import GOPScorer
 from app.server import AyahTarget, TajweedPipeline, TajweedSession, WordTarget
-from app.tajweed_rules import RuleStatus, TajweedConfig
+from app.tajweed_rules import (
+    MaddType,
+    RuleStatus,
+    TajweedConfig,
+    calibrate_harakah,
+)
 
 CFG = AudioConfig()
 SR = CFG.sample_rate
@@ -145,11 +150,10 @@ def test_gop_scores_target_biased_emissions_well():
 # ---------------------------------------------------------------------------
 # tajweed_rules: Madd
 # ---------------------------------------------------------------------------
-def test_madd_passes_for_stable_two_count_vowel():
+def test_madd_natural_passes_at_two_counts():
     cfg = TajweedConfig()
-    seconds = cfg.counts_to_seconds(2)
-    vowel = tone(150, seconds, amp=0.4)
-    res = tj.evaluate_madd(vowel, target_counts=2, config=cfg)
+    vowel = tone(150, cfg.counts_to_seconds(2), amp=0.4)
+    res = tj.evaluate_madd(vowel, MaddType.TABEE, cfg)
     assert res.status is RuleStatus.PASSED
     assert res.pitch_stable
     assert abs(res.measured_counts - 2) < 0.6
@@ -157,10 +161,48 @@ def test_madd_passes_for_stable_two_count_vowel():
 
 def test_madd_fails_when_too_short():
     cfg = TajweedConfig()
-    vowel = tone(150, cfg.counts_to_seconds(2) * 0.4, amp=0.4)
-    res = tj.evaluate_madd(vowel, target_counts=2, config=cfg)
+    vowel = tone(150, cfg.counts_to_seconds(2) * 0.3, amp=0.4)
+    res = tj.evaluate_madd(vowel, MaddType.TABEE, cfg)
     assert res.status is RuleStatus.FAILED
     assert "short" in (res.error or "")
+
+
+def test_madd_lazim_requires_exactly_six():
+    cfg = TajweedConfig()
+    six = tone(150, cfg.counts_to_seconds(6), amp=0.4)
+    assert tj.evaluate_madd(six, MaddType.LAZIM, cfg).status is RuleStatus.PASSED
+    # A 4-count hold is correct for Muttasil but wrong for an obligatory Lazim.
+    four = tone(150, cfg.counts_to_seconds(4), amp=0.4)
+    res = tj.evaluate_madd(four, MaddType.LAZIM, cfg)
+    assert res.status is RuleStatus.FAILED
+    assert res.nearest_count == 6
+
+
+def test_madd_munfasil_accepts_two_or_four():
+    cfg = TajweedConfig()
+    for counts in (2, 4):
+        vowel = tone(150, cfg.counts_to_seconds(counts), amp=0.4)
+        res = tj.evaluate_madd(vowel, MaddType.MUNFASIL, cfg)
+        assert res.status is RuleStatus.PASSED, counts
+        assert res.nearest_count == counts
+
+
+def test_madd_uses_relative_pace_not_absolute():
+    # A slow (Tahqiq) reciter: their single count is 0.45 s, so a natural madd
+    # lasts ~0.9 s. Judged against the default 0.275 s unit it looks ~3.3 counts
+    # and wrongly fails; calibrated to the reciter's pace it is correctly 2.
+    cfg = TajweedConfig()
+    slow_harakah = 0.45
+    natural = tone(150, slow_harakah * 2, amp=0.4)
+
+    uncalibrated = tj.evaluate_madd(natural, MaddType.TABEE, cfg)
+    assert uncalibrated.status is RuleStatus.FAILED
+
+    harakah = calibrate_harakah(natural, cfg)
+    assert abs(harakah - slow_harakah) < 0.05
+    calibrated = tj.evaluate_madd(natural, MaddType.TABEE, cfg,
+                                  harakah_seconds=harakah)
+    assert calibrated.status is RuleStatus.PASSED
 
 
 # ---------------------------------------------------------------------------

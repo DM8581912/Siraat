@@ -80,7 +80,11 @@ Scores are ≤ 0; per-phoneme thresholds turn them into `passed` / `weak` /
 Acoustic heuristics on each phoneme's aligned waveform segment:
 
 - **Madd** — measures voiced, pitch-stable duration (AMDF pitch tracking) and
-  checks it against the required 2 / 4 / 6 *harakah* counts (~0.25–0.30 s each).
+  checks it against the lengths permitted for the *madd type* (natural/Badal = 2,
+  Muttasil = 4–5, Lāzim = 6, Munfasil = 2/4/5, ʿĀriḍ/Leen = 2/4/6). The
+  *harakah* count unit is **relative to the reciter's pace**: `calibrate_harakah`
+  anchors it to a measured natural madd so Tahqīq (slow) and Hadr (fast)
+  recitation are judged correctly, rather than against a fixed millisecond value.
 - **Ghunnah** — measures sustained nasal-band vs oral-band energy and requires
   the nasal hold to span at least 2 counts.
 - **Qalqalah** — scans the window after the consonant closure for a release
